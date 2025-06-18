@@ -2,16 +2,6 @@
   "last_sch_text_sim_command": "",
   "tabs": [
     {
-      "analysis": "OP",
-      "commands": [
-        ".op",
-        ".kicad adjustpaths",
-        ".save all",
-        ".probe alli",
-        ".probe allp"
-      ]
-    },
-    {
       "analysis": "TRAN",
       "commands": [
         ".tran 100u 1",
@@ -27,17 +17,27 @@
         "right": 70,
         "top": 30
       },
-      "measurements": [],
+      "measurements": [
+        {
+          "expr": "AVG V(out)",
+          "format": "3~V"
+        }
+      ],
       "showGrid": true,
       "traces": [
         {
-          "color": "rgb(166, 86, 40)",
-          "signal": "V(gain)",
+          "color": "rgb(231, 138, 195)",
+          "signal": "V(Net-_Q1-B_)",
           "trace_type": 257
         },
         {
           "color": "rgb(228, 26, 28)",
           "signal": "V(in)",
+          "trace_type": 257
+        },
+        {
+          "color": "rgb(55, 126, 184)",
+          "signal": "V(out)",
           "trace_type": 257
         }
       ]

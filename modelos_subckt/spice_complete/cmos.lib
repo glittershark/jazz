@@ -416,9 +416,11 @@ Uf0 nand(4) VDD VSS
 *  jds    6/6/94
 *  This part is shown in the data book as MC14013B
 *
-.SUBCKT CD4013B SA RA CA DA QA QABAR
-+  optional: VDD=$G_CD4000_VDD VSS=$G_CD4000_VSS
-+  params: MNTYMXDLY=0 IO_LEVEL=0
+* CD4013B Dual D Flip-Flop - KiCad Compatible Version
+*
+* CD4013B Dual D Flip-Flop - KiCad Compatible Version
+*
+.SUBCKT CD4013B SA RA CA DA QA QABAR VDD VSS MNTYMXDLY=0 IO_LEVEL=0
 *
 Uf0 inva(2) VDD VSS
 +   SA RA prebar clrbar
@@ -450,7 +452,7 @@ U3 PINDLY(2,0,3) VDD VSS
 +               CLEAR, DELAY(-1,225NS,450NS),
 +               EDGE & (TRN_LH | TRN_HL), DELAY(-1,175NS,350NS),
 +               DELAY(-1,226NS,451NS))}
-  
+
 U4 CONSTRAINT(3) VDD VSS
 + CA SA RA
 + IO_4000B IO_LEVEL={IO_LEVEL}
