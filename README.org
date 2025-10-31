@@ -2,7 +2,7 @@
 
 some daisy seed effect pedal firmware
 
-run ~nix-shell~ to get dependencies. see ~shell.nix~ for a list of dependencies if
+run ~nix-shell~ to get dependencies. see [[https://github.com/glittershark/jazz/blob/main/shell.nix][shell.nix]] for a list of dependencies if
 you are less of a nix weenie than i am
 
 to build:
@@ -19,5 +19,5 @@ $ make flash DIR=delay
 
 * current effects
 
-- ~delay~: literally just a perfectly clean delay with a little bit of feedback.
+- [[https://github.com/glittershark/jazz/blob/main/src/delay/delay.cpp][delay]]: literally just a perfectly clean delay with a little bit of feedback.
   can't be controlled.
