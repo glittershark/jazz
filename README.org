@@ -1,0 +1,23 @@
+#+title: jazz
+
+some daisy seed effect pedal firmware
+
+run ~nix-shell~ to get dependencies. see ~shell.nix~ for a list of dependencies if
+you are less of a nix weenie than i am
+
+to build:
+
+#+begin_src shell-session
+$ make
+#+end_src
+
+to flash a particular pedal to a daisy seed (in reset mode!):
+
+#+begin_src shell-session
+$ make flash DIR=delay
+#+end_src
+
+* current effects
+
+- ~delay~: literally just a perfectly clean delay with a little bit of feedback.
+  can't be controlled.
