@@ -1,0 +1,5 @@
+#+title: Reverse delay
+
+* Circuit
+
+- *Delay Amount*: 100K linear pot, pin 21
