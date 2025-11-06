@@ -19,5 +19,5 @@ $ make flash DIR=delay
 
 * current effects
 
-- [[https://github.com/glittershark/jazz/blob/main/src/delay/delay.cpp][delay]]: literally just a perfectly clean delay with a little bit of feedback.
-  can't be controlled.
+- [[https://github.com/glittershark/jazz/blob/main/src/delay/delay.cpp][delay]]: literally just a perfectly clean delay.
+- [[https://github.com/glittershark/jazz/blob/main/src/reverse/reverse.cpp][reverse]]: a simple reverse delay.
