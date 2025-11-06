@@ -3,3 +3,4 @@
 * Circuit
 
 - *Delay Amount*: 100K linear pot, pin 21
+- *Feedback*: 100K linear pot, pin 20
