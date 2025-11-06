@@ -1,9 +1,12 @@
-.PHONY: all deps delay flash clean
+.PHONY: all deps delay reverse flash clean
 
-all: compile_commands.json delay
+all: delay reverse
 
 delay: deps
 	bear -- ${MAKE} -C src/delay
+
+reverse: deps
+	bear -- ${MAKE} -C src/reverse
 
 flash:
 	@test $(DIR) || (echo "DIR must be set (eg `make flash DIR=delay`)"; exit 1)
