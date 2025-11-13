@@ -5,7 +5,29 @@ some daisy seed effect pedal firmware
 run ~nix-shell~ to get dependencies. see [[https://github.com/glittershark/jazz/blob/main/shell.nix][shell.nix]] for a list of dependencies if
 you are less of a nix weenie than i am
 
-to build:
+* building and testing
+
+to build the ~libjazz~ library:
+
+#+begin_src shell-session
+$ make
+#+end_src
+
+to run tests:
+
+#+begin_src shell-session
+$ make test
+#+end_src
+
+note: cmake generates ~compile_commands.json~ in the build directory and creates a symlink in the project root for clangd/language server support.
+
+the ~libjazz~ library is located in ~lib/libjazz/~ and provides:
+- ~Value~ class: platform-optimized value storage (float on 32-bit, double on 64-bit)
+- utility functions like ~isNegativeZero~
+
+* building hardware projects
+
+to build for daisy seed hardware (requires daisy platform libraries), use the same command:
 
 #+begin_src shell-session
 $ make

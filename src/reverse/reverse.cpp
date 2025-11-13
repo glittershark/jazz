@@ -1,6 +1,7 @@
 #include "daisy_seed.h"
 #include "daisysp.h"
 #include "hid/logger.h"
+#include "libjazz/value.hpp"
 
 using namespace daisy;
 using namespace daisysp;
@@ -32,6 +33,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 }
 
 int main(void) {
+
   hw.Configure();
   hw.Init();
   hw.SetAudioBlockSize(4);

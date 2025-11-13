@@ -1,5 +1,5 @@
 TARGET = reverse
-CPP_SOURCES = reverse.cpp
+CPP_SOURCES = reverse.cpp value.hpp
 LIBDAISY_DIR = ../../vendor/libDaisy/
 DAISYSP_DIR = ../../vendor/DaisySP/
 

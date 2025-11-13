@@ -2,4 +2,6 @@
 
 with pkgs;
 
-mkShell { buildInputs = [ python3 gcc-arm-embedded dfu-util bear uucp ]; }
+mkShell {
+  buildInputs = [ python3 gcc-arm-embedded dfu-util bear uucp cmake gtest ];
+}
