@@ -12,9 +12,8 @@ add_executable(reverse reverse.cpp)
 # Link against libjazz library and Daisy libraries
 target_link_libraries(reverse PRIVATE 
     jazz::libjazz
-    # Add Daisy libraries here when available:
-    # daisy_core
-    # daisysp
+    daisy
+    DaisySP
 )
 
 set_target_properties(reverse PROPERTIES

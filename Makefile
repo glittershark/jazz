@@ -3,9 +3,13 @@
 # Default target - build everything via CMake
 all: cmake-build
 
-# Test target - run the test suite
-test: cmake-build
-	cd build && ctest
+# Test target - build and run tests on host platform
+test:
+	rm -rf build-test
+	mkdir -p build-test
+	cd build-test && cmake -DTEST_ONLY=ON ..
+	cd build-test && make
+	cd build-test && ctest
 
 # Create build directory and configure CMake
 cmake-configure: build/Makefile
@@ -34,6 +38,7 @@ vendor/DaisySP/build/libdaisysp.a: vendor/DaisySP/*
 
 # Clean everything
 clean:
-	rm -rf build
+	rm -rf build build-test
 	${MAKE} -C src/delay clean || true
 	${MAKE} -C src/reverse clean || true
+	${MAKE} -C src/granular clean || true

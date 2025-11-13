@@ -122,8 +122,13 @@ core/build
 cube/Daisy_Seed_Rev2/
 cube/Daisy_Seed_Rev3/
 /**/VisualGDB
+# Build directories
 /**/build
+build/
+build-test/
 bin/
+
+# IDE/Tooling
 .visualgdb
 VisualGDBCache
 vs/*.log
@@ -131,4 +136,8 @@ MyProjects/
 .cortex-debug.registers.state.json
 .cortex-debug.peripherals.state.json
 compile_commands.json
+.clangd/
+.cache/
+
+# Claude Code
 .claude

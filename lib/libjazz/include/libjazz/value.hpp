@@ -40,6 +40,8 @@ private:
       sizeof(void *) == 4 ? 0xfffa0000ULL : 0xfffa000000000000ULL;
 
 public:
+  inline Value() : Value(0.f) {}
+
   inline Value(const FloatType number) {
     int16_t asInt16 = static_cast<int16_t>(number);
 
