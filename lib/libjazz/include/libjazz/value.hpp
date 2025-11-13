@@ -10,7 +10,7 @@
 using FloatType = float;
 using StorageType = uint32_t;
 #elif UINTPTR_MAX == 0xFFFFFFFFFFFFFFFF
-// 64-bit platform  
+// 64-bit platform
 using FloatType = double;
 using StorageType = uint64_t;
 #else
@@ -32,9 +32,12 @@ private:
     StorageType asBits;
   };
 
-  static const StorageType MaxFloat = sizeof(void*) == 4 ? 0xfff80000ULL : 0xfff8000000000000ULL;
-  static const StorageType Int16Tag = sizeof(void*) == 4 ? 0xfff90000ULL : 0xfff9000000000000ULL;
-  static const StorageType PtrTag   = sizeof(void*) == 4 ? 0xfffa0000ULL : 0xfffa000000000000ULL;
+  static const StorageType MaxFloat =
+      sizeof(void *) == 4 ? 0xfff80000ULL : 0xfff8000000000000ULL;
+  static const StorageType Int16Tag =
+      sizeof(void *) == 4 ? 0xfff90000ULL : 0xfff9000000000000ULL;
+  static const StorageType PtrTag =
+      sizeof(void *) == 4 ? 0xfffa0000ULL : 0xfffa000000000000ULL;
 
 public:
   inline Value(const FloatType number) {
@@ -58,12 +61,14 @@ public:
   inline Value(const float number) : Value(static_cast<double>(number)) {}
 #endif
 
-  inline Value(const int16_t number) { asBits = static_cast<StorageType>(number) | Int16Tag; }
+  inline Value(const int16_t number) {
+    asBits = static_cast<StorageType>(number) | Int16Tag;
+  }
 
   inline Value(void *pointer) {
     uintptr_t ptr_val = reinterpret_cast<uintptr_t>(pointer);
     assert((ptr_val & PtrTag) == 0);
-    
+
 #if UINTPTR_MAX == 0xFFFFFFFF
     asBits = static_cast<StorageType>(ptr_val) | PtrTag;
 #else
