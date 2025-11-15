@@ -68,3 +68,25 @@ TEST_F(SlabTest, CstrDestr) {
   slab.Free(y);
   EXPECT_EQ(destr_calls, 2);
 }
+
+TEST_F(SlabTest, CstrDestrUniquePtr) {
+  Slab<CstrDestr, 10> slab;
+
+  std::atomic<int> cstr_calls{0};
+  std::atomic<int> destr_calls{0};
+
+  void *orig_x;
+  {
+    auto x = slab.MakeUnique(&cstr_calls, &destr_calls);
+    orig_x = x.get();
+    EXPECT_EQ(cstr_calls, 1);
+  }
+  EXPECT_EQ(destr_calls, 1);
+
+  {
+    auto x = slab.MakeUnique(&cstr_calls, &destr_calls);
+    EXPECT_EQ(cstr_calls, 2);
+    EXPECT_EQ(x.get(), orig_x);
+  }
+  EXPECT_EQ(destr_calls, 2);
+}
