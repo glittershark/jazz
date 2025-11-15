@@ -1,5 +1,6 @@
+#include <bitset>
 #include <cstddef>
-#include <optional>
+#include <iterator>
 
 #include "daisy_seed.h"
 #include "daisysp.h"
@@ -12,18 +13,19 @@ using namespace daisysp;
 
 DaisySeed hw;
 
+constexpr const size_t BUFFER_LEN = 44100 * 2; /* 2 seconds */
+constexpr const size_t MAX_FADE_TIME = 10000;
+constexpr const size_t UPDATE_CAP = 2048;
+
 struct Update {
   enum Kind { kErase, kWrite } kind;
   size_t finished_at;
   float value;
   size_t samples;
-  std::optional<Update *> next;
+  Update *next;
 };
 
-static Slab<Update, 2048> UPDATES;
-
-#define BUFFER_LEN 44100 * 2 /* 2 seconds */
-#define MAX_FADE_TIME 10000
+static Slab<Update, UPDATE_CAP> UPDATES;
 
 class BufferValue : private Value {
 public:
@@ -55,11 +57,11 @@ public:
   Update *PushBack(Update &&update) {
     if (isPointer()) {
       Update *cur = asSampleWithUpdates()->first_update;
-      while (!cur->next.has_value()) {
-        cur = cur->next.value();
+      while (cur->next != nullptr) {
+        cur = cur->next;
       }
       cur->next = UPDATES.Alloc(std::move(update));
-      return cur->next.value();
+      return cur->next;
     } else {
       float sample = asSample();
       auto upd = UPDATES.Alloc(std::move(update));
@@ -70,26 +72,76 @@ public:
   }
 };
 
-static BufferValue buffer[BUFFER_LEN];
+class IndicesToUpdate {
+private:
+  size_t m_index;
+  IndicesToUpdate *next;
+  static Slab<IndicesToUpdate, UPDATE_CAP> SLAB;
+
+public:
+  IndicesToUpdate(size_t index) : m_index(index) {}
+
+  static void Prepend(IndicesToUpdate **head, size_t index) {
+    auto new_head = SLAB.Alloc(index);
+    new_head->next = *head;
+    *head = new_head;
+  }
+
+  size_t index() const { return m_index; }
+
+  class Iterator {
+    const IndicesToUpdate *m_cur;
+
+  public:
+    using difference_type = std::ptrdiff_t;
+    using value_type = IndicesToUpdate;
+
+    Iterator(const IndicesToUpdate *cur) : m_cur(cur) {}
+
+    const IndicesToUpdate &operator*() const { return *m_cur; }
+    void operator++(int) { ++*this; };
+    Iterator &operator++() {
+      m_cur = m_cur->next;
+      return *this;
+    };
+
+    bool operator!=(Iterator &other) const { return other.m_cur != m_cur; }
+  };
+  friend Iterator;
+
+  Iterator begin() const { return Iterator(this); }
+  Iterator end() const { return Iterator(nullptr); }
+
+  static_assert(std::input_iterator<Iterator>);
+};
+
+/// *** State ***
+
+static BufferValue BUFFER[BUFFER_LEN];
+static IndicesToUpdate *INDICES_TO_UPDATE[MAX_FADE_TIME];
 
 void Erase(size_t index, size_t clock_time, float value,
            size_t samples = MAX_FADE_TIME) {
-  buffer[index].PushBack(
+  BUFFER[index].PushBack(
       {Update::Kind::kErase, clock_time + samples, value, samples});
-
-  // TODO
-  // if index not in indices_to_update[clock_time % max_fade_time]:
-  //     indices_to_update[clock_time % max_fade_time].append(index)
+  IndicesToUpdate::Prepend(&INDICES_TO_UPDATE[clock_time % MAX_FADE_TIME],
+                           index);
 }
 
 void Write(size_t index, size_t clock_time, float value,
            size_t samples = MAX_FADE_TIME) {
-  buffer[index].PushBack({Update::Kind::kWrite, clock_time + samples, value,
+  BUFFER[index].PushBack({Update::Kind::kWrite, clock_time + samples, value,
                           static_cast<size_t>(value / samples)});
+  IndicesToUpdate::Prepend(&INDICES_TO_UPDATE[clock_time % MAX_FADE_TIME],
+                           index);
+}
 
-  // TODO
-  // if index not in indices_to_update[clock_time % max_fade_time]:
-  //     indices_to_update[clock_time % max_fade_time].append(index)
+void DoUpdate(size_t index, size_t clock_time) {}
+
+void PreHousekeeping(size_t clock_time) {
+  for (auto index : *INDICES_TO_UPDATE[clock_time % MAX_FADE_TIME]) {
+    DoUpdate(index.index(), clock_time);
+  }
 }
 
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
