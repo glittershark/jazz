@@ -1,4 +1,5 @@
 #include "libjazz/slab.hpp"
+#include <atomic>
 #include <cstdint>
 #include <gtest/gtest.h>
 
@@ -11,10 +12,8 @@ protected:
 TEST_F(SlabTest, IntSlab) {
   Slab<uint64_t, 10> slab;
 
-  auto x = slab.Alloc();
-  *x = 4;
-  auto y = slab.Alloc();
-  *y = 7;
+  auto x = slab.Alloc(4);
+  auto y = slab.Alloc(7);
   EXPECT_EQ(*x, 4);
   EXPECT_EQ(*y, 7);
 
@@ -37,4 +36,35 @@ TEST_F(SlabTest, IntSlab) {
   EXPECT_EQ(x_new, x);
 }
 
-// TODO: test constructor and destructor get called
+class CstrDestr {
+  std::atomic<int> *m_cstr_calls;
+  std::atomic<int> *m_destr_calls;
+
+public:
+  CstrDestr(std::atomic<int> *cstr_calls, std::atomic<int> *destr_calls)
+      : m_cstr_calls(cstr_calls), m_destr_calls(destr_calls) {
+    (*m_cstr_calls)++;
+  }
+
+  ~CstrDestr() { (*m_destr_calls)++; }
+};
+
+TEST_F(SlabTest, CstrDestr) {
+  Slab<CstrDestr, 10> slab;
+
+  std::atomic<int> cstr_calls{0};
+  std::atomic<int> destr_calls{0};
+
+  auto x = slab.Alloc(&cstr_calls, &destr_calls);
+  EXPECT_EQ(cstr_calls, 1);
+
+  auto y = slab.Alloc(&cstr_calls, &destr_calls);
+  EXPECT_NE(x, y);
+  EXPECT_EQ(cstr_calls, 2);
+
+  slab.Free(x);
+  EXPECT_EQ(destr_calls, 1);
+
+  slab.Free(y);
+  EXPECT_EQ(destr_calls, 2);
+}
