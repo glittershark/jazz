@@ -20,7 +20,7 @@ private:
   size_t m_len;
 
 public:
-  inline Slab() : m_next(0), m_len(0), m_entries{} {}
+  inline Slab() : m_entries{}, m_next(0), m_len(0) {}
 
   // TODO: it would be nice to destruct all the non-empty elements in ~Slab, but
   // that requires either stack space linear in the number of elements, or
