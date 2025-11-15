@@ -5,9 +5,8 @@ all: cmake-build
 
 # Test target - build and run tests on host platform
 test:
-	rm -rf build-test
 	mkdir -p build-test
-	cd build-test && cmake -DTEST_ONLY=ON ..
+	cd build-test && cmake -DTEST_ONLY=ON -DCMAKE_BUILD_TYPE=Debug ..
 	cd build-test && make
 	cd build-test && ctest
 
