@@ -7,7 +7,7 @@ you are less of a nix weenie than i am
 
 * building and testing
 
-to build the ~libjazz~ library:
+to build firmware blobs for all effects:
 
 #+begin_src shell-session
 $ make
@@ -21,19 +21,9 @@ $ make test
 
 note: cmake generates ~compile_commands.json~ in the build directory and creates a symlink in the project root for clangd/language server support.
 
-the ~libjazz~ library is located in ~lib/libjazz/~ and provides:
-- ~Value~ class: platform-optimized value storage (float on 32-bit, double on 64-bit)
-- utility functions like ~isNegativeZero~
+* flashing to daisy seed
 
-* building hardware projects
-
-to build for daisy seed hardware (requires daisy platform libraries), use the same command:
-
-#+begin_src shell-session
-$ make
-#+end_src
-
-to flash a particular pedal to a daisy seed (in reset mode!):
+to flash a particular effect to a daisy seed (in reset mode!):
 
 #+begin_src shell-session
 $ make flash DIR=delay
@@ -43,3 +33,4 @@ $ make flash DIR=delay
 
 - [[https://github.com/glittershark/jazz/blob/main/src/delay/delay.cpp][delay]]: literally just a perfectly clean delay.
 - [[https://github.com/glittershark/jazz/blob/main/src/reverse/reverse.cpp][reverse]]: a simple reverse delay.
+- [[https://github.com/glittershark/jazz/blob/main/src/granular/granular.cpp][granular]]: weird semi-generative granular delay.
