@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <optional>
 
 #include "daisy_seed.h"
@@ -12,7 +13,7 @@ using namespace daisysp;
 DaisySeed hw;
 
 struct Update {
-  enum Kind { sample, erase, write } kind;
+  enum Kind { kErase, kWrite } kind;
   size_t finished_at;
   float value;
   size_t samples;
@@ -30,9 +31,10 @@ public:
     float sample;
     Update *first_update;
   };
+
+private:
   static Slab<SampleWithUpdates, BUFFER_LEN> SAMPLES;
 
-protected:
   SampleWithUpdates *asSampleWithUpdates() const {
     return std::bit_cast<SampleWithUpdates *>(getPointer());
   }
@@ -41,6 +43,14 @@ protected:
 public:
   BufferValue(float sample) : Value(sample) {}
   BufferValue() : BufferValue(0.0f) {}
+
+  float sample() const {
+    if (isPointer()) {
+      return asSampleWithUpdates()->sample;
+    } else {
+      return asSample();
+    }
+  }
 
   Update *PushBack(Update &&update) {
     if (isPointer()) {
@@ -64,7 +74,22 @@ static BufferValue buffer[BUFFER_LEN];
 
 void Erase(size_t index, size_t clock_time, float value,
            size_t samples = MAX_FADE_TIME) {
-  // buffer[index]
+  buffer[index].PushBack(
+      {Update::Kind::kErase, clock_time + samples, value, samples});
+
+  // TODO
+  // if index not in indices_to_update[clock_time % max_fade_time]:
+  //     indices_to_update[clock_time % max_fade_time].append(index)
+}
+
+void Write(size_t index, size_t clock_time, float value,
+           size_t samples = MAX_FADE_TIME) {
+  buffer[index].PushBack({Update::Kind::kWrite, clock_time + samples, value,
+                          static_cast<size_t>(value / samples)});
+
+  // TODO
+  // if index not in indices_to_update[clock_time % max_fade_time]:
+  //     indices_to_update[clock_time % max_fade_time].append(index)
 }
 
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
