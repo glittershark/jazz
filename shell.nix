@@ -11,6 +11,11 @@ mkShell {
     uucp
     cmake
     gtest
-    rapidcheck
+    # Workaround https://github.com/NixOS/nixpkgs/issues/296348
+    (rapidcheck.overrideDerivation (oldAttrs: {
+      postFixup = ''
+        cp -r "$out/share" $dev
+      '';
+    })).dev
   ];
 }

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(jazz-test)
 
 find_package(Threads REQUIRED)
+find_package(rapidcheck REQUIRED)
 
 enable_testing()
 
@@ -16,6 +17,7 @@ function(add_gtest source_file)
     Threads::Threads
     gtest
     gtest_main
+    rapidcheck
   )
 
   # Set any compile definitions
