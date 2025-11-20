@@ -1,7 +1,5 @@
-#include <bitset>
+#include <array>
 #include <cstddef>
-#include <iterator>
-#include <optional>
 
 #include "daisy_seed.h"
 #include "daisysp.h"
@@ -15,8 +13,9 @@ using namespace daisysp;
 DaisySeed hw;
 
 constexpr const size_t BUFFER_LEN = 44100 * 2; /* 2 seconds */
-constexpr const size_t MAX_FADE_TIME = 10000;
-constexpr const size_t UPDATE_CAP = 2048;
+constexpr const size_t MAX_FADE_TIME = 64;
+constexpr const size_t NUM_HEADS = 3;
+constexpr const size_t UPDATE_CAP = (NUM_HEADS + 1) * (MAX_FADE_TIME + 1);
 
 struct Update {
   enum Kind { kErase, kWrite } kind;
@@ -59,10 +58,9 @@ public:
     float sample;
     Update *first_update;
   };
+  static Slab<SampleWithUpdates, UPDATE_CAP> SAMPLES;
 
-private:
-  static Slab<SampleWithUpdates, BUFFER_LEN> SAMPLES;
-
+protected:
   SampleWithUpdates *asSampleWithUpdates() const {
     return std::bit_cast<SampleWithUpdates *>(getPointer());
   }
@@ -149,11 +147,15 @@ public:
   static_assert(std::input_iterator<Iterator>);
 };
 
+Slab<BufferValue::SampleWithUpdates, UPDATE_CAP> BufferValue::SAMPLES;
+Slab<IndicesToUpdate, UPDATE_CAP> IndicesToUpdate::SLAB;
+
 /// *** State ***
 
 static BufferValue BUFFER[BUFFER_LEN];
 static IndicesToUpdate *INDICES_TO_UPDATE[MAX_FADE_TIME];
 static size_t global_clock_max = 300000;
+static size_t global_clock = 0;
 
 void Erase(size_t index, size_t clock_time, float value,
            size_t samples = MAX_FADE_TIME) {
@@ -182,9 +184,9 @@ void DoUpdate(size_t index, size_t clock_time) {
       auto time_till_ripe =
           (update->finished_at - clock_time) % global_clock_max;
       if (time_till_ripe <= 0) {
+        content.sample() *= update->value;
         *update_ptr = update->next;
         UPDATES.Free(update);
-        content.sample() *= update->value;
       }
     }
     update_ptr = &update->next;
@@ -196,7 +198,8 @@ void DoUpdate(size_t index, size_t clock_time) {
     auto update = *update_ptr;
     if (update->kind == Update::Kind::kWrite) {
       auto time_till_ripe =
-          (update->finished_at - clock_time) % global_clock_max;
+          ((update->finished_at - clock_time) + global_clock_max) %
+          global_clock_max;
       if (time_till_ripe <= 0) {
         *update_ptr = update->next;
         UPDATES.Free(update);
@@ -216,7 +219,8 @@ float Read(size_t index, size_t clock_time) {
   while (update != nullptr) {
     if (update->kind == Update::Kind::kErase) {
       auto time_till_ripe =
-          (update->finished_at - clock_time) % global_clock_max;
+          ((update->finished_at - clock_time) + global_clock_max) %
+          global_clock_max;
       auto frac_offset =
           (update->samples * update->value) / (1 - update->value);
       auto factor =
@@ -231,7 +235,8 @@ float Read(size_t index, size_t clock_time) {
   while (update != nullptr) {
     if (update->kind == Update::Kind::kWrite) {
       auto time_till_ripe =
-          (update->finished_at - clock_time) % global_clock_max;
+          ((update->finished_at - clock_time) + global_clock_max) %
+          global_clock_max;
       auto target_val = update->value;
       auto fading_in_val = target_val - (time_till_ripe * update->samples);
       value += fading_in_val;
@@ -248,15 +253,62 @@ void PreHousekeeping(size_t clock_time) {
   }
 }
 
+struct Head {
+  enum Kind { kRead, kErase, kWrite } kind;
+  size_t index;
+  float value;
+};
+
+template <size_t HEADS> float FullCycle(std::array<Head, HEADS> heads) {
+  PreHousekeeping(global_clock);
+  float wet_signal = 0.f;
+
+  for (auto &&head : heads) {
+    switch (head.kind) {
+    case Head::Kind::kRead: {
+      wet_signal += Read(head.index, global_clock) * head.value;
+      break;
+    }
+    case Head::Kind::kErase: {
+      Erase(head.index, global_clock, head.value);
+      break;
+    }
+    case Head::Kind::kWrite: {
+      Write(head.index, global_clock, head.value);
+      break;
+    }
+    }
+  }
+
+  global_clock = (global_clock + 1 + global_clock_max) % global_clock_max;
+
+  return wet_signal;
+}
+
+static std::array<Head, 3> heads{{
+    {Head::Kind::kRead, 0, 1.f},
+    {Head::Kind::kWrite, 0, 1.f},
+    {Head::Kind::kErase, 0, 0.f},
+}};
+
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
   for (size_t i = 0; i < size; i++) {
-    out[0][i] = in[0][i];
+    auto sample = in[0][i];
+
+    for (auto &&head : heads) {
+      if (head.kind == Head::Kind::kWrite) {
+        head.value = sample;
+      }
+
+      head.index += 1;
+    }
+
+    out[0][i] = sample + FullCycle(heads);
   }
 }
 
 int main(void) {
-
   hw.Configure();
   hw.Init();
   hw.SetAudioBlockSize(4);
