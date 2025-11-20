@@ -1,6 +1,7 @@
 #include <bitset>
 #include <cstddef>
 #include <iterator>
+#include <optional>
 
 #include "daisy_seed.h"
 #include "daisysp.h"
@@ -23,6 +24,31 @@ struct Update {
   float value;
   size_t samples;
   Update *next;
+
+  class Iterator {
+    const Update *m_cur;
+
+  public:
+    using difference_type = std::ptrdiff_t;
+    using value_type = Update;
+
+    Iterator(const Update *cur) : m_cur(cur) {}
+
+    const Update &operator*() const { return *m_cur; }
+    void operator++(int) { ++*this; };
+    Iterator &operator++() {
+      m_cur = m_cur->next;
+      return *this;
+    };
+
+    bool operator!=(Iterator &other) const { return other.m_cur != m_cur; }
+  };
+  friend Iterator;
+
+  Iterator begin() const { return Iterator(this); }
+  Iterator end() const { return Iterator(nullptr); }
+
+  static_assert(std::input_iterator<Iterator>);
 };
 
 static Slab<Update, UPDATE_CAP> UPDATES;
@@ -40,13 +66,13 @@ private:
   SampleWithUpdates *asSampleWithUpdates() const {
     return std::bit_cast<SampleWithUpdates *>(getPointer());
   }
-  float asSample() const { return getFloat(); }
+  float &asSample() { return getFloat(); }
 
 public:
   BufferValue(float sample) : Value(sample) {}
   BufferValue() : BufferValue(0.0f) {}
 
-  float sample() const {
+  float &sample() {
     if (isPointer()) {
       return asSampleWithUpdates()->sample;
     } else {
@@ -68,6 +94,14 @@ public:
       auto head = SAMPLES.Alloc(sample, upd);
       new (this) Value((void *)head);
       return upd;
+    }
+  }
+
+  Update **FirstUpdate() const {
+    if (isPointer()) {
+      return &asSampleWithUpdates()->first_update;
+    } else {
+      return nullptr;
     }
   }
 };
@@ -119,6 +153,7 @@ public:
 
 static BufferValue BUFFER[BUFFER_LEN];
 static IndicesToUpdate *INDICES_TO_UPDATE[MAX_FADE_TIME];
+static size_t global_clock_max = 300000;
 
 void Erase(size_t index, size_t clock_time, float value,
            size_t samples = MAX_FADE_TIME) {
@@ -136,10 +171,79 @@ void Write(size_t index, size_t clock_time, float value,
                            index);
 }
 
-void DoUpdate(size_t index, size_t clock_time) {}
+void DoUpdate(size_t index, size_t clock_time) {
+  auto content = BUFFER[index];
+
+  // Apply erases
+  auto update_ptr = content.FirstUpdate();
+  while (update_ptr != nullptr && *update_ptr != nullptr) {
+    auto update = *update_ptr;
+    if (update->kind == Update::Kind::kErase) {
+      auto time_till_ripe =
+          (update->finished_at - clock_time) % global_clock_max;
+      if (time_till_ripe <= 0) {
+        *update_ptr = update->next;
+        UPDATES.Free(update);
+        content.sample() *= update->value;
+      }
+    }
+    update_ptr = &update->next;
+  }
+
+  // Apply writes
+  update_ptr = content.FirstUpdate();
+  while (update_ptr != nullptr && *update_ptr != nullptr) {
+    auto update = *update_ptr;
+    if (update->kind == Update::Kind::kWrite) {
+      auto time_till_ripe =
+          (update->finished_at - clock_time) % global_clock_max;
+      if (time_till_ripe <= 0) {
+        *update_ptr = update->next;
+        UPDATES.Free(update);
+        content.sample() += update->value;
+      }
+    }
+    update_ptr = &update->next;
+  }
+}
+
+float Read(size_t index, size_t clock_time) {
+  auto content = BUFFER[index];
+  auto value = content.sample();
+
+  // Apply erases
+  auto update = *content.FirstUpdate();
+  while (update != nullptr) {
+    if (update->kind == Update::Kind::kErase) {
+      auto time_till_ripe =
+          (update->finished_at - clock_time) % global_clock_max;
+      auto frac_offset =
+          (update->samples * update->value) / (1 - update->value);
+      auto factor =
+          frac_offset / ((update->samples - time_till_ripe) + frac_offset + 1);
+      value *= factor;
+    }
+    update = update->next;
+  }
+
+  // Apply writes
+  update = *content.FirstUpdate();
+  while (update != nullptr) {
+    if (update->kind == Update::Kind::kWrite) {
+      auto time_till_ripe =
+          (update->finished_at - clock_time) % global_clock_max;
+      auto target_val = update->value;
+      auto fading_in_val = target_val - (time_till_ripe * update->samples);
+      value += fading_in_val;
+    }
+    update = update->next;
+  }
+
+  return value;
+}
 
 void PreHousekeeping(size_t clock_time) {
-  for (auto index : *INDICES_TO_UPDATE[clock_time % MAX_FADE_TIME]) {
+  for (auto &&index : *INDICES_TO_UPDATE[clock_time % MAX_FADE_TIME]) {
     DoUpdate(index.index(), clock_time);
   }
 }

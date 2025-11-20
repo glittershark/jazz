@@ -84,7 +84,7 @@ public:
   inline bool isInt16() const { return (asBits & Int16Tag) == Int16Tag; }
   inline bool isPointer() const { return (asBits & PtrTag) == PtrTag; }
 
-  inline FloatType getFloat() const {
+  inline FloatType &getFloat() {
     assert(isFloat());
     return asFloat;
   }
