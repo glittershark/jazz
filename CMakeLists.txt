@@ -32,6 +32,7 @@ if(NOT TEST_ONLY)
     add_subdirectory(src/delay)
     add_subdirectory(src/reverse)
     add_subdirectory(src/granular)
+    add_subdirectory(src/rachel)
 else()
     # Test-only build
     enable_testing()
