@@ -34,3 +34,4 @@ $ make flash DIR=delay
 - [[https://github.com/glittershark/jazz/blob/main/src/delay/delay.cpp][delay]]: literally just a perfectly clean delay.
 - [[https://github.com/glittershark/jazz/blob/main/src/reverse/reverse.cpp][reverse]]: a simple reverse delay.
 - [[https://github.com/glittershark/jazz/blob/main/src/granular/granular.cpp][granular]]: weird semi-generative granular delay.
+- [[https://github.com/glittershark/jazz/tree/main/src/rachel][rachel]]: heavily modulated multi-delay
