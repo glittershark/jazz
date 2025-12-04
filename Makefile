@@ -26,6 +26,12 @@ flash: deps
 	@test $(DIR) || (echo "DIR must be set (eg \`make flash DIR=delay\`)"; exit 1)
 	${MAKE} -C src/$(DIR) program-dfu
 
+debug: deps
+	@test $(DIR) || (echo "DIR must be set (eg \`make debug DIR=delay\`)"; exit 1)
+	@[ -f src/$(DIR)/build/$(DIR).elf ] || (echo "You should probably build and flash first."; exit 1)
+	pgrep st-util || setsid st-util -p 4242 --no-reset --semihosting >/dev/null 2>&1 &
+	gdb -ex "file src/$(DIR)/build/$(DIR).elf" -ex "target remote localhost:4242"
+
 # Dependencies for hardware projects (libDaisy)
 deps: vendor/libDaisy/build/libdaisy.a vendor/DaisySP/build/libdaisysp.a
 
@@ -33,7 +39,7 @@ vendor/libDaisy/build/libdaisy.a: vendor/libDaisy/*
 	make -C vendor/libDaisy
 
 vendor/DaisySP/build/libdaisysp.a: vendor/DaisySP/*
-	make -C vendor/libDaisy
+	make -C vendor/DaisySP
 
 # Clean everything
 clean:
