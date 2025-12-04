@@ -14,6 +14,10 @@ function(add_gtest source_file)
   # Link it against the required libraries
   target_link_libraries(${test_name} PUBLIC
     jazz::libjazz
+    jazz::delay
+    jazz::reverse
+    jazz::granular
+    jazz::rachel
     Threads::Threads
     gtest
     gtest_main
@@ -27,7 +31,7 @@ function(add_gtest source_file)
 
   # Set the properties
   set_target_properties(${test_name} PROPERTIES
-    CXX_STANDARD 14
+    CXX_STANDARD 20
     CXX_STANDARD_REQUIRED YES
     C_STANDARD 11
     C_STANDARD_REQUIRED YES

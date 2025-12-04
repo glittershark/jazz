@@ -36,5 +36,12 @@ if(NOT TEST_ONLY)
 else()
     # Test-only build
     enable_testing()
+    
+    # Add src directories for testing (without hardware dependencies)
+    add_subdirectory(src/delay)
+    add_subdirectory(src/reverse)
+    add_subdirectory(src/granular)
+    add_subdirectory(src/rachel)
+    
     add_subdirectory(tests)
 endif()

@@ -34,26 +34,13 @@ private:
 
   static const StorageType MaxFloat =
       sizeof(void *) == 4 ? 0xfff80000ULL : 0xfff8000000000000ULL;
-  static const StorageType Int16Tag =
-      sizeof(void *) == 4 ? 0xfff90000ULL : 0xfff9000000000000ULL;
   static const StorageType PtrTag =
       sizeof(void *) == 4 ? 0xfffa0000ULL : 0xfffa000000000000ULL;
 
 public:
   inline Value() : Value(0.f) {}
 
-  inline Value(const FloatType number) {
-    int16_t asInt16 = static_cast<int16_t>(number);
-
-    // if the number can be losslessly stored as an int16 do so
-    // (int16 doesn't have -0, so check for that too)
-    if (number == asInt16 && !isNegativeZero(number)) {
-      *this = Value(asInt16);
-      return;
-    }
-
-    asFloat = number;
-  }
+  inline Value(const FloatType number) { asFloat = number; }
 
 #if UINTPTR_MAX == 0xFFFFFFFF
   // On 32-bit platforms, allow construction from double (converting to float)
@@ -62,10 +49,6 @@ public:
   // On 64-bit platforms, allow construction from float (converting to double)
   inline Value(const float number) : Value(static_cast<double>(number)) {}
 #endif
-
-  inline Value(const int16_t number) {
-    asBits = static_cast<StorageType>(number) | Int16Tag;
-  }
 
   inline Value(void *pointer) {
     uintptr_t ptr_val = reinterpret_cast<uintptr_t>(pointer);
@@ -81,17 +64,11 @@ public:
   }
 
   inline bool isFloat() const { return asBits < MaxFloat; }
-  inline bool isInt16() const { return (asBits & Int16Tag) == Int16Tag; }
   inline bool isPointer() const { return (asBits & PtrTag) == PtrTag; }
 
   inline FloatType &getFloat() {
     assert(isFloat());
     return asFloat;
-  }
-
-  inline int16_t getInt16() const {
-    assert(isInt16());
-    return static_cast<int16_t>(asBits & ~Int16Tag);
   }
 
   inline void *getPointer() const {

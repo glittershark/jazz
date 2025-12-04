@@ -1,179 +1,45 @@
 #include <array>
 #include <cstddef>
 
+#include "granular.hpp"
+#include "libjazz/slab.hpp"
+#include "libjazz/value.hpp"
+
+#ifndef UNIT_TEST
 #include "daisy_seed.h"
 #include "daisysp.h"
 #include "hid/logger.h"
-#include "libjazz/slab.hpp"
-#include "libjazz/value.hpp"
 
 using namespace daisy;
 using namespace daisysp;
 
 DaisySeed hw;
-
-constexpr const size_t BUFFER_LEN = 44100 * 2; /* 2 seconds */
-constexpr const size_t MAX_FADE_TIME = 64;
-constexpr const size_t NUM_HEADS = 3;
-constexpr const size_t UPDATE_CAP = (NUM_HEADS + 1) * (MAX_FADE_TIME + 1);
-
-struct Update {
-  enum Kind { kErase, kWrite } kind;
-  size_t finished_at;
-  float value;
-  size_t samples;
-  Update *next;
-
-  class Iterator {
-    const Update *m_cur;
-
-  public:
-    using difference_type = std::ptrdiff_t;
-    using value_type = Update;
-
-    Iterator(const Update *cur) : m_cur(cur) {}
-
-    const Update &operator*() const { return *m_cur; }
-    void operator++(int) { ++*this; };
-    Iterator &operator++() {
-      m_cur = m_cur->next;
-      return *this;
-    };
-
-    bool operator!=(Iterator &other) const { return other.m_cur != m_cur; }
-  };
-  friend Iterator;
-
-  Iterator begin() const { return Iterator(this); }
-  Iterator end() const { return Iterator(nullptr); }
-
-  static_assert(std::input_iterator<Iterator>);
-};
-
-static Slab<Update, UPDATE_CAP> UPDATES;
-
-class BufferValue : private Value {
-public:
-  struct SampleWithUpdates {
-    float sample;
-    Update *first_update;
-  };
-  static Slab<SampleWithUpdates, UPDATE_CAP> SAMPLES;
-
-protected:
-  SampleWithUpdates *asSampleWithUpdates() const {
-    return std::bit_cast<SampleWithUpdates *>(getPointer());
-  }
-  float &asSample() { return getFloat(); }
-
-public:
-  BufferValue(float sample) : Value(sample) {}
-  BufferValue() : BufferValue(0.0f) {}
-
-  float &sample() {
-    if (isPointer()) {
-      return asSampleWithUpdates()->sample;
-    } else {
-      return asSample();
-    }
-  }
-
-  Update *PushBack(Update &&update) {
-    if (isPointer()) {
-      Update *cur = asSampleWithUpdates()->first_update;
-      while (cur->next != nullptr) {
-        cur = cur->next;
-      }
-      cur->next = UPDATES.Alloc(std::move(update));
-      return cur->next;
-    } else {
-      float sample = asSample();
-      auto upd = UPDATES.Alloc(std::move(update));
-      auto head = SAMPLES.Alloc(sample, upd);
-      new (this) Value((void *)head);
-      return upd;
-    }
-  }
-
-  Update **FirstUpdate() const {
-    if (isPointer()) {
-      return &asSampleWithUpdates()->first_update;
-    } else {
-      return nullptr;
-    }
-  }
-};
-
-class IndicesToUpdate {
-private:
-  size_t m_index;
-  IndicesToUpdate *next;
-  static Slab<IndicesToUpdate, UPDATE_CAP> SLAB;
-
-public:
-  IndicesToUpdate(size_t index) : m_index(index) {}
-
-  static void Prepend(IndicesToUpdate **head, size_t index) {
-    auto new_head = SLAB.Alloc(index);
-    new_head->next = *head;
-    *head = new_head;
-  }
-
-  size_t index() const { return m_index; }
-
-  class Iterator {
-    const IndicesToUpdate *m_cur;
-
-  public:
-    using difference_type = std::ptrdiff_t;
-    using value_type = IndicesToUpdate;
-
-    Iterator(const IndicesToUpdate *cur) : m_cur(cur) {}
-
-    const IndicesToUpdate &operator*() const { return *m_cur; }
-    void operator++(int) { ++*this; };
-    Iterator &operator++() {
-      m_cur = m_cur->next;
-      return *this;
-    };
-
-    bool operator!=(Iterator &other) const { return other.m_cur != m_cur; }
-  };
-  friend Iterator;
-
-  Iterator begin() const { return Iterator(this); }
-  Iterator end() const { return Iterator(nullptr); }
-
-  static_assert(std::input_iterator<Iterator>);
-};
+#endif
 
 Slab<BufferValue::SampleWithUpdates, UPDATE_CAP> BufferValue::SAMPLES;
 Slab<IndicesToUpdate, UPDATE_CAP> IndicesToUpdate::SLAB;
 
-/// *** State ***
-
-static BufferValue BUFFER[BUFFER_LEN];
-static IndicesToUpdate *INDICES_TO_UPDATE[MAX_FADE_TIME];
-static size_t global_clock_max = 300000;
-static size_t global_clock = 0;
-
-void Erase(size_t index, size_t clock_time, float value,
-           size_t samples = MAX_FADE_TIME) {
-  BUFFER[index].PushBack(
-      {Update::Kind::kErase, clock_time + samples, value, samples});
-  IndicesToUpdate::Prepend(&INDICES_TO_UPDATE[clock_time % MAX_FADE_TIME],
+void Granular::Erase(size_t index, size_t clock_time, float value,
+                     size_t samples) {
+  BUFFER[index].PushBack({.kind = Update::Kind::kErase,
+                          .finished_at = clock_time + samples,
+                          .value = value,
+                          .samples = samples});
+  IndicesToUpdate::Prepend(&indices_to_update_[clock_time % MAX_FADE_TIME],
                            index);
 }
 
-void Write(size_t index, size_t clock_time, float value,
-           size_t samples = MAX_FADE_TIME) {
-  BUFFER[index].PushBack({Update::Kind::kWrite, clock_time + samples, value,
-                          static_cast<size_t>(value / samples)});
-  IndicesToUpdate::Prepend(&INDICES_TO_UPDATE[clock_time % MAX_FADE_TIME],
+void Granular::Write(size_t index, size_t clock_time, float value,
+                     size_t samples) {
+  BUFFER[index].PushBack({.kind = Update::Kind::kWrite,
+                          .finished_at = clock_time + samples,
+                          .value = value,
+                          .samples = samples});
+  IndicesToUpdate::Prepend(&indices_to_update_[clock_time % MAX_FADE_TIME],
                            index);
 }
 
-void DoUpdate(size_t index, size_t clock_time) {
+void Granular::DoUpdate(size_t index, size_t clock_time) {
   auto content = BUFFER[index];
 
   // Apply erases
@@ -183,13 +49,13 @@ void DoUpdate(size_t index, size_t clock_time) {
     if (update->kind == Update::Kind::kErase) {
       auto time_till_ripe =
           (update->finished_at - clock_time) % global_clock_max;
-      if (time_till_ripe <= 0) {
+      if (time_till_ripe == 0) {
         content.sample() *= update->value;
-        *update_ptr = update->next;
+        *update_ptr = update->next_;
         UPDATES.Free(update);
       }
     }
-    update_ptr = &update->next;
+    update_ptr = &update->next_;
   }
 
   // Apply writes
@@ -200,22 +66,29 @@ void DoUpdate(size_t index, size_t clock_time) {
       auto time_till_ripe =
           ((update->finished_at - clock_time) + global_clock_max) %
           global_clock_max;
-      if (time_till_ripe <= 0) {
-        *update_ptr = update->next;
+      if (time_till_ripe == 0) {
+        *update_ptr = update->next_;
         UPDATES.Free(update);
         content.sample() += update->value;
       }
     }
-    update_ptr = &update->next;
+    update_ptr = &update->next_;
   }
+
+  content.Housekeep();
 }
 
-float Read(size_t index, size_t clock_time) {
+float Granular::Read(size_t index, size_t clock_time) {
   auto content = BUFFER[index];
   auto value = content.sample();
 
   // Apply erases
-  auto update = *content.FirstUpdate();
+  auto maybe_update = content.FirstUpdate();
+  if (maybe_update == nullptr) {
+    return value;
+  }
+  auto update = *maybe_update;
+
   while (update != nullptr) {
     if (update->kind == Update::Kind::kErase) {
       auto time_till_ripe =
@@ -227,7 +100,7 @@ float Read(size_t index, size_t clock_time) {
           frac_offset / ((update->samples - time_till_ripe) + frac_offset + 1);
       value *= factor;
     }
-    update = update->next;
+    update = update->next_;
   }
 
   // Apply writes
@@ -238,58 +111,37 @@ float Read(size_t index, size_t clock_time) {
           ((update->finished_at - clock_time) + global_clock_max) %
           global_clock_max;
       auto target_val = update->value;
-      auto fading_in_val = target_val - (time_till_ripe * update->samples);
+      auto fading_in_val =
+          target_val * (update->samples - time_till_ripe) / update->samples;
       value += fading_in_val;
     }
-    update = update->next;
+    update = update->next_;
   }
 
   return value;
 }
 
-void PreHousekeeping(size_t clock_time) {
-  for (auto &&index : *INDICES_TO_UPDATE[clock_time % MAX_FADE_TIME]) {
+void Granular::PreHousekeeping(size_t clock_time) {
+  auto indices_to_update = indices_to_update_[clock_time % MAX_FADE_TIME];
+  indices_to_update_[clock_time % MAX_FADE_TIME] = nullptr;
+
+  if (indices_to_update == nullptr) {
+    return;
+  }
+
+  for (auto &&index : indices_to_update->drain()) {
     DoUpdate(index.index(), clock_time);
   }
 }
 
-struct Head {
-  enum Kind { kRead, kErase, kWrite } kind;
-  size_t index;
-  float value;
-};
-
-template <size_t HEADS> float FullCycle(std::array<Head, HEADS> heads) {
-  PreHousekeeping(global_clock);
-  float wet_signal = 0.f;
-
-  for (auto &&head : heads) {
-    switch (head.kind) {
-    case Head::Kind::kRead: {
-      wet_signal += Read(head.index, global_clock) * head.value;
-      break;
-    }
-    case Head::Kind::kErase: {
-      Erase(head.index, global_clock, head.value);
-      break;
-    }
-    case Head::Kind::kWrite: {
-      Write(head.index, global_clock, head.value);
-      break;
-    }
-    }
-  }
-
-  global_clock = (global_clock + 1 + global_clock_max) % global_clock_max;
-
-  return wet_signal;
-}
-
-static std::array<Head, 3> heads{{
-    {Head::Kind::kRead, 0, 1.f},
+static std::array<Head, 1> heads{{
+    // {Head::Kind::kRead, 0, 1.f},
     {Head::Kind::kWrite, 0, 1.f},
-    {Head::Kind::kErase, 0, 0.f},
+    // {Head::Kind::kErase, 0, 0.f},
 }};
+
+#ifndef UNIT_TEST
+static Granular granular;
 
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
@@ -301,25 +153,29 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
         head.value = sample;
       }
 
-      head.index += 1;
+      head.index = (head.index + 1) % BUFFER_LEN;
     }
 
-    out[0][i] = sample + FullCycle(heads);
+    auto _ = granular.FullCycle(heads);
+    out[0][i] = sample;
   }
 }
+#endif
 
+#ifndef UNIT_TEST
 int main(void) {
   hw.Configure();
   hw.Init();
   hw.SetAudioBlockSize(4);
 
-  AdcChannelConfig adcConfig[2];
-  adcConfig[0].InitSingle(hw.GetPin(21)); /* delay amount */
-  adcConfig[1].InitSingle(hw.GetPin(20)); /* feedback */
-  hw.adc.Init(adcConfig, 2);
-  hw.adc.Start();
+  // AdcChannelConfig adcConfig[2];
+  // adcConfig[0].InitSingle(hw.GetPin(21)); /* delay amount */
+  // adcConfig[1].InitSingle(hw.GetPin(20)); /* feedback */
+  // hw.adc.Init(adcConfig, 2);
+  // hw.adc.Start();
 
   hw.StartAudio(AudioCallback);
   for (;;) {
   }
 }
+#endif

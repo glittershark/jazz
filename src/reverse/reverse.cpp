@@ -1,12 +1,16 @@
+#include <cstddef>
+#include "libjazz/value.hpp"
+
+#ifndef UNIT_TEST
 #include "daisy_seed.h"
 #include "daisysp.h"
 #include "hid/logger.h"
-#include "libjazz/value.hpp"
 
 using namespace daisy;
 using namespace daisysp;
 
 DaisySeed hw;
+#endif
 
 #define BUFFER_LEN 44100 * 2 /* 2 seconds */
 
@@ -16,6 +20,7 @@ static float buffer[BUFFER_LEN] = {};
 static int read_pos = BUFFER_LEN;
 static int write_pos = 0;
 
+#ifndef UNIT_TEST
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
   for (size_t i = 0; i < size; i++) {
@@ -31,7 +36,9 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
     out[0][i] = sample + delayed_signal;
   }
 }
+#endif
 
+#ifndef UNIT_TEST
 int main(void) {
 
   hw.Configure();
@@ -52,3 +59,4 @@ int main(void) {
     feedback = new_feedback;
   }
 }
+#endif

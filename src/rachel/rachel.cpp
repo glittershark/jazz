@@ -1,3 +1,6 @@
+#include <cstddef>
+
+#ifndef UNIT_TEST
 #include "daisy_seed.h"
 #include "daisysp.h"
 
@@ -6,6 +9,7 @@ using namespace daisysp;
 
 Oscillator lfo; // LFO for modulation
 DaisySeed hw;
+#endif
 
 #define BUFFER_LEN 22000
 #define FEEDBACK 0.9
@@ -16,6 +20,7 @@ static int buffer_pos[] = {0, 0, 0};
 static int delay_samples[] = {12000, 2200, 3333};
 static float sample_rate;
 
+#ifndef UNIT_TEST
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
   for (size_t i = 0; i < size; i++) {
@@ -46,7 +51,9 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
     out[0][i] = o;
   }
 }
+#endif
 
+#ifndef UNIT_TEST
 int main(void) {
   hw.Configure();
   hw.Init();
@@ -63,3 +70,4 @@ int main(void) {
   for (;;) {
   }
 }
+#endif

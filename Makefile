@@ -1,7 +1,7 @@
-.PHONY: all test flash clean cmake-build cmake-configure
+.PHONY: all test flash clean cmake-build cmake-configure merge-compile-commands
 
 # Default target - build everything via CMake
-all: cmake-build
+all: cmake-build merge-compile-commands
 
 # Test target - build and run tests on host platform
 test:
@@ -9,6 +9,7 @@ test:
 	cd build-test && cmake -DTEST_ONLY=ON -DCMAKE_BUILD_TYPE=Debug ..
 	cd build-test && make
 	cd build-test && ctest
+	$(MAKE) merge-compile-commands
 
 # Create build directory and configure CMake
 cmake-configure: build/Makefile
@@ -41,9 +42,24 @@ vendor/libDaisy/build/libdaisy.a: vendor/libDaisy/*
 vendor/DaisySP/build/libdaisysp.a: vendor/DaisySP/*
 	make -C vendor/DaisySP
 
+# Merge compile commands from both build directories for clangd
+merge-compile-commands:
+	@if [ -f build/compile_commands.json ] && [ -f build-test/compile_commands.json ]; then \
+		jq -s 'add' build/compile_commands.json build-test/compile_commands.json > compile_commands.json; \
+		echo "Merged compile commands from build/ and build-test/"; \
+	elif [ -f build/compile_commands.json ]; then \
+		cp build/compile_commands.json compile_commands.json; \
+		echo "Copied compile commands from build/"; \
+	elif [ -f build-test/compile_commands.json ]; then \
+		cp build-test/compile_commands.json compile_commands.json; \
+		echo "Copied compile commands from build-test/"; \
+	else \
+		echo "No compile_commands.json found in build/ or build-test/"; \
+	fi
+
 # Clean everything
 clean:
-	rm -rf build build-test
+	rm -rf build build-test compile_commands.json
 	${MAKE} -C src/delay clean || true
 	${MAKE} -C src/reverse clean || true
 	${MAKE} -C src/granular clean || true
