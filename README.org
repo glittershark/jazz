@@ -31,7 +31,21 @@ $ make flash DIR=delay
 
 * current effects
 
+** delays
 - [[https://github.com/glittershark/jazz/blob/main/src/delay/delay.cpp][delay]]: literally just a perfectly clean delay.
 - [[https://github.com/glittershark/jazz/blob/main/src/reverse/reverse.cpp][reverse]]: a simple reverse delay.
 - [[https://github.com/glittershark/jazz/blob/main/src/granular/granular.cpp][granular]]: weird semi-generative granular delay.
 - [[https://github.com/glittershark/jazz/tree/main/src/rachel][rachel]]: heavily modulated multi-delay
+
+** filters
+- [[https://github.com/glittershark/jazz/blob/main/src/low_pass_filter/lowpass_filter.cpp][low_pass_filter]]: simple one-pole lowpass filter.
+- [[https://github.com/glittershark/jazz/blob/main/src/high_pass_filter/highpass_filter.cpp][high_pass_filter]]: simple one-pole highpass filter.
+- [[https://github.com/glittershark/jazz/blob/main/src/cursed_low_pass_filter/cursed_lowpass_filter.cpp][cursed_low_pass_filter]]: cursed lowpass filter using exponentiation and multiplication.
+- [[https://github.com/glittershark/jazz/blob/main/src/cursed_high_pass_filter/cursed_highpass_filter.cpp][cursed_high_pass_filter]]: cursed highpass filter using exponentiation and multiplication.
+
+** distortion
+- [[https://github.com/glittershark/jazz/blob/main/src/clip/clip.cpp][clip]]: hard clipping distortion.
+- [[https://github.com/glittershark/jazz/blob/main/src/anticlip/anticlip.cpp][anticlip]]: adds back the residue from clipping.
+
+** other
+- [[https://github.com/glittershark/jazz/blob/main/src/la_sort/la_sort.cpp][la_sort]]: sorting-based effect with weighted tap from sorted buffer.
