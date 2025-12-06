@@ -3,13 +3,7 @@
 #include <cstdint>
 #include <gtest/gtest.h>
 
-class SlabTest : public ::testing::Test {
-protected:
-  void SetUp() override {}
-  void TearDown() override {}
-};
-
-TEST_F(SlabTest, IntSlab) {
+TEST(SlabTest, IntSlab) {
   Slab<uint64_t, 10> slab;
 
   auto x = slab.Alloc(4);
@@ -49,7 +43,7 @@ public:
   ~CstrDestr() { (*m_destr_calls)++; }
 };
 
-TEST_F(SlabTest, CstrDestr) {
+TEST(SlabTest, CstrDestr) {
   Slab<CstrDestr, 10> slab;
 
   std::atomic<int> cstr_calls{0};
@@ -69,7 +63,7 @@ TEST_F(SlabTest, CstrDestr) {
   EXPECT_EQ(destr_calls, 2);
 }
 
-TEST_F(SlabTest, CstrDestrUniquePtr) {
+TEST(SlabTest, CstrDestrUniquePtr) {
   Slab<CstrDestr, 10> slab;
 
   std::atomic<int> cstr_calls{0};
@@ -89,4 +83,32 @@ TEST_F(SlabTest, CstrDestrUniquePtr) {
     EXPECT_EQ(x.get(), orig_x);
   }
   EXPECT_EQ(destr_calls, 2);
+}
+
+TEST(SlabTest, Indexes) {
+  Slab<int64_t, 10> slab;
+
+  auto x = slab.AllocIndex(4);
+  auto y = slab.AllocIndex(7);
+
+  EXPECT_EQ(*slab.AtIndex(x), 4);
+  EXPECT_EQ(*slab.AtIndex(y), 7);
+
+  slab.FreeIndex(y);
+  EXPECT_EQ(*slab.AtIndex(x), 4);
+
+  auto z = slab.AllocIndex();
+  EXPECT_EQ(y, z);
+
+  slab.FreeIndex(z);
+  slab.FreeIndex(y);
+  slab.FreeIndex(x);
+
+  auto x_new = slab.AllocIndex();
+  auto y_new = slab.AllocIndex();
+  auto z_new = slab.AllocIndex();
+
+  EXPECT_EQ(z_new, z);
+  EXPECT_EQ(y_new, y);
+  EXPECT_EQ(x_new, x);
 }

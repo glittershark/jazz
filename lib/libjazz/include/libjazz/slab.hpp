@@ -1,6 +1,7 @@
 #ifndef SLAB_H_
 #define SLAB_H_
 
+#include <bit>
 #include <cassert>
 #include <cstddef>
 #include <memory>
@@ -15,12 +16,12 @@ private:
     ~Entry() {}
   };
 
-  Entry m_entries[len];
+  Entry entries_[len];
   size_t m_next;
   size_t m_len;
 
 public:
-  inline Slab() : m_entries{}, m_next(0), m_len(0) {}
+  inline Slab() : entries_{}, m_next(0), m_len(0) {}
 
   // TODO: it would be nice to destruct all the non-empty elements in ~Slab, but
   // that requires either stack space linear in the number of elements, or
@@ -29,12 +30,12 @@ public:
 
   template <class... Args> T *Alloc(Args &&...args) {
     assert(m_next < len);
-    auto res = &m_entries[m_next];
+    auto res = &entries_[m_next];
     if (m_next == m_len) {
       m_len++;
       m_next++;
     } else {
-      m_next = m_entries[m_next].next;
+      m_next = entries_[m_next].next;
     }
     new (&res->val) T(std::forward<Args &&>(args)...);
     return &res->val;
@@ -43,10 +44,36 @@ public:
   void Free(T *ptr) {
     ptr->~T();
     auto entry = reinterpret_cast<Entry *>(ptr);
-    assert(entry >= m_entries && entry <= &m_entries[len - 1]);
+    assert(entry >= entries_ && entry <= &entries_[len - 1]);
     entry->next = m_next;
-    m_next = entry - m_entries;
+    m_next = entry - entries_;
   }
+
+  class Index {
+    std::ptrdiff_t idx_;
+    friend Slab;
+
+  protected:
+    Index(size_t idx) : idx_(idx) {}
+
+  public:
+    const size_t AsInt() const { return idx_; }
+    static Index FromInt(size_t idx) { return Index(idx); }
+    const bool operator==(Index other) const { return idx_ == other.idx_; }
+  };
+
+  Index IndexOf(T *ptr) const {
+    return reinterpret_cast<Entry *>(ptr) - entries_;
+  }
+
+  template <class... Args> Index AllocIndex(Args &&...args) {
+    auto ptr = Alloc(args...);
+    return IndexOf(ptr);
+  }
+
+  T *AtIndex(Index index) { return &entries_[index.idx_].val; }
+
+  void FreeIndex(Index index) { Free(AtIndex(index)); }
 
   struct Deleter {
     friend Slab<T, len>;
