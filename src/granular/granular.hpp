@@ -154,46 +154,11 @@ public:
     }
   }
 
-  Update *PushBack(Update &&update) {
-    if (isPointer()) {
-      auto head = asSampleWithUpdates();
+  Update *PushBack(Update &&update);
 
-      if (head->first_update == nullptr) {
-        head->first_update = UPDATES.Alloc(std::move(update));
-        return head->first_update;
-      } else {
-        Update *cur = asSampleWithUpdates()->first_update;
-        while (cur->next_ != nullptr) {
-          cur = cur->next_;
-        }
-        cur->next_ = UPDATES.Alloc(std::move(update));
+  Update **FirstUpdate() const;
 
-        return cur->next_;
-      }
-    } else {
-      float sample = asSample();
-      auto upd = UPDATES.Alloc(std::move(update));
-      auto head = SAMPLES.Alloc(sample, upd);
-      new (this) Value((void *)head);
-      return upd;
-    }
-  }
-
-  Update **FirstUpdate() const {
-    if (isPointer()) {
-      return &asSampleWithUpdates()->first_update;
-    } else {
-      return nullptr;
-    }
-  }
-
-  void Housekeep() {
-    if (isPointer() && asSampleWithUpdates()->first_update == nullptr) {
-      auto sample_ = sample();
-      SAMPLES.Free(asSampleWithUpdates());
-      new (this) BufferValue(sample_);
-    }
-  }
+  void Housekeep();
 
   class DrainingIterator {
     enum { kHead, kUpdate } kind_;
@@ -244,12 +209,12 @@ public:
 class Granular {
 
 private:
-  IndicesToUpdate *indices_to_update_[MAX_FADE_TIME];
+  std::array<IndicesToUpdate *, MAX_FADE_TIME> indices_to_update_;
   size_t global_clock_max = 300000;
   size_t global_clock_ = 0;
 
 public:
-  BufferValue BUFFER[BUFFER_LEN];
+  std::array<BufferValue, BUFFER_LEN> BUFFER;
 
   void Erase(size_t index, size_t clock_time, float value,
              size_t samples = MAX_FADE_TIME);

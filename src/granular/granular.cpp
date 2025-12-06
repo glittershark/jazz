@@ -19,6 +19,49 @@ DaisySeed hw;
 Slab<BufferValue::SampleWithUpdates, UPDATE_CAP> BufferValue::SAMPLES;
 Slab<IndicesToUpdate, UPDATE_CAP> IndicesToUpdate::SLAB;
 
+Update *BufferValue::PushBack(Update &&update) {
+  if (isPointer()) {
+    auto head = asSampleWithUpdates();
+
+    if (head->first_update == nullptr) {
+      head->first_update = UPDATES.Alloc(std::move(update));
+      return head->first_update;
+    } else {
+      Update *cur = asSampleWithUpdates()->first_update;
+      while (cur->next_ != nullptr) {
+        cur = cur->next_;
+      }
+      cur->next_ = UPDATES.Alloc(std::move(update));
+
+      return cur->next_;
+    }
+  } else {
+    float sample = asSample();
+    auto upd = UPDATES.Alloc(std::move(update));
+    auto head = SAMPLES.Alloc(sample, upd);
+    new (this) Value((void *)head);
+    return upd;
+  }
+}
+
+Update **BufferValue::FirstUpdate() const {
+  if (isPointer()) {
+    return &asSampleWithUpdates()->first_update;
+  } else {
+    return nullptr;
+  }
+}
+
+void BufferValue::Housekeep() {
+  if (isPointer() && asSampleWithUpdates()->first_update == nullptr) {
+    auto sample_ = sample();
+    SAMPLES.Free(asSampleWithUpdates());
+    new (this) BufferValue(sample_);
+  }
+}
+
+// class Granular
+
 void Granular::Erase(size_t index, size_t clock_time, float value,
                      size_t samples) {
   BUFFER[index].PushBack({.kind = Update::Kind::kErase,
