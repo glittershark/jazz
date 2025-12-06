@@ -8,7 +8,7 @@ test:
 	mkdir -p build-test
 	cd build-test && cmake -DTEST_ONLY=ON -DCMAKE_BUILD_TYPE=Debug ..
 	cd build-test && make
-	cd build-test && ctest
+	cd build-test && ctest --output-on-failure
 	$(MAKE) merge-compile-commands
 
 # Create build directory and configure CMake
