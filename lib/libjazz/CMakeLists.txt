@@ -21,7 +21,7 @@ target_include_directories(libjazz
 set_target_properties(libjazz PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION 1
-    CXX_STANDARD 14
+    CXX_STANDARD 20
     CXX_STANDARD_REQUIRED YES
 )
 
