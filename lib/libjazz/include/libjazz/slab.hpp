@@ -1,7 +1,6 @@
 #ifndef SLAB_H_
 #define SLAB_H_
 
-#include <bit>
 #include <cassert>
 #include <cstddef>
 #include <memory>
@@ -49,7 +48,7 @@ public:
     m_next = entry - entries_;
   }
 
-  class Index {
+  template <Slab<T, len> *SLAB> class Index {
     std::ptrdiff_t idx_;
     friend Slab;
 
@@ -57,23 +56,36 @@ public:
     Index(size_t idx) : idx_(idx) {}
 
   public:
+    Index(const Index &) = delete;
+    Index &operator=(const Index &) = delete;
+
     const size_t AsInt() const { return idx_; }
     static Index FromInt(size_t idx) { return Index(idx); }
     const bool operator==(Index other) const { return idx_ == other.idx_; }
+    T *get() { return SLAB->AtIndex(*this); }
+    T &operator*() { return *SLAB->AtIndex(*this); }
+    T *operator->() { return get(); }
+
+    ~Index() { SLAB->FreeIndex(*this); }
   };
 
-  Index IndexOf(T *ptr) const {
+  template <Slab<T, len> *SLAB> Index<SLAB> IndexOf(T *ptr) const {
     return reinterpret_cast<Entry *>(ptr) - entries_;
   }
 
-  template <class... Args> Index AllocIndex(Args &&...args) {
+  template <Slab<T, len> *SLAB, class... Args>
+  Index<SLAB> AllocIndex(Args &&...args) {
     auto ptr = Alloc(args...);
-    return IndexOf(ptr);
+    return IndexOf<SLAB>(ptr);
   }
 
-  T *AtIndex(Index index) { return &entries_[index.idx_].val; }
+  template <Slab<T, len> *SLAB> T *AtIndex(Index<SLAB> &index) {
+    return &entries_[index.idx_].val;
+  }
 
-  void FreeIndex(Index index) { Free(AtIndex(index)); }
+  template <Slab<T, len> *SLAB> void FreeIndex(Index<SLAB> &index) {
+    Free(AtIndex(index));
+  }
 
   struct Deleter {
     friend Slab<T, len>;

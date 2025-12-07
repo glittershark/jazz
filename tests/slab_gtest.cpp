@@ -86,29 +86,53 @@ TEST(SlabTest, CstrDestrUniquePtr) {
 }
 
 TEST(SlabTest, Indexes) {
-  Slab<int64_t, 10> slab;
+  static Slab<int64_t, 10> slab;
 
-  auto x = slab.AllocIndex(4);
-  auto y = slab.AllocIndex(7);
+  auto x = slab.AllocIndex<&slab>(4);
+  auto y = slab.AllocIndex<&slab>(7);
 
   EXPECT_EQ(*slab.AtIndex(x), 4);
+  EXPECT_EQ(*x, 4);
   EXPECT_EQ(*slab.AtIndex(y), 7);
+  EXPECT_EQ(*y, 7);
 
   slab.FreeIndex(y);
   EXPECT_EQ(*slab.AtIndex(x), 4);
 
-  auto z = slab.AllocIndex();
-  EXPECT_EQ(y, z);
+  auto z = slab.AllocIndex<&slab>();
+  EXPECT_EQ(y.AsInt(), z.AsInt());
 
   slab.FreeIndex(z);
   slab.FreeIndex(y);
   slab.FreeIndex(x);
 
-  auto x_new = slab.AllocIndex();
-  auto y_new = slab.AllocIndex();
-  auto z_new = slab.AllocIndex();
+  auto x_new = slab.AllocIndex<&slab>();
+  auto y_new = slab.AllocIndex<&slab>();
+  auto z_new = slab.AllocIndex<&slab>();
 
-  EXPECT_EQ(z_new, z);
-  EXPECT_EQ(y_new, y);
-  EXPECT_EQ(x_new, x);
+  EXPECT_EQ(z_new.AsInt(), z.AsInt());
+  EXPECT_EQ(y_new.AsInt(), y.AsInt());
+  EXPECT_EQ(x_new.AsInt(), x.AsInt());
+}
+
+TEST(SlabTest, CstrDestrIndexes) {
+  static Slab<CstrDestr, 10> slab;
+
+  std::atomic<int> cstr_calls{0};
+  std::atomic<int> destr_calls{0};
+
+  void *orig_x;
+  {
+    auto x = slab.AllocIndex<&slab>(&cstr_calls, &destr_calls);
+    orig_x = x.get();
+    EXPECT_EQ(cstr_calls, 1);
+  }
+  EXPECT_EQ(destr_calls, 1);
+
+  {
+    auto x = slab.AllocIndex<&slab>(&cstr_calls, &destr_calls);
+    EXPECT_EQ(cstr_calls, 2);
+    EXPECT_EQ(x.get(), orig_x);
+  }
+  EXPECT_EQ(destr_calls, 2);
 }
