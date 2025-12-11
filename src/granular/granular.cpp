@@ -194,7 +194,7 @@ static std::array<Head, NUM_HEADS> heads{{
 }};
 
 #ifndef UNIT_TEST
-static Granular granular;
+__attribute__((section(".sdram_bss"))) Granular granular;
 
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
