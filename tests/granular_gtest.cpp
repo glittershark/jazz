@@ -61,14 +61,8 @@ TEST_F(GranularTest, WriteVeryMany) {
   for (auto clock_time = 0; clock_time < BUFFER_LEN * 10; ++clock_time) {
     granular.PreHousekeeping(clock_time);
     auto index = clock_time % BUFFER_LEN;
-    // 52 fails
-    // 53 fails
-    // 54 infinite loops
-    // 55 fails
-    // 56 infinite loops
-    // 57 fails
-    // 58 fails
-    // 64 fails
-    granular.Write(index, clock_time, 0.5, 52);
+    // Cycle through all problematic values to test they all work
+    size_t samples = (clock_time % 64) + 1;  // Test values 1-64
+    granular.Write(index, clock_time, 0.5, samples);
   };
 }
