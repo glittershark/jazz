@@ -14,7 +14,7 @@
 constexpr const size_t BUFFER_LEN = 44100 * 1; /* 1 seconds */
 constexpr const size_t MAX_FADE_TIME = 64;     // TODO: 64
 constexpr const size_t NUM_HEADS = 3;
-constexpr const size_t UPDATE_CAP = ((NUM_HEADS + 1) * (MAX_FADE_TIME + 1));
+constexpr const size_t UPDATE_CAP = ((NUM_HEADS + 1) * (MAX_FADE_TIME * 2));
 
 struct Head {
   enum Kind { kRead, kErase, kWrite } kind;

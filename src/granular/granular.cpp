@@ -100,6 +100,7 @@ void Granular::DoUpdate(size_t index, size_t clock_time) {
         content->setSample(content->sample() * update->value);
         *update_ptr = update->next_;
         UPDATES.Free(update);
+        continue;
       }
     }
     update_ptr = &update->next_;
@@ -117,6 +118,7 @@ void Granular::DoUpdate(size_t index, size_t clock_time) {
         *update_ptr = update->next_;
         UPDATES.Free(update);
         content->setSample(content->sample() + update->value);
+        continue;
       }
     }
     update_ptr = &update->next_;
@@ -181,9 +183,8 @@ void Granular::PreHousekeeping(size_t clock_time) {
   }
 }
 
-static std::array<Head, 1> heads{{
-    // {Head::Kind::kRead, 0, 1.f},
-    {Head::Kind::kWrite, 0, 1.f},
+static std::array<Head, 2> heads{{
+    {Head::Kind::kRead, BUFFER_LEN / 2, 1.f}, {Head::Kind::kWrite, 0, 1.f},
     // {Head::Kind::kErase, 0, 0.f},
 }};
 
