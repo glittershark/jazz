@@ -20,7 +20,7 @@ Slab<BufferValue::SampleWithUpdates, UPDATE_CAP> BufferValue::SAMPLES;
 Slab<IndicesToUpdate, UPDATE_CAP> IndicesToUpdate::SLAB;
 
 Update *BufferValue::PushBack(Update &&update) {
-  if (isPointer()) {
+  if (isSampleWithUpdates()) {
     auto head = asSampleWithUpdates();
 
     if (head->first_update == nullptr) {
@@ -38,14 +38,15 @@ Update *BufferValue::PushBack(Update &&update) {
   } else {
     float sample = asSample();
     auto upd = UPDATES.Alloc(std::move(update));
-    auto head = SAMPLES.Alloc(sample, upd);
-    new (this) Value((void *)head);
+    decltype(SAMPLES)::Ptr<&SAMPLES> head =
+        SAMPLES.AllocPtr<&SAMPLES>(sample, upd);
+    new (this) BufferValue(head);
     return upd;
   }
 }
 
-Update **BufferValue::FirstUpdate() const {
-  if (isPointer()) {
+Update **BufferValue::FirstUpdate() {
+  if (isSampleWithUpdates()) {
     return &asSampleWithUpdates()->first_update;
   } else {
     return nullptr;
@@ -53,9 +54,12 @@ Update **BufferValue::FirstUpdate() const {
 }
 
 void BufferValue::Housekeep() {
-  if (isPointer() && asSampleWithUpdates()->first_update == nullptr) {
+  if (isSampleWithUpdates() && asSampleWithUpdates()->first_update == nullptr) {
     auto sample_ = sample();
-    SAMPLES.Free(asSampleWithUpdates());
+    auto sample_with_updates = asSampleWithUpdates();
+    for (auto &&_ : DrainingIterator(&*sample_with_updates)) {
+    }
+    SAMPLES.FreePtr(asSampleWithUpdates());
     new (this) BufferValue(sample_);
   }
 }
@@ -68,8 +72,8 @@ void Granular::Erase(size_t index, size_t clock_time, float value,
                           .finished_at = clock_time + samples,
                           .value = value,
                           .samples = samples});
-  IndicesToUpdate::Prepend(&indices_to_update_[clock_time % MAX_FADE_TIME],
-                           index);
+  IndicesToUpdate::Prepend(
+      &indices_to_update_[(clock_time + samples) % MAX_FADE_TIME], index);
 }
 
 void Granular::Write(size_t index, size_t clock_time, float value,
@@ -78,22 +82,22 @@ void Granular::Write(size_t index, size_t clock_time, float value,
                           .finished_at = clock_time + samples,
                           .value = value,
                           .samples = samples});
-  IndicesToUpdate::Prepend(&indices_to_update_[clock_time % MAX_FADE_TIME],
-                           index);
+  IndicesToUpdate::Prepend(
+      &indices_to_update_[(clock_time + samples) % MAX_FADE_TIME], index);
 }
 
 void Granular::DoUpdate(size_t index, size_t clock_time) {
-  auto content = BUFFER[index];
+  auto content = &BUFFER[index];
 
   // Apply erases
-  auto update_ptr = content.FirstUpdate();
+  auto update_ptr = content->FirstUpdate();
   while (update_ptr != nullptr && *update_ptr != nullptr) {
     auto update = *update_ptr;
     if (update->kind == Update::Kind::kErase) {
       auto time_till_ripe =
           (update->finished_at - clock_time) % global_clock_max;
       if (time_till_ripe == 0) {
-        content.sample() *= update->value;
+        content->setSample(content->sample() * update->value);
         *update_ptr = update->next_;
         UPDATES.Free(update);
       }
@@ -102,7 +106,7 @@ void Granular::DoUpdate(size_t index, size_t clock_time) {
   }
 
   // Apply writes
-  update_ptr = content.FirstUpdate();
+  update_ptr = content->FirstUpdate();
   while (update_ptr != nullptr && *update_ptr != nullptr) {
     auto update = *update_ptr;
     if (update->kind == Update::Kind::kWrite) {
@@ -112,21 +116,21 @@ void Granular::DoUpdate(size_t index, size_t clock_time) {
       if (time_till_ripe == 0) {
         *update_ptr = update->next_;
         UPDATES.Free(update);
-        content.sample() += update->value;
+        content->setSample(content->sample() + update->value);
       }
     }
     update_ptr = &update->next_;
   }
 
-  content.Housekeep();
+  content->Housekeep();
 }
 
 float Granular::Read(size_t index, size_t clock_time) {
-  auto content = BUFFER[index];
-  auto value = content.sample();
+  auto content = &BUFFER[index];
+  auto value = content->sample();
 
   // Apply erases
-  auto maybe_update = content.FirstUpdate();
+  auto maybe_update = content->FirstUpdate();
   if (maybe_update == nullptr) {
     return value;
   }
@@ -147,7 +151,7 @@ float Granular::Read(size_t index, size_t clock_time) {
   }
 
   // Apply writes
-  update = *content.FirstUpdate();
+  update = *content->FirstUpdate();
   while (update != nullptr) {
     if (update->kind == Update::Kind::kWrite) {
       auto time_till_ripe =
@@ -199,8 +203,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
       head.index = (head.index + 1) % BUFFER_LEN;
     }
 
-    auto _ = granular.FullCycle(heads);
-    out[0][i] = sample;
+    out[0][i] = sample + granular.FullCycle(heads);
   }
 }
 #endif

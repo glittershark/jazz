@@ -6,7 +6,7 @@
 #include <memory>
 #include <utility>
 
-template <typename T, const size_t len> class Slab {
+template <typename T, const size_t CAP> class Slab {
 private:
   union Entry {
     T val;
@@ -15,12 +15,12 @@ private:
     ~Entry() {}
   };
 
-  Entry entries_[len];
-  size_t m_next;
-  size_t m_len;
+  Entry entries_[CAP];
+  size_t next_;
+  size_t len_;
 
 public:
-  inline Slab() : entries_{}, m_next(0), m_len(0) {}
+  inline Slab() : entries_{}, next_(0), len_(0) {}
 
   // TODO: it would be nice to destruct all the non-empty elements in ~Slab, but
   // that requires either stack space linear in the number of elements, or
@@ -28,13 +28,13 @@ public:
   // currently put anything in here that's non-trivial.
 
   template <class... Args> T *Alloc(Args &&...args) {
-    assert(m_next < len);
-    auto res = &entries_[m_next];
-    if (m_next == m_len) {
-      m_len++;
-      m_next++;
+    assert(next_ < CAP);
+    auto res = &entries_[next_];
+    if (next_ == len_) {
+      len_++;
+      next_++;
     } else {
-      m_next = entries_[m_next].next;
+      next_ = entries_[next_].next;
     }
     new (&res->val) T(std::forward<Args &&>(args)...);
     return &res->val;
@@ -43,56 +43,51 @@ public:
   void Free(T *ptr) {
     ptr->~T();
     auto entry = reinterpret_cast<Entry *>(ptr);
-    assert(entry >= entries_ && entry <= &entries_[len - 1]);
-    entry->next = m_next;
-    m_next = entry - entries_;
+    assert(entry >= entries_ && entry <= &entries_[CAP - 1]);
+    entry->next = next_;
+    next_ = entry - entries_;
   }
 
-  template <Slab<T, len> *SLAB> class Index {
+  template <Slab<T, CAP> *SLAB> class Ptr {
     std::ptrdiff_t idx_;
     friend Slab;
 
   protected:
-    Index(size_t idx) : idx_(idx) {}
+    Ptr(size_t idx) : idx_(idx) {}
 
   public:
-    Index(const Index &) = delete;
-    Index &operator=(const Index &) = delete;
-
     const size_t AsInt() const { return idx_; }
-    static Index FromInt(size_t idx) { return Index(idx); }
-    const bool operator==(Index other) const { return idx_ == other.idx_; }
-    T *get() { return SLAB->AtIndex(*this); }
-    T &operator*() { return *SLAB->AtIndex(*this); }
+    static Ptr FromInt(size_t idx) { return Ptr(idx); }
+    const bool operator==(Ptr other) const { return idx_ == other.idx_; }
+    T *get() { return SLAB->Deref(*this); }
+    T &operator*() { return *SLAB->Deref(*this); }
     T *operator->() { return get(); }
-
-    ~Index() { SLAB->FreeIndex(*this); }
   };
 
-  template <Slab<T, len> *SLAB> Index<SLAB> IndexOf(T *ptr) const {
+  template <Slab<T, CAP> *SLAB> Ptr<SLAB> Get(T *ptr) const {
     return reinterpret_cast<Entry *>(ptr) - entries_;
   }
 
-  template <Slab<T, len> *SLAB, class... Args>
-  Index<SLAB> AllocIndex(Args &&...args) {
+  template <Slab<T, CAP> *SLAB, class... Args>
+  Ptr<SLAB> AllocPtr(Args &&...args) {
     auto ptr = Alloc(args...);
-    return IndexOf<SLAB>(ptr);
+    return Get<SLAB>(ptr);
   }
 
-  template <Slab<T, len> *SLAB> T *AtIndex(Index<SLAB> &index) {
+  template <Slab<T, CAP> *SLAB> T *Deref(Ptr<SLAB> index) {
     return &entries_[index.idx_].val;
   }
 
-  template <Slab<T, len> *SLAB> void FreeIndex(Index<SLAB> &index) {
-    Free(AtIndex(index));
+  template <Slab<T, CAP> *SLAB> void FreePtr(Ptr<SLAB> index) {
+    Free(Deref(index));
   }
 
   struct Deleter {
-    friend Slab<T, len>;
+    friend Slab<T, CAP>;
 
   protected:
-    Slab<T, len> &m_slab;
-    Deleter(Slab<T, len> &slab) : m_slab(slab) {}
+    Slab<T, CAP> &m_slab;
+    Deleter(Slab<T, CAP> &slab) : m_slab(slab) {}
 
   public:
     void operator()(T *ptr) { m_slab.Free(ptr); }

@@ -2,14 +2,19 @@
 
 #include "libjazz/slab.hpp"
 #include "libjazz/value.hpp"
+#include <algorithm>
 #include <array>
+#include <cassert>
+#include <cmath>
 #include <cstddef>
+#include <cstdint>
+#include <memory>
 
 // Constants
-constexpr const size_t BUFFER_LEN = 44100 * 2; /* 2 seconds */
-constexpr const size_t MAX_FADE_TIME = 64;
+constexpr const size_t BUFFER_LEN = 44100 * 1; /* 1 seconds */
+constexpr const size_t MAX_FADE_TIME = 64;     // TODO: 64
 constexpr const size_t NUM_HEADS = 3;
-constexpr const size_t UPDATE_CAP = (NUM_HEADS + 1) * (MAX_FADE_TIME + 1);
+constexpr const size_t UPDATE_CAP = ((NUM_HEADS + 1) * (MAX_FADE_TIME + 1));
 
 struct Head {
   enum Kind { kRead, kErase, kWrite } kind;
@@ -128,35 +133,67 @@ public:
   static_assert(std::input_iterator<DrainingIterator>);
 };
 
-class BufferValue : private Value {
+class BufferValue {
 public:
   struct SampleWithUpdates {
-    FloatType sample;
+    float sample;
     Update *first_update;
   };
   static Slab<SampleWithUpdates, UPDATE_CAP> SAMPLES;
+  using SlabPtr = decltype(SAMPLES)::Ptr<&SAMPLES>;
+
+  enum { kSample, kSampleWithUpdates } kind_;
+  union {
+    float float_;
+    SlabPtr ptr_;
+    std::ptrdiff_t pd_;
+  };
+
+  static const size_t INT_TAG = 1ull << (sizeof(void *) * 8 - 1);
 
 protected:
-  SampleWithUpdates *asSampleWithUpdates() const {
-    return std::bit_cast<SampleWithUpdates *>(getPointer());
+  SlabPtr asSampleWithUpdates() {
+    assert(isSampleWithUpdates());
+    return SlabPtr::FromInt(pd_ & ~INT_TAG);
   }
-  FloatType &asSample() { return getFloat(); }
+  float asSample() { return float_ - 1.0f; }
 
 public:
-  BufferValue(FloatType sample) : Value(sample) {}
-  BufferValue() : BufferValue(0.0f) {}
+  BufferValue(SlabPtr ptr) : ptr_(ptr) { pd_ |= INT_TAG; }
+  BufferValue(float sample) : float_(std::clamp(sample, -1.0f, 1.0f) + 1.0) {
+    pd_ &= ~INT_TAG;
+    assert(!isSampleWithUpdates());
+  }
+  BufferValue() : float_(0.0f) {}
 
-  FloatType &sample() {
-    if (isPointer()) {
+  ~BufferValue() {
+    if (isSampleWithUpdates()) {
+      SAMPLES.FreePtr(asSampleWithUpdates());
+    }
+  }
+
+  inline bool isSampleWithUpdates() const { return (pd_ & INT_TAG) == INT_TAG; }
+  inline bool isSample() const { return !isSampleWithUpdates(); }
+
+  float sample() {
+    if (isSampleWithUpdates()) {
       return asSampleWithUpdates()->sample;
     } else {
       return asSample();
     }
   }
 
+  void setSample(float sample) {
+    if (isSampleWithUpdates()) {
+      asSampleWithUpdates()->sample = sample;
+    } else {
+      sample = std::clamp(sample, -1.0f, 1.0f) + 1.0;
+    }
+  }
+
   Update *PushBack(Update &&update);
 
-  Update **FirstUpdate() const;
+  Update **FirstUpdate();
 
   void Housekeep();
 
@@ -223,6 +260,8 @@ public:
   void DoUpdate(size_t index, size_t clock_time);
   float Read(size_t index, size_t clock_time);
   void PreHousekeeping(size_t clock_time);
+
+  ~Granular() {}
 
   template <size_t HEADS> float FullCycle(std::array<Head, HEADS> heads) {
     PreHousekeeping(global_clock_);

@@ -25,6 +25,20 @@ TEST(IndicesToUpdateTest, IterEmpty) {
   }
 }
 
+TEST(BufferValueTest, SampleWithUpdates) {
+  BufferValue v(1.0f);
+  v.PushBack({.kind = Update::Kind::kErase,
+              .finished_at = 1,
+              .value = 1.0f,
+              .samples = 1});
+  EXPECT_EQ(v.sample(), 1.0f);
+  EXPECT_TRUE(v.isSampleWithUpdates());
+  auto update = v.FirstUpdate();
+  EXPECT_NE(update, nullptr);
+  EXPECT_NE(*update, nullptr);
+  EXPECT_EQ((*update)->kind, Update::Kind::kErase);
+}
+
 class GranularTest : public ::testing::Test {
 protected:
   Granular granular;
@@ -34,10 +48,11 @@ protected:
 };
 
 TEST_F(GranularTest, WriteOne) { granular.Write(0, 0, 0.5); }
+
 TEST_F(GranularTest, WriteMany) {
   for (auto clock_time = 0; clock_time < BUFFER_LEN + 10; ++clock_time) {
     granular.PreHousekeeping(clock_time);
     auto index = clock_time % BUFFER_LEN;
-    granular.Write(index, clock_time, 0.5);
+    granular.Write(index, clock_time, 0.5, 1);
   };
 }
