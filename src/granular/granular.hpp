@@ -12,14 +12,17 @@
 
 // Constants
 constexpr const size_t BUFFER_LEN = 44100 * 1; /* 1 seconds */
-constexpr const size_t MAX_FADE_TIME = 64;     // TODO: 64
-constexpr const size_t NUM_HEADS = 3;
-constexpr const size_t UPDATE_CAP = ((NUM_HEADS + 1) * (MAX_FADE_TIME * 2));
+constexpr const size_t MAX_FADE_TIME = 128;
+constexpr const size_t NUM_HEADS = 6;
+constexpr const size_t UPDATE_CAP =
+    ((NUM_HEADS + 1) * ((MAX_FADE_TIME + 1) * 2));
 
 struct Head {
-  enum Kind { kRead, kErase, kWrite } kind;
+  enum class Kind { kRead, kErase, kWrite } kind;
+  enum class Direction { kForwards, kBackwards } direction;
   size_t index;
   float value;
+  size_t step = 1;
 };
 
 struct Update {
@@ -247,7 +250,7 @@ class Granular {
 
 private:
   std::array<IndicesToUpdate *, MAX_FADE_TIME> indices_to_update_;
-  size_t global_clock_max = 300000;
+  size_t global_clock_max_ = SIZE_MAX;
   size_t global_clock_ = 0;
 
 public:
@@ -262,6 +265,8 @@ public:
   void PreHousekeeping(size_t clock_time);
 
   ~Granular() {}
+
+  size_t global_clock_max() const { return global_clock_max_; }
 
   template <size_t HEADS> float FullCycle(std::array<Head, HEADS> heads) {
     PreHousekeeping(global_clock_);
@@ -284,7 +289,7 @@ public:
       }
     }
 
-    global_clock_ = (global_clock_ + 1 + global_clock_max) % global_clock_max;
+    global_clock_ = (global_clock_ + 1) % global_clock_max_;
     return wet_signal;
   }
 };

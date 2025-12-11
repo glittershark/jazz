@@ -95,7 +95,7 @@ void Granular::DoUpdate(size_t index, size_t clock_time) {
     auto update = *update_ptr;
     if (update->kind == Update::Kind::kErase) {
       auto time_till_ripe =
-          (update->finished_at - clock_time) % global_clock_max;
+          (update->finished_at - clock_time) % global_clock_max_;
       if (time_till_ripe == 0) {
         content->setSample(content->sample() * update->value);
         *update_ptr = update->next_;
@@ -112,8 +112,8 @@ void Granular::DoUpdate(size_t index, size_t clock_time) {
     auto update = *update_ptr;
     if (update->kind == Update::Kind::kWrite) {
       auto time_till_ripe =
-          ((update->finished_at - clock_time) + global_clock_max) %
-          global_clock_max;
+          ((update->finished_at - clock_time) + global_clock_max_) %
+          global_clock_max_;
       if (time_till_ripe == 0) {
         *update_ptr = update->next_;
         UPDATES.Free(update);
@@ -141,8 +141,8 @@ float Granular::Read(size_t index, size_t clock_time) {
   while (update != nullptr) {
     if (update->kind == Update::Kind::kErase) {
       auto time_till_ripe =
-          ((update->finished_at - clock_time) + global_clock_max) %
-          global_clock_max;
+          ((update->finished_at - clock_time) + global_clock_max_) %
+          global_clock_max_;
       auto frac_offset =
           (update->samples * update->value) / (1 - update->value);
       auto factor =
@@ -157,8 +157,8 @@ float Granular::Read(size_t index, size_t clock_time) {
   while (update != nullptr) {
     if (update->kind == Update::Kind::kWrite) {
       auto time_till_ripe =
-          ((update->finished_at - clock_time) + global_clock_max) %
-          global_clock_max;
+          ((update->finished_at - clock_time) + global_clock_max_) %
+          global_clock_max_;
       auto target_val = update->value;
       auto fading_in_val =
           target_val * (update->samples - time_till_ripe) / update->samples;
@@ -183,9 +183,14 @@ void Granular::PreHousekeeping(size_t clock_time) {
   }
 }
 
-static std::array<Head, 2> heads{{
-    {Head::Kind::kRead, BUFFER_LEN / 2, 1.f}, {Head::Kind::kWrite, 0, 1.f},
-    // {Head::Kind::kErase, 0, 0.f},
+static std::array<Head, NUM_HEADS> heads{{
+    {Head::Kind::kRead, Head::Direction::kForwards, BUFFER_LEN / 2, 0.7f},
+    {Head::Kind::kRead, Head::Direction::kForwards,
+     BUFFER_LEN / 2 + BUFFER_LEN / 4, 0.7f, 2},
+    {Head::Kind::kRead, Head::Direction::kBackwards, BUFFER_LEN / 3, 0.7f, 2},
+    {Head::Kind::kRead, Head::Direction::kBackwards, BUFFER_LEN / 2, 0.7f, 2},
+    {Head::Kind::kWrite, Head::Direction::kForwards, 0, 0.7f},
+    {Head::Kind::kErase, Head::Direction::kForwards, BUFFER_LEN / 4, 0.9f},
 }};
 
 #ifndef UNIT_TEST
@@ -201,7 +206,16 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
         head.value = sample;
       }
 
-      head.index = (head.index + 1) % BUFFER_LEN;
+      switch (head.direction) {
+      case Head::Direction::kForwards: {
+        head.index = (head.index + head.step) % BUFFER_LEN;
+        break;
+      }
+      case Head::Direction::kBackwards: {
+        head.index = (head.index + BUFFER_LEN - head.step) % BUFFER_LEN;
+        break;
+      }
+      }
     }
 
     out[0][i] = sample + granular.FullCycle(heads);
