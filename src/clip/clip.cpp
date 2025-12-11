@@ -21,7 +21,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
   for (size_t i = 0; i < size; i++) {
     // TODO: Add your clipping DSP here
-    auto sample = in[0][i];
+    auto sample = in[0][i] * 15;
     float clipped_sample = clip(sample);
     float residue = sample - clipped_sample;
     out[0][i] = sample - residue;
@@ -44,4 +44,3 @@ int main(void) {
     System::Delay(1);
   }
 }
-
