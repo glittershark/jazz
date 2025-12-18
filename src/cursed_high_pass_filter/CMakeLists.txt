@@ -15,3 +15,4 @@ set_target_properties(cursed_highpass_filter PROPERTIES
     CXX_STANDARD_REQUIRED YES
 )
 
+

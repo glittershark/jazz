@@ -17,3 +17,4 @@ program-dfu: ../../build/lib/libjazz/liblibjazz.a all
 ../../build/lib/libjazz/liblibjazz.a:
 	cd ../.. && make cmake-build
 
+
