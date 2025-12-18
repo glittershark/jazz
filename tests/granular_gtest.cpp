@@ -73,6 +73,12 @@ TEST_F(GranularTest, JustRead) {
   EXPECT_NEAR(granular->Read(0, 0), 0.0, 0.0001);
 }
 
+TEST_F(GranularTest, JustReadManyTimes) {
+  for (auto clock_time = 0; clock_time < BUFFER_LEN * 10; ++clock_time) {
+    EXPECT_EQ(granular->Read(0, 0), 0.0f);
+  }
+}
+
 TEST_F(GranularTest, WriteAndRead) {
   granular->Write(0, 0, 0.7, 1);
   EXPECT_NEAR(granular->Read(0, 0), 0.7, 0.0001);
