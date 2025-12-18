@@ -167,7 +167,7 @@ public:
     pd_ &= ~INT_TAG;
     assert(!isSampleWithUpdates());
   }
-  BufferValue() : float_(0.0f) {}
+  BufferValue() : BufferValue(0.0f) {}
 
   ~BufferValue() {
     if (isSampleWithUpdates()) {
