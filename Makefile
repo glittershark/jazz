@@ -63,4 +63,5 @@ clean:
 	${MAKE} -C src/delay clean || true
 	${MAKE} -C src/reverse clean || true
 	${MAKE} -C src/granular clean || true
+	${MAKE} -C src/identity clean || true
 	${MAKE} -C src/rachel clean || true
