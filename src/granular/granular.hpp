@@ -11,7 +11,7 @@
 #include <memory>
 
 // Constants
-constexpr const size_t BUFFER_LEN = 44100 * 10; /* 10 seconds */
+constexpr const size_t BUFFER_LEN = 44100 * 1; /* 1 seconds */
 constexpr const size_t MAX_FADE_TIME = 128;
 constexpr const size_t NUM_HEADS = 6;
 constexpr const size_t UPDATE_CAP =
