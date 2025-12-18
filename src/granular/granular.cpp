@@ -227,7 +227,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 int main(void) {
   hw.Configure();
   hw.Init();
-  hw.SetAudioBlockSize(4);
+  hw.SetAudioBlockSize(8);
 
   // AdcChannelConfig adcConfig[2];
   // adcConfig[0].InitSingle(hw.GetPin(21)); /* delay amount */
