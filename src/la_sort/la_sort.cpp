@@ -55,8 +55,9 @@ void insert_sorted(float sample) {
     sorted_samples[insert_pos] = sample;
     current_size++;
     
-    // Also add to insertion buffer
-    insertion_buffer[current_size - 1] = sample;
+    // Also add to insertion buffer (track insertion order)
+    insertion_buffer[write_index] = sample;
+    write_index = (write_index + 1) % BUFFER_SIZE;
   } else {
     // Buffer is full, replace oldest sample
     float oldest_sample = insertion_buffer[write_index];
@@ -90,6 +91,11 @@ void insert_sorted(float sample) {
 float weighted_tap() {
   if (current_size == 0) {
     return 0.0f;
+  }
+  
+  // Handle single element case to avoid division by zero
+  if (current_size == 1) {
+    return sorted_samples[0];
   }
   
   float sum = 0.0f;
