@@ -190,7 +190,7 @@ public:
     if (isSampleWithUpdates()) {
       asSampleWithUpdates()->sample = sample;
     } else {
-      sample = std::clamp(sample, -1.0f, 1.0f) + 1.0;
+      asSampleWithUpdates()->sample = std::clamp(sample, -1.0f, 1.0f) + 1.0;
     }
   }
 
