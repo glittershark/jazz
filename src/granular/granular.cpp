@@ -1,9 +1,11 @@
 #include <array>
 #include <cstddef>
+#include <iostream>
 
 #include "granular.hpp"
 #include "libjazz/slab.hpp"
 #include "libjazz/value.hpp"
+#include "system.h"
 
 #ifndef UNIT_TEST
 #include "daisy_seed.h"
@@ -184,13 +186,24 @@ void Granular::PreHousekeeping(size_t clock_time) {
 }
 
 static std::array<Head, NUM_HEADS> heads{{
-    {Head::Kind::kRead, Head::Direction::kForwards, BUFFER_LEN / 2, 0.7f},
-    {Head::Kind::kRead, Head::Direction::kForwards,
-     BUFFER_LEN / 2 + BUFFER_LEN / 4, 0.7f, 2},
-    {Head::Kind::kRead, Head::Direction::kBackwards, BUFFER_LEN / 3, 0.7f, 2},
-    {Head::Kind::kRead, Head::Direction::kBackwards, BUFFER_LEN / 2, 0.7f, 2},
-    {Head::Kind::kWrite, Head::Direction::kForwards, 0, 0.7f},
-    {Head::Kind::kErase, Head::Direction::kForwards, BUFFER_LEN / 4, 0.9f},
+    {.kind = Head::Kind::kWrite,
+     .direction = Head::Direction::kForwards,
+     .index = 0,
+     .value = 1.0f},
+    {.kind = Head::Kind::kRead,
+     .direction = Head::Direction::kForwards,
+     .index = 0,
+     .value = 1.0f,
+     .step = 1},
+    // {Head::Kind::kRead, Head::Direction::kForwards,
+    //  BUFFER_LEN / 2 + BUFFER_LEN / 4, 0.7f, 2},
+    // {Head::Kind::kRead, Head::Direction::kBackwards, BUFFER_LEN / 3,
+    // 0.7f, 2}, {Head::Kind::kRead, Head::Direction::kBackwards, BUFFER_LEN
+    // / 2, 0.7f, 2},
+    {.kind = Head::Kind::kErase,
+     .direction = Head::Direction::kForwards,
+     .index = BUFFER_LEN / 2,
+     .value = 0.5f},
 }};
 
 #ifndef UNIT_TEST
@@ -229,14 +242,25 @@ int main(void) {
   hw.Init();
   hw.SetAudioBlockSize(8);
 
-  // AdcChannelConfig adcConfig[2];
-  // adcConfig[0].InitSingle(hw.GetPin(21)); /* delay amount */
+  AdcChannelConfig adcConfig[1];
+  adcConfig[0].InitSingle(daisy::seed::A0);
   // adcConfig[1].InitSingle(hw.GetPin(20)); /* feedback */
-  // hw.adc.Init(adcConfig, 2);
-  // hw.adc.Start();
+  hw.adc.Init(adcConfig, 1);
+  hw.adc.Start();
 
   hw.StartAudio(AudioCallback);
   for (;;) {
+    auto value = hw.adc.GetFloat(0);
+    auto desiredHeadOffset = (int)(BUFFER_LEN * value);
+
+    auto writeHead = &heads[0];
+    auto readHead = &heads[1];
+
+    auto actualHeadOffset = writeHead->index - readHead->index;
+    auto adjust = desiredHeadOffset - actualHeadOffset;
+    readHead->index += adjust;
+
+    System::Delay(100);
   }
 }
 #endif
