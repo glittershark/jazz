@@ -29,6 +29,11 @@ to flash a particular effect to a daisy seed (in reset mode!):
 $ make flash DIR=delay
 #+end_src
 
+* printing stuff
+
+see [[https://github.com/glittershark/jazz/blob/main/src/console/console.cpp][console]] for how to set up the console. reading from it should be something
+like ~screen /dev/ttyACM0 115200~.
+
 * current effects
 
 ** delays

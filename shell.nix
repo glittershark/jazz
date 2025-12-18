@@ -18,5 +18,6 @@ mkShell {
         cp -r "$out/share" $dev
       '';
     })).dev
+    screen
   ];
 }
