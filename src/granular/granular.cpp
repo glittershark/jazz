@@ -272,25 +272,8 @@ int main(void) {
   hw.Init();
   hw.SetAudioBlockSize(8);
 
-  AdcChannelConfig adcConfig[1];
-  adcConfig[0].InitSingle(daisy::seed::A0);
-  // adcConfig[1].InitSingle(hw.GetPin(20)); /* feedback */
-  hw.adc.Init(adcConfig, 1);
-  hw.adc.Start();
-
   hw.StartAudio(AudioCallback);
   for (;;) {
-    auto value = hw.adc.GetFloat(0);
-    auto desiredHeadOffset = (int)(BUFFER_LEN * value);
-
-    auto writeHead = &heads[0];
-    auto readHead = &heads[1];
-
-    auto actualHeadOffset = writeHead->index - readHead->index;
-    auto adjust = desiredHeadOffset - actualHeadOffset;
-    readHead->index += adjust;
-
-    System::Delay(100);
   }
 }
 #endif
