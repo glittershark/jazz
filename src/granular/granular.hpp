@@ -8,13 +8,27 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 
 // Constants
-constexpr const size_t BUFFER_LEN = 44100 * 1; /* 1 second */
+constexpr const size_t BUFFER_LEN = 22050 * 1; /* 1 second */
 constexpr const size_t MAX_FADE_TIME = 128;
-constexpr const size_t NUM_HEADS = 4;
+constexpr const size_t NUM_HEADS = 3;
 constexpr const size_t UPDATE_CAP =
     ((NUM_HEADS + 1) * ((MAX_FADE_TIME + 1) * 2));
+
+struct RandomFade {
+  size_t countdown;
+  size_t old_index;
+  // TODO(aspen): Once we switch directions, this will also need to remember the
+  // old direction
+};
+
+struct RandomHead {
+  size_t grain_size = 1000;
+  size_t grain_remaining = grain_size;
+  std::optional<RandomFade> fade = std::nullopt;
+};
 
 struct Head {
   enum class Kind { kRead, kErase, kWrite } kind;
@@ -22,10 +36,7 @@ struct Head {
   size_t index;
   float value;
   size_t step = 1;
-  // ignored unless Direction is kRandom
-  bool random = false;
-  size_t random_grain_size = 1000;
-  size_t random_grain_remaining = random_grain_size;
+  std::optional<RandomHead> random;
 
   void Process(float sample);
 };
@@ -280,7 +291,18 @@ public:
     for (auto &&head : heads) {
       switch (head.kind) {
       case Head::Kind::kRead: {
-        wet_signal += Read(head.index, global_clock_) * head.value;
+        // TODO(aspen): Refactor; pull out a helper function pls
+        auto value = Read(head.index, global_clock_);
+        if (head.random && head.random->fade) {
+          auto at_fade = Read(head.random->fade->old_index, global_clock_);
+          float fade_amt =
+              ((float)(MAX_FADE_TIME - head.random->fade->countdown) /
+               (float)MAX_FADE_TIME);
+          value *= fade_amt;
+          value += (at_fade * (1.0f - fade_amt));
+        }
+
+        wet_signal += value * head.value;
         break;
       }
       case Head::Kind::kErase: {

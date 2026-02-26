@@ -1,6 +1,7 @@
 #include <array>
 #include <cstddef>
 #include <iostream>
+#include <optional>
 #include <random>
 
 #include "granular.hpp"
@@ -198,19 +199,9 @@ static std::array<Head, NUM_HEADS> heads{{
         .kind = Head::Kind::kRead,
         .direction = Head::Direction::kForwards,
         .index = 0,
-        .value = 0.7f,
+        .value = 0.5f,
         .step = 1,
-        .random = true,
-        .random_grain_size = 44000,
-    },
-    {
-        .kind = Head::Kind::kRead,
-        .direction = Head::Direction::kBackwards,
-        .index = 0,
-        .value = 0.7f,
-        .step = 1,
-        .random = true,
-        .random_grain_size = 10000,
+        .random = {{.grain_size = 44000}},
     },
     {
         .kind = Head::Kind::kErase,
@@ -226,22 +217,35 @@ void Head::Process(float sample) {
   }
 
   if (random) {
-    if ((random_grain_remaining -= step) == 0) {
+    if ((random->grain_remaining -= step) == 0) {
+      random->fade = {
+          .countdown = MAX_FADE_TIME,
+          .old_index = index,
+      };
       index = std::rand() % BUFFER_LEN;
-      random_grain_remaining = random_grain_size;
+      random->grain_remaining = random->grain_size;
       return;
     }
   }
 
+  size_t step_by;
   switch (direction) {
   case Head::Direction::kForwards: {
-    index = (index + step) % BUFFER_LEN;
+    step_by = step;
     break;
   }
   case Head::Direction::kBackwards: {
-    index = (index + BUFFER_LEN - step) % BUFFER_LEN;
+    step_by = -step;
     break;
   }
+  }
+
+  index = (index + step_by) % BUFFER_LEN;
+  if (random->fade) {
+    if (random->fade->countdown-- == 0) {
+      random->fade = std::nullopt;
+    }
+    random->fade->old_index = (random->fade->old_index + step_by) % BUFFER_LEN;
   }
 }
 
