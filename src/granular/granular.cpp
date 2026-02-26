@@ -1,6 +1,7 @@
 #include <array>
 #include <cstddef>
 #include <iostream>
+#include <random>
 
 #include "granular.hpp"
 #include "libjazz/slab.hpp"
@@ -186,25 +187,58 @@ void Granular::PreHousekeeping(size_t clock_time) {
 }
 
 static std::array<Head, NUM_HEADS> heads{{
-    {.kind = Head::Kind::kWrite,
-     .direction = Head::Direction::kForwards,
-     .index = 0,
-     .value = 1.0f},
-    {.kind = Head::Kind::kRead,
-     .direction = Head::Direction::kForwards,
-     .index = 0,
-     .value = 1.0f,
-     .step = 1},
+    {
+        .kind = Head::Kind::kWrite,
+        .direction = Head::Direction::kForwards,
+        .index = 0,
+        .value = 1.0f,
+        .step = 1,
+    },
+    {
+        .kind = Head::Kind::kRead,
+        .direction = Head::Direction::kRandom,
+        .index = 0,
+        .value = 0.7f,
+        .step = 1,
+        .random_grain_size = 10000,
+    },
     // {Head::Kind::kRead, Head::Direction::kForwards,
     //  BUFFER_LEN / 2 + BUFFER_LEN / 4, 0.7f, 2},
     // {Head::Kind::kRead, Head::Direction::kBackwards, BUFFER_LEN / 3,
     // 0.7f, 2}, {Head::Kind::kRead, Head::Direction::kBackwards, BUFFER_LEN
     // / 2, 0.7f, 2},
-    {.kind = Head::Kind::kErase,
-     .direction = Head::Direction::kForwards,
-     .index = BUFFER_LEN / 2,
-     .value = 0.5f},
+    {
+        .kind = Head::Kind::kErase,
+        .direction = Head::Direction::kForwards,
+        .index = BUFFER_LEN / 2,
+        .value = 0.5f,
+    },
 }};
+
+void Head::Process(float sample) {
+  if (kind == Head::Kind::kWrite) {
+    value = sample;
+  }
+
+  switch (direction) {
+  case Head::Direction::kForwards: {
+    index = (index + step) % BUFFER_LEN;
+    break;
+  }
+  case Head::Direction::kBackwards: {
+    index = (index + BUFFER_LEN - step) % BUFFER_LEN;
+    break;
+  }
+  case Head::Direction::kRandom:
+    if ((random_grain_remaining -= step) == 0) {
+      index = std::rand() % BUFFER_LEN;
+      random_grain_remaining = random_grain_size;
+    } else {
+      index = (index + BUFFER_LEN + step) % BUFFER_LEN;
+    }
+    break;
+  }
+}
 
 #ifndef UNIT_TEST
 static Granular granular;
@@ -215,20 +249,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
     auto sample = in[0][i];
 
     for (auto &&head : heads) {
-      if (head.kind == Head::Kind::kWrite) {
-        head.value = sample;
-      }
-
-      switch (head.direction) {
-      case Head::Direction::kForwards: {
-        head.index = (head.index + head.step) % BUFFER_LEN;
-        break;
-      }
-      case Head::Direction::kBackwards: {
-        head.index = (head.index + BUFFER_LEN - head.step) % BUFFER_LEN;
-        break;
-      }
-      }
+      head.Process(sample);
     }
 
     out[0][i] = sample + granular.FullCycle(heads);
