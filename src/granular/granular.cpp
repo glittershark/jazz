@@ -196,17 +196,22 @@ static std::array<Head, NUM_HEADS> heads{{
     },
     {
         .kind = Head::Kind::kRead,
-        .direction = Head::Direction::kRandom,
+        .direction = Head::Direction::kForwards,
         .index = 0,
         .value = 0.7f,
         .step = 1,
+        .random = true,
+        .random_grain_size = 44000,
+    },
+    {
+        .kind = Head::Kind::kRead,
+        .direction = Head::Direction::kBackwards,
+        .index = 0,
+        .value = 0.7f,
+        .step = 1,
+        .random = true,
         .random_grain_size = 10000,
     },
-    // {Head::Kind::kRead, Head::Direction::kForwards,
-    //  BUFFER_LEN / 2 + BUFFER_LEN / 4, 0.7f, 2},
-    // {Head::Kind::kRead, Head::Direction::kBackwards, BUFFER_LEN / 3,
-    // 0.7f, 2}, {Head::Kind::kRead, Head::Direction::kBackwards, BUFFER_LEN
-    // / 2, 0.7f, 2},
     {
         .kind = Head::Kind::kErase,
         .direction = Head::Direction::kForwards,
@@ -220,6 +225,14 @@ void Head::Process(float sample) {
     value = sample;
   }
 
+  if (random) {
+    if ((random_grain_remaining -= step) == 0) {
+      index = std::rand() % BUFFER_LEN;
+      random_grain_remaining = random_grain_size;
+      return;
+    }
+  }
+
   switch (direction) {
   case Head::Direction::kForwards: {
     index = (index + step) % BUFFER_LEN;
@@ -229,14 +242,6 @@ void Head::Process(float sample) {
     index = (index + BUFFER_LEN - step) % BUFFER_LEN;
     break;
   }
-  case Head::Direction::kRandom:
-    if ((random_grain_remaining -= step) == 0) {
-      index = std::rand() % BUFFER_LEN;
-      random_grain_remaining = random_grain_size;
-    } else {
-      index = (index + BUFFER_LEN + step) % BUFFER_LEN;
-    }
-    break;
   }
 }
 
