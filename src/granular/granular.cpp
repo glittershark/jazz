@@ -249,12 +249,13 @@ void Head::Process(float sample) {
   }
   }
 
-  index = (index + step_by) % BUFFER_LEN;
+  index = (BUFFER_LEN + index + step_by) % BUFFER_LEN;
   if (random->fade) {
     if (random->fade->countdown-- == 0) {
       random->fade = std::nullopt;
     }
-    random->fade->old_index = (random->fade->old_index + step_by) % BUFFER_LEN;
+    random->fade->old_index =
+        (BUFFER_LEN + random->fade->old_index + step_by) % BUFFER_LEN;
   }
 }
 
