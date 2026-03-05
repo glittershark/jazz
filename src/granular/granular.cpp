@@ -190,25 +190,34 @@ void Granular::PreHousekeeping(size_t clock_time) {
 static std::array<Head, NUM_HEADS> heads{{
     {
         .kind = Head::Kind::kWrite,
-        .direction = Head::Direction::kForwards,
+        .direction = Head::Direction::kBackwards,
         .index = 0,
         .value = 1.0f,
         .step = 1,
     },
+    // {
+    //     .kind = Head::Kind::kRead,
+    //     .direction = Head::Direction::kForwards,
+    //     .index = 10000,
+    //     .value = 0.7f,
+    //     .step = 1,
+    //     // .random = {{.grain_size = 10000}},
+    // },
     {
         .kind = Head::Kind::kRead,
-        .direction = Head::Direction::kForwards,
-        .index = 0,
-        .value = 0.5f,
+        .direction = Head::Direction::kBackwards,
+        .index = 20000,
+        .value = 0.7f,
         .step = 1,
-        .random = {{.grain_size = 44000}},
+        // .random = {{.grain_size = 20000}},
     },
-    {
-        .kind = Head::Kind::kErase,
-        .direction = Head::Direction::kForwards,
-        .index = BUFFER_LEN / 2,
-        .value = 0.5f,
-    },
+    // {
+    //     .kind = Head::Kind::kErase,
+    //     .direction = Head::Direction::kBackwards,
+    //     .index = BUFFER_LEN / 2,
+    //     .value = 0.5f,
+    //     // .random = {{.grain_size = 20000}},
+    // },
 }};
 
 void Head::Process(float sample) {
@@ -270,7 +279,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 int main(void) {
   hw.Configure();
   hw.Init();
-  hw.SetAudioBlockSize(8);
+  hw.SetAudioBlockSize(1);
 
   hw.StartAudio(AudioCallback);
   for (;;) {

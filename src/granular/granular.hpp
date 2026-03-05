@@ -13,7 +13,7 @@
 // Constants
 constexpr const size_t BUFFER_LEN = 22050 * 1; /* 1 second */
 constexpr const size_t MAX_FADE_TIME = 128;
-constexpr const size_t NUM_HEADS = 3;
+constexpr const size_t NUM_HEADS = 4;
 constexpr const size_t UPDATE_CAP =
     ((NUM_HEADS + 1) * ((MAX_FADE_TIME + 1) * 2));
 
