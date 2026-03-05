@@ -195,29 +195,29 @@ static std::array<Head, NUM_HEADS> heads{{
         .value = 1.0f,
         .step = 1,
     },
-    // {
-    //     .kind = Head::Kind::kRead,
-    //     .direction = Head::Direction::kForwards,
-    //     .index = 10000,
-    //     .value = 0.7f,
-    //     .step = 1,
-    //     // .random = {{.grain_size = 10000}},
-    // },
+    {
+        .kind = Head::Kind::kRead,
+        .direction = Head::Direction::kForwards,
+        .index = 10000,
+        .value = 0.7f,
+        .step = 1,
+        .random = {{.grain_size = 10000}},
+    },
     {
         .kind = Head::Kind::kRead,
         .direction = Head::Direction::kBackwards,
         .index = 20000,
         .value = 0.7f,
-        .step = 1,
+        .step = 2,
+        .random = {{.grain_size = 20000}},
+    },
+    {
+        .kind = Head::Kind::kErase,
+        .direction = Head::Direction::kBackwards,
+        .index = BUFFER_LEN / 2,
+        .value = 0.5f,
         // .random = {{.grain_size = 20000}},
     },
-    // {
-    //     .kind = Head::Kind::kErase,
-    //     .direction = Head::Direction::kBackwards,
-    //     .index = BUFFER_LEN / 2,
-    //     .value = 0.5f,
-    //     // .random = {{.grain_size = 20000}},
-    // },
 }};
 
 void Head::Process(float sample) {
@@ -280,7 +280,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 int main(void) {
   hw.Configure();
   hw.Init();
-  hw.SetAudioBlockSize(1);
+  hw.SetAudioBlockSize(16);
 
   hw.StartAudio(AudioCallback);
   for (;;) {
