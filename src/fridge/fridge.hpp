@@ -33,7 +33,7 @@ class Head {
 public:
   Head()
       : position_(0), write_amount_(1.), read_amount_(1.), erase_amount_(1.),
-        feedback_({.kind = Feedback::Kind::kRead, .amount = 0.}) {}
+        feedback_({.kind_ = Feedback::Kind::kRead, .amount_ = 0.}) {}
 
   size_t &position() { return position_; }
   float &write_amount() { return write_amount_; }
