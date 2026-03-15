@@ -1,4 +1,4 @@
-.PHONY: all test flash clean cmake-build cmake-configure merge-compile-commands
+.PHONY: all test console flash clean cmake-build cmake-configure merge-compile-commands
 
 # Default target - build everything via CMake
 all: cmake-build merge-compile-commands
@@ -9,6 +9,13 @@ test:
 	cd build-test && cmake -DTEST_ONLY=ON -DCMAKE_BUILD_TYPE=Debug ..
 	cd build-test && make
 	cd build-test && ctest --output-on-failure
+	$(MAKE) merge-compile-commands
+
+# Build the host-side audio CLI
+console:
+	mkdir -p build-test
+	cd build-test && cmake -DTEST_ONLY=ON -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release ..
+	cd build-test && make jazz-console
 	$(MAKE) merge-compile-commands
 
 # Create build directory and configure CMake

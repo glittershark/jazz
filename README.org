@@ -21,6 +21,28 @@ $ make test
 
 note: cmake generates ~compile_commands.json~ in the build directory and creates a symlink in the project root for clangd/language server support.
 
+* host audio CLI
+
+for quick iteration without flashing firmware, build the host CLI:
+
+#+begin_src shell-session
+$ make console
+#+end_src
+
+default behavior is to decode an input mp3, run it through the granular effect, and play it through your computer audio device:
+
+#+begin_src shell-session
+$ ./build-test/src/console/jazz-console input.mp3
+#+end_src
+
+to save processed audio to a new mp3 while also playing it:
+
+#+begin_src shell-session
+$ ./build-test/src/console/jazz-console input.mp3 --output processed.mp3
+#+end_src
+
+the CLI depends on ~ffmpeg~ and ~ffplay~ being available in your shell.
+
 * flashing to daisy seed
 
 to flash a particular effect to a daisy seed (in reset mode!):
