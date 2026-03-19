@@ -35,6 +35,18 @@ default behavior is to decode an input mp3, run it through the granular effect, 
 $ ./build-test/src/console/jazz-console input.mp3
 #+end_src
 
+to select an effect explicitly:
+
+#+begin_src shell-session
+$ ./build-test/src/console/jazz-console input.mp3 --effect clip
+#+end_src
+
+list available effects:
+
+#+begin_src shell-session
+$ ./build-test/src/console/jazz-console --list-effects
+#+end_src
+
 to save processed audio to a new mp3 while also playing it:
 
 #+begin_src shell-session
