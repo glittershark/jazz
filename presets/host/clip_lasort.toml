@@ -1,0 +1,11 @@
+# Host CLI preset for jazz-console
+# Usage:
+# ./build-test/src/console/jazz-console input.mp3 --preset presets/host/clip_lasort.toml --output processed.mp3
+
+effect_chain = ["clip", "la_sort", "highpass"]
+
+clip_threshold = 0.3
+clip_gain = 10.0
+la_sort_weight_center = 0.62
+la_sort_weight_sharpness = 4.0
+highpass_alpha = 0.2

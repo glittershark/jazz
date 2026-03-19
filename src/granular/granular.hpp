@@ -210,7 +210,8 @@ public:
     if (isSampleWithUpdates()) {
       asSampleWithUpdates()->sample = sample;
     } else {
-      asSampleWithUpdates()->sample = std::clamp(sample, -1.0f, 1.0f) + 1.0;
+      float_ = std::clamp(sample, -1.0f, 1.0f) + 1.0f;
+      pd_ &= ~INT_TAG;
     }
   }
 
