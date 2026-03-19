@@ -7,7 +7,6 @@
 #include "granular.hpp"
 #include "libjazz/slab.hpp"
 #include "libjazz/value.hpp"
-#include "system.h"
 
 #ifndef UNIT_TEST
 #include "daisy_seed.h"
