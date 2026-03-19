@@ -1,9 +1,20 @@
 #ifndef FRIDGE_H_
 #define FRIDGE_H_
 
+#include <cassert>
+#ifndef UNIT_TEST
+
+#include "daisy_seed.h"
+#include "per/tim.h"
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <optional>
+
+struct Callback {
+  void (*callback)(void *, bool);
+  void *data;
+};
 
 namespace fridge {
 
@@ -12,6 +23,77 @@ constexpr const size_t NUM_LFOS = 8;
 constexpr const size_t MAX_TARGET_PARAMS = 64; // ??
 
 namespace control {
+
+using namespace daisy;
+using namespace daisy::seed;
+
+class GpioInMux {
+  GPIO pin_;
+  GPIO address_pin_a_;
+  GPIO address_pin_b_;
+  GPIO address_pin_c_;
+  TimerHandle timer_;
+  uint8_t channel_;
+
+  // We scan through the mux one channel every us
+  static constexpr const uint32_t kGpioMuxFreqUs = 1;
+
+  static constexpr const uint8_t kNumChannels = 8;
+
+  std::array<bool, kNumChannels> last_value_;
+  std::array<std::array<std::optional<Callback>, 8>, kNumChannels> callbacks_;
+
+  void SelectChannel(uint8_t channel);
+  void TimerCallback();
+
+  static void timer_callback_(void *);
+
+public:
+  GpioInMux(GPIO pin, GPIO address_pin_a, GPIO address_pin_b,
+            GPIO address_pin_c, TimerHandle::Config::Peripheral timer);
+
+  void Start();
+
+  /** Read the current value of a channel */
+  bool Read(uint8_t channel) const;
+
+  void RegisterCallback(uint8_t channel, Callback callback);
+
+  class Channel {
+    GpioInMux *mux_;
+    uint8_t channel_;
+
+  public:
+    Channel(GpioInMux *mux, uint8_t channel) : mux_(mux), channel_(channel) {}
+    bool Read() const { return mux_->Read(channel_); }
+
+    void OnChange(void (*callback)(void *, bool), void *data);
+  };
+};
+
+class QuadratureEncoder {
+  GpioInMux::Channel a_;
+  GpioInMux::Channel b_;
+  uint32_t ticks_per_turn_;
+  uint32_t ticks_;
+
+  void AChanged(bool new_value);
+  static void a_changed(void *this_, bool new_value) {
+    ((QuadratureEncoder *)this_)->AChanged(new_value);
+  }
+  void BChanged(bool new_value);
+  static void b_changed(void *this_, bool new_value) {
+    ((QuadratureEncoder *)this_)->BChanged(new_value);
+  }
+
+public:
+  QuadratureEncoder(GpioInMux::Channel a, GpioInMux::Channel b,
+                    uint32_t ticks_per_turn = 1);
+
+  uint32_t Ticks() const;
+  float Turns() const;
+};
+
 // TODO: knobs and buttons and things
 } // namespace control
 
@@ -51,7 +133,7 @@ enum class TargetParameter {
 };
 
 class Target {
-  TargetParameter parameter_;
+  TargetParameter voidarameter_;
   size_t head_idx_;
 
 public:
@@ -89,5 +171,7 @@ class Config {
 namespace state {} // namespace state
 
 } // namespace fridge
+
+#endif
 
 #endif // FRIDGE_H_
