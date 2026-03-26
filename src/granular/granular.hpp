@@ -79,10 +79,11 @@ static Slab<Update, UPDATE_CAP> UPDATES;
 class IndicesToUpdate {
 private:
   size_t index_;
-  IndicesToUpdate *next_;
+  IndicesToUpdate *next_ = nullptr;
   static Slab<IndicesToUpdate, UPDATE_CAP> SLAB;
 
 public:
+  IndicesToUpdate() : index_(0) {}
   IndicesToUpdate(size_t index) : index_(index) {}
 
   static void Prepend(IndicesToUpdate **head, size_t index) {
@@ -157,6 +158,9 @@ public:
   struct SampleWithUpdates {
     float sample;
     Update *first_update;
+
+    SampleWithUpdates(float sample = 0.0f, Update *first_update = nullptr)
+        : sample(sample), first_update(first_update) {}
   };
   static Slab<SampleWithUpdates, UPDATE_CAP> SAMPLES;
   using SlabPtr = decltype(SAMPLES)::Ptr<&SAMPLES>;
@@ -206,7 +210,8 @@ public:
     if (isSampleWithUpdates()) {
       asSampleWithUpdates()->sample = sample;
     } else {
-      asSampleWithUpdates()->sample = std::clamp(sample, -1.0f, 1.0f) + 1.0;
+      float_ = std::clamp(sample, -1.0f, 1.0f) + 1.0f;
+      pd_ &= ~INT_TAG;
     }
   }
 

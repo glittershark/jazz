@@ -141,3 +141,6 @@ compile_commands.json
 
 # Claude Code
 .claude
+
+# Local audio assets
+mp3s/
