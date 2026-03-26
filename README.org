@@ -21,6 +21,107 @@ $ make test
 
 note: cmake generates ~compile_commands.json~ in the build directory and creates a symlink in the project root for clangd/language server support.
 
+* host audio CLI
+
+for quick iteration without flashing firmware, the host CLI lets you run effects
+on mp3 files from your computer.
+
+** quick start
+
+build the host CLI:
+
+#+begin_src shell-session
+$ make console
+#+end_src
+
+run input through the default effect (~granular~) and play through your computer:
+
+#+begin_src shell-session
+$ ./build-test/src/console/jazz-console input.mp3
+#+end_src
+
+save processed output to a new mp3:
+
+#+begin_src shell-session
+$ ./build-test/src/console/jazz-console input.mp3 --output processed.mp3
+#+end_src
+
+if playback fails on your machine, disable playback and render offline:
+
+#+begin_src shell-session
+$ ./build-test/src/console/jazz-console input.mp3 --no-play --output processed.mp3
+#+end_src
+
+** effects and chains
+
+list available effects:
+
+#+begin_src shell-session
+$ ./build-test/src/console/jazz-console --list-effects
+#+end_src
+
+select one effect:
+
+#+begin_src shell-session
+$ ./build-test/src/console/jazz-console input.mp3 --effect clip
+#+end_src
+
+chain multiple effects in order:
+
+#+begin_src shell-session
+$ ./build-test/src/console/jazz-console input.mp3 --effect clip,lowpass,granular
+#+end_src
+
+** effect parameters
+
+you can tune parameters from the command line:
+
+#+begin_src shell-session
+$ ./build-test/src/console/jazz-console input.mp3 --effect clip,la_sort --clip-threshold 0.2 --la-sort-weight-center 0.65
+#+end_src
+
+supported parameter flags:
+- ~--clip-threshold~, ~--clip-gain~
+- ~--anticlip-threshold~, ~--anticlip-gain~
+- ~--lowpass-alpha~, ~--highpass-alpha~
+- ~--cursed-lowpass-alpha~, ~--cursed-highpass-alpha~
+- ~--la-sort-weight-center~, ~--la-sort-weight-sharpness~
+
+** presets (toml/json)
+
+load a preset file:
+
+#+begin_src shell-session
+$ ./build-test/src/console/jazz-console input.mp3 --preset presets/host/clip_lasort.toml --output processed.mp3
+#+end_src
+
+example preset included in repo:
+- ~presets/host/clip_lasort.toml~
+
+CLI flags override preset values, so you can start from a preset and tweak:
+
+#+begin_src shell-session
+$ ./build-test/src/console/jazz-console input.mp3 --preset presets/host/clip_lasort.toml --clip-threshold 0.1
+#+end_src
+
+JSON preset example:
+
+#+begin_src shell-session
+$ cat > /tmp/example_preset.json <<'EOF'
+{
+  "effect_chain": ["clip", "la_sort", "highpass"],
+  "clip_threshold": 0.3,
+  "clip_gain": 10.0,
+  "la_sort_weight_center": 0.62,
+  "la_sort_weight_sharpness": 4.0,
+  "highpass_alpha": 0.2
+}
+EOF
+$ ./build-test/src/console/jazz-console input.mp3 --preset /tmp/example_preset.json --output processed.mp3
+#+end_src
+
+the CLI depends on ~ffmpeg~ and ~ffplay~ being available in your shell.
+
 * flashing to daisy seed
 
 to flash a particular effect to a daisy seed (in reset mode!):
