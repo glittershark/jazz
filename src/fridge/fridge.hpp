@@ -133,7 +133,7 @@ enum class TargetParameter {
 };
 
 class Target {
-  TargetParameter voidarameter_;
+  TargetParameter parameter_;
   size_t head_idx_;
 
 public:
