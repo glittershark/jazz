@@ -69,13 +69,15 @@ public:
 
     void OnChange(void (*callback)(void *, bool), void *data);
   };
+
+  Channel channel(uint8_t channel) { return Channel(this, channel); }
 };
 
 class QuadratureEncoder {
   GpioInMux::Channel a_;
   GpioInMux::Channel b_;
   uint32_t ticks_per_turn_;
-  uint32_t ticks_;
+  int32_t ticks_;
 
   void AChanged(bool new_value);
   static void a_changed(void *this_, bool new_value) {
@@ -90,7 +92,7 @@ public:
   QuadratureEncoder(GpioInMux::Channel a, GpioInMux::Channel b,
                     uint32_t ticks_per_turn = 1);
 
-  uint32_t Ticks() const;
+  int32_t Ticks() const;
   float Turns() const;
 };
 

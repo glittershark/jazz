@@ -1,7 +1,12 @@
+#include "per/gpio.h"
+#include "per/tim.h"
 #ifndef UNIT_TEST
+#include "daisy_seed.h"
 #include "fridge.hpp"
 #include <cassert>
 #include <cstdint>
+
+daisy::DaisySeed hw;
 
 namespace fridge {
 namespace control {
@@ -88,7 +93,7 @@ void QuadratureEncoder::BChanged(bool new_value) {
   ticks_ += ((new_value ^ a_.Read()) ? -1 : 1);
 }
 
-uint32_t QuadratureEncoder::Ticks() const { return ticks_; }
+int32_t QuadratureEncoder::Ticks() const { return ticks_; }
 
 float QuadratureEncoder::Turns() const {
   return ((float)Ticks()) / ((float)ticks_per_turn_);
@@ -96,16 +101,60 @@ float QuadratureEncoder::Turns() const {
 
 } // namespace control
 
+namespace sound {} // namespace sound
+
 } // namespace fridge
 
-#include "daisy_seed.h"
-
-daisy::DaisySeed hw;
+using namespace daisy;
+using namespace daisy::seed;
 
 int main(void) {
   hw.Init();
   hw.SetAudioBlockSize(8);
   hw.StartLog();
+
+  GPIO address_pin_a;
+  address_pin_a.Init(D7, GPIO::Mode::OUTPUT);
+
+  GPIO address_pin_b;
+  address_pin_a.Init(D8, GPIO::Mode::OUTPUT);
+
+  GPIO address_pin_c;
+  address_pin_a.Init(D9, GPIO::Mode::OUTPUT);
+
+  GPIO pin_1;
+  pin_1.Init(D3, GPIO::Mode::INPUT, GPIO::Pull::PULLUP);
+  auto mux_1 =
+      fridge::control::GpioInMux(pin_1,
+                                 /* TODO: just pass a Pin to GpioInMux */
+                                 address_pin_a, address_pin_b, address_pin_c,
+                                 TimerHandle::Config::Peripheral::TIM_3);
+  mux_1.Start();
+
+  GPIO pin_2;
+  pin_2.Init(D4, GPIO::Mode::INPUT, GPIO::Pull::PULLUP);
+  auto mux_2 =
+      fridge::control::GpioInMux(pin_2,
+                                 /* TODO: just pass a Pin to GpioInMux */
+                                 address_pin_a, address_pin_b, address_pin_c,
+                                 TimerHandle::Config::Peripheral::TIM_4);
+
+  mux_2.Start();
+
+  auto enc =
+      fridge::control::QuadratureEncoder(mux_1.channel(0), mux_2.channel(0));
+
+  int32_t prev = 0;
+
+  for (;;) {
+    // TODO: this doesn't work??
+    auto ticks = enc.Ticks();
+    if (ticks != prev) {
+      hw.PrintLine("%d ticks", ticks);
+      prev = ticks;
+    }
+    hw.DelayMs(1);
+  }
 }
 
 #endif
