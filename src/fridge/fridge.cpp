@@ -13,10 +13,14 @@ namespace control {
 
 /// GpioInMux
 
-GpioInMux::GpioInMux(GPIO pin, GPIO address_pin_a, GPIO address_pin_b,
-                     GPIO address_pin_c, TimerHandle::Config::Peripheral timer)
-    : pin_(pin), address_pin_a_(address_pin_a), address_pin_b_(address_pin_b),
-      address_pin_c_(address_pin_c), timer_(), channel_(0) {
+GpioInMux::GpioInMux(Pin pin, Pin address_pin_a, Pin address_pin_b,
+                     Pin address_pin_c, TimerHandle::Config::Peripheral timer)
+    : pin_(), address_pin_a_(), address_pin_b_(), timer_(), channel_(0) {
+
+  pin_.Init(pin, GPIO::Mode::INPUT, GPIO::Pull::PULLUP);
+  address_pin_a_.Init(address_pin_a, GPIO::Mode::OUTPUT);
+  address_pin_b_.Init(address_pin_b, GPIO::Mode::OUTPUT);
+  address_pin_c_.Init(address_pin_c, GPIO::Mode::OUTPUT);
 
   TimerHandle::Config timer_config;
   timer_config.periph = timer;
@@ -101,8 +105,6 @@ float QuadratureEncoder::Turns() const {
 
 } // namespace control
 
-namespace sound {} // namespace sound
-
 } // namespace fridge
 
 using namespace daisy;
@@ -113,32 +115,13 @@ int main(void) {
   hw.SetAudioBlockSize(8);
   hw.StartLog();
 
-  GPIO address_pin_a;
-  address_pin_a.Init(D7, GPIO::Mode::OUTPUT);
+  auto mux_1 = fridge::control::GpioInMux(
+      D3, D7, D8, D9, TimerHandle::Config::Peripheral::TIM_3);
 
-  GPIO address_pin_b;
-  address_pin_a.Init(D8, GPIO::Mode::OUTPUT);
+  auto mux_2 = fridge::control::GpioInMux(
+      D4, D7, D8, D9, TimerHandle::Config::Peripheral::TIM_4);
 
-  GPIO address_pin_c;
-  address_pin_a.Init(D9, GPIO::Mode::OUTPUT);
-
-  GPIO pin_1;
-  pin_1.Init(D3, GPIO::Mode::INPUT, GPIO::Pull::PULLUP);
-  auto mux_1 =
-      fridge::control::GpioInMux(pin_1,
-                                 /* TODO: just pass a Pin to GpioInMux */
-                                 address_pin_a, address_pin_b, address_pin_c,
-                                 TimerHandle::Config::Peripheral::TIM_3);
   mux_1.Start();
-
-  GPIO pin_2;
-  pin_2.Init(D4, GPIO::Mode::INPUT, GPIO::Pull::PULLUP);
-  auto mux_2 =
-      fridge::control::GpioInMux(pin_2,
-                                 /* TODO: just pass a Pin to GpioInMux */
-                                 address_pin_a, address_pin_b, address_pin_c,
-                                 TimerHandle::Config::Peripheral::TIM_4);
-
   mux_2.Start();
 
   auto enc =
