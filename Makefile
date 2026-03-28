@@ -1,4 +1,4 @@
-.PHONY: all test console flash clean cmake-build cmake-configure merge-compile-commands
+.PHONY: all test console flash st-flash logs clean cmake-build cmake-configure merge-compile-commands
 
 # Default target - build everything via CMake
 all: cmake-build merge-compile-commands
@@ -29,16 +29,30 @@ build/Makefile:
 cmake-build: cmake-configure
 	cd build && make
 
-# Flash target - build hardware project and flash to device
+# Flash target - build hardware project and flash to device via DFU
 flash: deps
 	@test $(DIR) || (echo "DIR must be set (eg \`make flash DIR=delay\`)"; exit 1)
 	${MAKE} -C src/$(DIR) program-dfu
+
+# Flash target using STLink
+st-flash: deps
+	@test $(DIR) || (echo "DIR must be set (eg \`make st-flash DIR=delay\`)"; exit 1)
+	${MAKE} -C src/$(DIR)
+	st-flash write src/$(DIR)/build/$(DIR).bin 0x08000000
 
 debug: deps
 	@test $(DIR) || (echo "DIR must be set (eg \`make debug DIR=delay\`)"; exit 1)
 	@[ -f src/$(DIR)/build/$(DIR).elf ] || (echo "You should probably build and flash first."; exit 1)
 	pgrep st-util || setsid st-util -p 4242 --no-reset --semihosting >/dev/null 2>&1 &
 	gdb -ex "file src/$(DIR)/build/$(DIR).elf" -ex "target remote localhost:4242"
+
+# Reset board and follow serial logs (Ctrl+C to stop)
+logs:
+	st-flash reset
+	@echo "Waiting for USB to re-enumerate..."
+	@while ! ls /dev/ttyACM[0-9] >/dev/null 2>&1; do sleep 0.1; done
+	@sleep 1
+	cat /dev/ttyACM[0-9]
 
 # Dependencies for hardware projects (libDaisy)
 deps: vendor/libDaisy/build/libdaisy.a vendor/DaisySP/build/libdaisysp.a

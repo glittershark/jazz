@@ -1,5 +1,6 @@
 #include "per/gpio.h"
 #include "per/tim.h"
+#include <memory>
 #ifndef UNIT_TEST
 #include "daisy_seed.h"
 #include "fridge.hpp"
@@ -9,40 +10,36 @@
 daisy::DaisySeed hw;
 
 namespace fridge {
+
 namespace control {
+
+namespace mux {
+
+/// Address
+
+Address::Address(Pin a, Pin b, Pin c) : a_(), b_(), c_(), channel_(0) {
+  a_.Init(a, GPIO::Mode::OUTPUT);
+  b_.Init(b, GPIO::Mode::OUTPUT);
+  c_.Init(c, GPIO::Mode::OUTPUT);
+}
+
+void Address::SelectChannel(uint8_t channel) {
+  channel_ = channel;
+  a_.Write(channel & 1);
+  b_.Write(channel & 2);
+  c_.Write(channel & 4);
+}
 
 /// GpioInMux
 
-GpioInMux::GpioInMux(Pin pin, Pin address_pin_a, Pin address_pin_b,
-                     Pin address_pin_c, TimerHandle::Config::Peripheral timer)
-    : pin_(), address_pin_a_(), address_pin_b_(), timer_(), channel_(0) {
-
+GpioInMux::GpioInMux(Pin pin) : pin_(), last_value_({}), callbacks_({}) {
   pin_.Init(pin, GPIO::Mode::INPUT, GPIO::Pull::PULLUP);
-  address_pin_a_.Init(address_pin_a, GPIO::Mode::OUTPUT);
-  address_pin_b_.Init(address_pin_b, GPIO::Mode::OUTPUT);
-  address_pin_c_.Init(address_pin_c, GPIO::Mode::OUTPUT);
-
-  TimerHandle::Config timer_config;
-  timer_config.periph = timer;
-  timer_config.enable_irq = true;
-  timer_.Init(timer_config);
-  timer_.SetCallback(GpioInMux::timer_callback_, this);
-
-  timer_.SetPeriod((kGpioMuxFreqUs * timer_.GetFreq()) / 1'000'000);
 }
 
-void GpioInMux::Start() { timer_.Start(); }
-
-void GpioInMux::SelectChannel(uint8_t channel) {
-  address_pin_a_.Write(channel & 1);
-  address_pin_b_.Write(channel & 2);
-  address_pin_c_.Write(channel & 4);
-}
-
-void GpioInMux::RegisterCallback(uint8_t channel, Callback callback) {
+void GpioInMux::RegisterCallback(uint8_t channel, Callback<bool> callback) {
   assert(channel < kNumChannels);
   for (auto &cb : callbacks_[channel]) {
-    if (!cb) {
+    if (!cb.has_value()) {
       cb = callback;
       return;
     }
@@ -50,22 +47,21 @@ void GpioInMux::RegisterCallback(uint8_t channel, Callback callback) {
   assert(false);
 }
 
-void GpioInMux::timer_callback_(void *gpio_mux) {
-  ((GpioInMux *)gpio_mux)->TimerCallback();
-}
-void GpioInMux::TimerCallback() {
-  auto prev_value = last_value_[channel_];
+bool GpioInMux::BeforeChange(uint8_t channel) {
+  auto prev_value = last_value_[channel];
   auto new_value = pin_.Read();
-  auto channel = channel_;
   last_value_[channel] = new_value;
-  channel_ = (channel_ + 1) % kNumChannels;
-  SelectChannel(channel_);
+  return prev_value;
+};
+
+void GpioInMux::AfterChange(uint8_t channel, bool prev_value) {
+  auto new_value = last_value_[channel];
 
   // NOTE: we call the callbacks after updating the selected channel, to keep
   // the hardware timing as close to 1 microsecond as possible
   if (new_value != prev_value) {
-    for (auto &&cb : callbacks_[channel]) {
-      if (cb) {
+    for (auto &cb : callbacks_[channel]) {
+      if (cb.has_value()) {
         cb->callback(cb->data, new_value);
       }
     }
@@ -81,9 +77,10 @@ void GpioInMux::Channel::OnChange(void (*callback)(void *, bool), void *data) {
   mux_->RegisterCallback(channel_, {callback, data});
 }
 
-/// RainbowLedFeedbackEncoder
+} // namespace mux
 
-QuadratureEncoder::QuadratureEncoder(GpioInMux::Channel a, GpioInMux::Channel b,
+QuadratureEncoder::QuadratureEncoder(mux::GpioInMux::Channel a,
+                                     mux::GpioInMux::Channel b,
                                      uint32_t ticks_per_turn)
     : a_(a), b_(b), ticks_per_turn_(ticks_per_turn), ticks_(0) {
   a.OnChange(QuadratureEncoder::a_changed, this);
@@ -113,30 +110,47 @@ using namespace daisy::seed;
 int main(void) {
   hw.Init();
   hw.SetAudioBlockSize(8);
-  hw.StartLog();
+  hw.StartLog(true); // wait for serial connection
 
-  auto mux_1 = fridge::control::GpioInMux(
-      D3, D7, D8, D9, TimerHandle::Config::Peripheral::TIM_3);
+  fridge::control::mux::Address addr(
+      /* a = */ D17,
+      /* b = */ D16,
+      /* c = */ D15);
 
-  auto mux_2 = fridge::control::GpioInMux(
-      D4, D7, D8, D9, TimerHandle::Config::Peripheral::TIM_4);
+  fridge::control::mux::MultiGpioInMux<2> encoders({
+      fridge::control::mux::GpioInMux(D4),
+      fridge::control::mux::GpioInMux(D3),
+  });
 
-  mux_1.Start();
-  mux_2.Start();
+  auto scan = fridge::control::mux::channel_scan::make<8>(
+      fridge::control::mux::Address(
+          /* a = */ D15,
+          /* b = */ D16,
+          /* c = */ D17),
+      TimerHandle::Config::Peripheral::TIM_3, encoders);
 
-  auto enc =
-      fridge::control::QuadratureEncoder(mux_1.channel(0), mux_2.channel(0));
+  auto enc1 = fridge::control::QuadratureEncoder(encoders.channel(0, 2),
+                                                 encoders.channel(1, 2));
+  auto enc2 = fridge::control::QuadratureEncoder(encoders.channel(0, 0),
+                                                 encoders.channel(1, 0));
 
-  int32_t prev = 0;
+  int32_t prev1 = 0;
+  int32_t prev2 = 0;
 
+  scan.Start();
   for (;;) {
-    // TODO: this doesn't work??
-    auto ticks = enc.Ticks();
-    if (ticks != prev) {
-      hw.PrintLine("%d ticks", ticks);
-      prev = ticks;
+    auto ticks1 = enc1.Ticks();
+    auto ticks2 = enc2.Ticks();
+
+    if (ticks1 != prev1) {
+      hw.PrintLine("enc 1: %d ticks", ticks1);
+      prev1 = ticks1;
     }
-    hw.DelayMs(1);
+
+    if (ticks2 != prev2) {
+      hw.PrintLine("enc 2: %d ticks", ticks2);
+      prev2 = ticks2;
+    }
   }
 }
 

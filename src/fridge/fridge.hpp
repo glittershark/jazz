@@ -1,18 +1,19 @@
 #ifndef FRIDGE_H_
 #define FRIDGE_H_
 
-#include <cassert>
 #ifndef UNIT_TEST
 
 #include "daisy_seed.h"
+#include "per/gpio.h"
 #include "per/tim.h"
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
 
-struct Callback {
-  void (*callback)(void *, bool);
+template <typename T> struct Callback {
+  void (*callback)(void *, T);
   void *data;
 };
 
@@ -27,37 +28,100 @@ namespace control {
 using namespace daisy;
 using namespace daisy::seed;
 
-class GpioInMux {
-  GPIO pin_;
-  GPIO address_pin_a_;
-  GPIO address_pin_b_;
-  GPIO address_pin_c_;
-  TimerHandle timer_;
+namespace mux {
+
+class Address {
+  GPIO a_;
+  GPIO b_;
+  GPIO c_;
   uint8_t channel_;
 
-  // We scan through the mux one channel every us
-  static constexpr const uint32_t kGpioMuxFreqUs = 1;
+public:
+  Address(const Address &) = delete;
+  Address &operator=(const Address &) = delete;
+  Address(Address &&) = default;
+  Address &operator=(Address &&) = default;
 
-  static constexpr const uint8_t kNumChannels = 8;
-
-  std::array<bool, kNumChannels> last_value_;
-  std::array<std::array<std::optional<Callback>, 8>, kNumChannels> callbacks_;
-
+  Address(Pin a, Pin b, Pin c);
   void SelectChannel(uint8_t channel);
-  void TimerCallback();
+  inline uint8_t Channel() const { return channel_; };
+};
 
-  static void timer_callback_(void *);
+template <std::size_t kNumChannels, typename CB> class ChannelScan {
+  Address address_;
+  TimerHandle timer_;
+  CB &callback_;
+
+  // We scan through the mux one channel every 100 microseconds
+  static constexpr const uint32_t kFreqUs = 100;
+
+  void TimerCallback() {
+    auto channel = address_.Channel();
+    auto arg = callback_.BeforeChange(channel);
+    address_.SelectChannel((channel + 1) % kNumChannels);
+    callback_.AfterChange(channel, arg);
+  }
+
+  static void timer_callback_(void *channel_scan) {
+    ((ChannelScan *)channel_scan)->TimerCallback();
+  };
 
 public:
-  GpioInMux(Pin pin, Pin address_pin_a, Pin address_pin_b, Pin address_pin_c,
-            TimerHandle::Config::Peripheral timer);
+  ChannelScan(const ChannelScan &) = delete;
+  ChannelScan &operator=(const ChannelScan &) = delete;
 
-  void Start();
+  ChannelScan(Address address, TimerHandle::Config::Peripheral timer,
+              CB &callback)
+      : address_(std::move(address)), timer_(), callback_(callback) {
+
+    TimerHandle::Config timer_config;
+    timer_config.periph = timer;
+    timer_config.enable_irq = true;
+
+    timer_.Init(timer_config);
+    timer_.SetCallback(ChannelScan::timer_callback_, this);
+    timer_.SetPeriod((kFreqUs * timer_.GetFreq()) / 1'000'000);
+  };
+
+  TimerHandle::Result Start() { return timer_.Start(); };
+};
+
+namespace channel_scan {
+
+template <size_t N, typename C>
+static ChannelScan<N, C> make(Address address,
+                              TimerHandle::Config::Peripheral timer, C &cb) {
+  return ChannelScan<N, C>(std::move(address), timer, cb);
+};
+
+} // namespace channel_scan
+
+class GpioInMux {
+public:
+  static constexpr const uint8_t kNumChannels = 8;
+
+  GpioInMux(const GpioInMux &) = delete;
+  GpioInMux &operator=(const GpioInMux &) = delete;
+  GpioInMux(GpioInMux &&) = default;
+  GpioInMux &operator=(GpioInMux &&) = default;
+
+private:
+  GPIO pin_;
+
+  std::array<bool, kNumChannels> last_value_;
+  std::array<std::array<std::optional<Callback<bool>>, 8>, kNumChannels>
+      callbacks_;
+
+public:
+  GpioInMux(Pin pin);
 
   /** Read the current value of a channel */
   bool Read(uint8_t channel) const;
 
-  void RegisterCallback(uint8_t channel, Callback callback);
+  bool BeforeChange(uint8_t channel);
+  void AfterChange(uint8_t channel, bool prev);
+
+  void RegisterCallback(uint8_t channel, Callback<bool> callback);
 
   class Channel {
     GpioInMux *mux_;
@@ -73,11 +137,62 @@ public:
   Channel channel(uint8_t channel) { return Channel(this, channel); }
 };
 
+/**
+ * Multiple GpioInMuxes that share a single set of address pins
+ */
+template <std::size_t N> class MultiGpioInMux {
+public:
+  static constexpr const uint8_t kNumChannels = GpioInMux::kNumChannels;
+
+  MultiGpioInMux(const MultiGpioInMux &) = delete;
+  MultiGpioInMux &operator=(const MultiGpioInMux &) = delete;
+  MultiGpioInMux(MultiGpioInMux &&) = default;
+  MultiGpioInMux &operator=(MultiGpioInMux &&) = default;
+
+private:
+  std::array<GpioInMux, N> muxes_;
+  std::array<bool, kNumChannels> last_value_;
+
+public:
+  MultiGpioInMux(std::array<GpioInMux, N> muxes) : muxes_(std::move(muxes)) {};
+
+  std::array<bool, N> BeforeChange(uint8_t channel) {
+    std::array<bool, N> result;
+    for (size_t i = 0; i < N; i++) {
+      result[i] = muxes_[i].BeforeChange(channel);
+    }
+    return result;
+  };
+
+  void AfterChange(uint8_t channel, std::array<bool, N> prev) {
+    for (size_t i = 0; i < N; i++) {
+      muxes_[i].AfterChange(channel, prev[i]);
+    }
+  };
+
+  /** Read the current value of a channel */
+  std::array<bool, N> Read(uint8_t channel) const {
+    std::array<bool, N> result;
+    for (size_t i = 0; i < N; i++) {
+      result[i] = muxes_[i].Read();
+    }
+    return result;
+  }
+
+  GpioInMux &operator[](size_t idx) { return muxes_[idx]; }
+
+  GpioInMux::Channel channel(size_t mux_idx, uint8_t channel) {
+    return muxes_[mux_idx].channel(channel);
+  }
+};
+
+} // namespace mux
+
 class QuadratureEncoder {
-  GpioInMux::Channel a_;
-  GpioInMux::Channel b_;
+  mux::GpioInMux::Channel a_;
+  mux::GpioInMux::Channel b_;
   uint32_t ticks_per_turn_;
-  int32_t ticks_;
+  volatile int32_t ticks_;
 
   void AChanged(bool new_value);
   static void a_changed(void *this_, bool new_value) {
@@ -89,7 +204,10 @@ class QuadratureEncoder {
   }
 
 public:
-  QuadratureEncoder(GpioInMux::Channel a, GpioInMux::Channel b,
+  QuadratureEncoder(const QuadratureEncoder &) = delete;
+  QuadratureEncoder &operator=(const QuadratureEncoder &) = delete;
+
+  QuadratureEncoder(mux::GpioInMux::Channel a, mux::GpioInMux::Channel b,
                     uint32_t ticks_per_turn = 1);
 
   int32_t Ticks() const;
@@ -171,6 +289,43 @@ class Config {
 } // namespace config
 
 namespace state {} // namespace state
+
+namespace sound {
+
+struct Update {
+  enum Kind { kErase, kWrite } kind;
+  size_t finished_at;
+  float value;
+  size_t samples;
+  Update *next_;
+
+  class Iterator {
+    const Update *cur;
+
+  public:
+    using difference_type = std::ptrdiff_t;
+    using value_type = Update;
+
+    Iterator(const Update *cur) : cur(cur) {}
+
+    const Update &operator*() const { return *cur; }
+    void operator++(int) { ++*this; };
+    Iterator &operator++() {
+      cur = cur->next_;
+      return *this;
+    };
+
+    bool operator!=(Iterator &other) const { return other.cur != cur; }
+  };
+  friend Iterator;
+
+  Iterator begin() const { return Iterator(this); }
+  Iterator end() const { return Iterator(nullptr); }
+
+  static_assert(std::input_iterator<Iterator>);
+};
+
+} // namespace sound
 
 } // namespace fridge
 
