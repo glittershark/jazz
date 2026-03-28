@@ -49,8 +49,8 @@ class GpioInMux {
   static void timer_callback_(void *);
 
 public:
-  GpioInMux(GPIO pin, GPIO address_pin_a, GPIO address_pin_b,
-            GPIO address_pin_c, TimerHandle::Config::Peripheral timer);
+  GpioInMux(Pin pin, Pin address_pin_a, Pin address_pin_b, Pin address_pin_c,
+            TimerHandle::Config::Peripheral timer);
 
   void Start();
 
