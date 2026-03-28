@@ -1,0 +1,14 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/chris_h_3/Adventures/Coding/CHIP_AUDIO/jazz/build-test-debug/cmake_install.cmake",
+		"/Users/chris_h_3/Adventures/Coding/CHIP_AUDIO/jazz/build-test-debug/lib/libjazz/cmake_install.cmake",
+		"/Users/chris_h_3/Adventures/Coding/CHIP_AUDIO/jazz/build-test-debug/src/delay/cmake_install.cmake",
+		"/Users/chris_h_3/Adventures/Coding/CHIP_AUDIO/jazz/build-test-debug/src/reverse/cmake_install.cmake",
+		"/Users/chris_h_3/Adventures/Coding/CHIP_AUDIO/jazz/build-test-debug/src/granular/cmake_install.cmake",
+		"/Users/chris_h_3/Adventures/Coding/CHIP_AUDIO/jazz/build-test-debug/src/fridge/cmake_install.cmake",
+		"/Users/chris_h_3/Adventures/Coding/CHIP_AUDIO/jazz/build-test-debug/src/rachel/cmake_install.cmake",
+		"/Users/chris_h_3/Adventures/Coding/CHIP_AUDIO/jazz/build-test-debug/src/console/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

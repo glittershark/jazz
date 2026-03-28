@@ -1,0 +1,1 @@
+/usr/bin/c++ -g -Wl,-search_paths_first -Wl,-headerpad_max_install_names "CMakeFiles/jazz-console.dir/console.cpp.o" -o jazz-console  ../../lib/libjazz/liblibjazz.a ../granular/libgranular.a ../../lib/libjazz/liblibjazz.a

@@ -21,6 +21,13 @@ if(TEST_ONLY)
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED YES
     )
+
+    add_executable(fridge-lfo-cli lfo_cli.cpp)
+    target_link_libraries(fridge-lfo-cli PRIVATE jazz::fridge)
+    set_target_properties(fridge-lfo-cli PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED YES
+    )
     
     # Create alias for consistent naming
     add_library(jazz::fridge ALIAS fridge)

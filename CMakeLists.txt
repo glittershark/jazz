@@ -3,6 +3,7 @@ cmake_policy(SET CMP0048 NEW)
 
 # Check if this is a test-only build (host platform)
 option(TEST_ONLY "Build only tests for host platform" OFF)
+option(BUILD_TESTS "Build host tests when TEST_ONLY is enabled" ON)
 
 # Default: Use ARM toolchain for hardware projects
 if(NOT TEST_ONLY)
@@ -52,6 +53,8 @@ else()
     add_subdirectory(src/granular)
     add_subdirectory(src/fridge)
     add_subdirectory(src/rachel)
-    
-    add_subdirectory(tests)
+
+    if(BUILD_TESTS)
+        add_subdirectory(tests)
+    endif()
 endif()

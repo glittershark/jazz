@@ -17,6 +17,7 @@ function(add_gtest source_file)
     jazz::delay
     jazz::reverse
     jazz::granular
+    jazz::fridge
     jazz::rachel
     Threads::Threads
     gtest

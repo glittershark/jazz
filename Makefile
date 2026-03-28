@@ -1,4 +1,4 @@
-.PHONY: all test flash clean cmake-build cmake-configure merge-compile-commands
+.PHONY: all test flash clean cmake-build cmake-configure merge-compile-commands fridge-lfo-cli
 
 # Default target - build everything via CMake
 all: cmake-build merge-compile-commands
@@ -6,9 +6,15 @@ all: cmake-build merge-compile-commands
 # Test target - build and run tests on host platform
 test:
 	mkdir -p build-test
-	cd build-test && cmake -DTEST_ONLY=ON -DCMAKE_BUILD_TYPE=Debug ..
+	cd build-test && cmake -DTEST_ONLY=ON -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug ..
 	cd build-test && make
 	cd build-test && ctest --output-on-failure
+	$(MAKE) merge-compile-commands
+
+fridge-lfo-cli:
+	mkdir -p build-test
+	cd build-test && cmake -DTEST_ONLY=ON -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release ..
+	cd build-test && make fridge-lfo-cli
 	$(MAKE) merge-compile-commands
 
 # Create build directory and configure CMake

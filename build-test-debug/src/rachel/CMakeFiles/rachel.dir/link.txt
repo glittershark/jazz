@@ -1,0 +1,2 @@
+/usr/bin/ar qc librachel.a CMakeFiles/rachel.dir/rachel.cpp.o
+/usr/bin/ranlib librachel.a
