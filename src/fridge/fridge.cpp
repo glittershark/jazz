@@ -1,3 +1,4 @@
+#include "hid/rgb_led.h"
 #include "per/gpio.h"
 #include "per/tim.h"
 #include <memory>
@@ -7,12 +8,82 @@
 #include <cassert>
 #include <cstdint>
 
-daisy::DaisySeed hw;
+namespace color {
+
+RGB::RGB(const HSV &hsv) {
+  if (hsv.saturation == 0) {
+    red = green = blue = hsv.value;
+    return;
+  }
+
+  uint8_t region = hsv.hue / 43;
+  uint8_t remainder = (hsv.hue - (region * 43)) * 6;
+
+  uint8_t p = (hsv.value * (255 - hsv.saturation)) >> 8;
+  uint8_t q = (hsv.value * (255 - ((hsv.saturation * remainder) >> 8))) >> 8;
+  uint8_t t =
+      (hsv.value * (255 - ((hsv.saturation * (255 - remainder)) >> 8))) >> 8;
+
+  switch (region) {
+  case 0:
+    red = hsv.value;
+    green = t;
+    blue = p;
+    break;
+  case 1:
+    red = q;
+    green = hsv.value;
+    blue = p;
+    break;
+  case 2:
+    red = p;
+    green = hsv.value;
+    blue = t;
+    break;
+  case 3:
+    red = p;
+    green = q;
+    blue = hsv.value;
+    break;
+  case 4:
+    red = t;
+    green = p;
+    blue = hsv.value;
+    break;
+  default:
+    red = hsv.value;
+    green = p;
+    blue = q;
+    break;
+  }
+}
+
+HSV::HSV(const RGB &rgb) {
+  uint8_t max = rgb.red > rgb.green ? rgb.red : rgb.green;
+  max = max > rgb.blue ? max : rgb.blue;
+  uint8_t min = rgb.red < rgb.green ? rgb.red : rgb.green;
+  min = min < rgb.blue ? min : rgb.blue;
+  uint8_t delta = max - min;
+
+  value = max;
+  saturation = (max == 0) ? 0 : (uint8_t)((delta * 255) / max);
+
+  if (delta == 0) {
+    hue = 0;
+  } else if (max == rgb.red) {
+    int16_t h = (int16_t)(rgb.green - rgb.blue) * 43 / delta;
+    hue = (h < 0) ? (uint8_t)(h + 256) : (uint8_t)h;
+  } else if (max == rgb.green) {
+    hue = 85 + (int16_t)(rgb.blue - rgb.red) * 43 / delta;
+  } else {
+    hue = 171 + (int16_t)(rgb.red - rgb.green) * 43 / delta;
+  }
+}
+
+} // namespace color
 
 namespace fridge {
-
-namespace control {
-
+namespace io {
 namespace mux {
 
 /// Address
@@ -100,56 +171,101 @@ float QuadratureEncoder::Turns() const {
   return ((float)Ticks()) / ((float)ticks_per_turn_);
 }
 
-} // namespace control
+/// RgbLed
+
+RgbLed::RgbLed(TimerHandle::Config::Peripheral timer, Pin red_pin,
+               Pin green_pin, Pin blue_pin, bool invert)
+    : timer_(timer), red_(timer_.InitChannel(1, red_pin)),
+      green_(timer_.InitChannel(2, green_pin)),
+      blue_(timer_.InitChannel(3, blue_pin)), invert_(invert) {}
+
+void RgbLed::Set(color::RGB c) {
+  if (invert_) {
+    red_.Set(255 - c.red);
+    green_.Set(255 - c.green);
+    blue_.Set(255 - c.blue);
+  } else {
+    red_.Set(c.red);
+    green_.Set(c.green);
+    blue_.Set(c.blue);
+  }
+}
+
+} // namespace io
 
 } // namespace fridge
 
 using namespace daisy;
 using namespace daisy::seed;
 
+DaisySeed hw;
+
 int main(void) {
   hw.Init();
   hw.SetAudioBlockSize(8);
   hw.StartLog(true); // wait for serial connection
 
-  fridge::control::mux::Address addr(
-      /* a = */ D17,
-      /* b = */ D16,
-      /* c = */ D15);
+  hw.PrintLine("Hello");
 
-  fridge::control::mux::MultiGpioInMux<2> encoders({
-      fridge::control::mux::GpioInMux(D4),
-      fridge::control::mux::GpioInMux(D3),
+  fridge::io::mux::MultiGpioInMux<2> encoders({
+      fridge::io::mux::GpioInMux(D4),
+      fridge::io::mux::GpioInMux(D3),
   });
 
-  auto scan = fridge::control::mux::channel_scan::make<8>(
-      fridge::control::mux::Address(
+  auto scan = fridge::io::mux::channel_scan::make<8>(
+      fridge::io::mux::Address(
           /* a = */ D15,
           /* b = */ D16,
           /* c = */ D17),
       TimerHandle::Config::Peripheral::TIM_3, encoders);
 
-  auto enc1 = fridge::control::QuadratureEncoder(encoders.channel(0, 2),
-                                                 encoders.channel(1, 2));
-  auto enc2 = fridge::control::QuadratureEncoder(encoders.channel(0, 0),
-                                                 encoders.channel(1, 0));
+  auto enc1 = fridge::io::QuadratureEncoder(encoders.channel(0, 2),
+                                            encoders.channel(1, 2));
+  auto enc2 = fridge::io::QuadratureEncoder(encoders.channel(0, 0),
+                                            encoders.channel(1, 0));
 
-  int32_t prev1 = 0;
-  int32_t prev2 = 0;
+  fridge::io::mux::Address led_address(D9, D10, D11);
+  led_address.SelectChannel(2);
+
+  // RGB LED on TIM4 (common anode, so inverted)
+  // D14 (PB7) = TIM4_CH2 = Red
+  // D13 (PB6) = TIM4_CH1 = Green
+  // D12 (PB9) = TIM4_CH4 = Blue
+  pwm::Timer pwm(TimerHandle::Config::Peripheral::TIM_4);
+  auto red = pwm.InitChannel(/* channel = */ 2, /* pin = */ D14);
+  auto green = pwm.InitChannel(/* channel = */ 1, /* pin = */ D13);
+  auto blue = pwm.InitChannel(/* channel = */ 4, /* pin = */ D12);
 
   scan.Start();
+
+  // Debug: try fixed red first (try both polarities)
+  hw.PrintLine("Testing red=255 (ON if common cathode)");
+  red.Set(255);
+  green.Set(0);
+  blue.Set(0);
+
+  System::Delay(2000);
+
+  hw.PrintLine("Now cycling hue with encoder...");
+
+  int32_t prev_ticks = 0;
+
   for (;;) {
-    auto ticks1 = enc1.Ticks();
-    auto ticks2 = enc2.Ticks();
+    int32_t ticks = enc1.Ticks();
 
-    if (ticks1 != prev1) {
-      hw.PrintLine("enc 1: %d ticks", ticks1);
-      prev1 = ticks1;
-    }
+    if (ticks != prev_ticks) {
+      uint8_t hue = (uint8_t)(ticks & 0xFF);
+      color::RGB rgb = color::HSV(hue, 255, 255);
 
-    if (ticks2 != prev2) {
-      hw.PrintLine("enc 2: %d ticks", ticks2);
-      prev2 = ticks2;
+      hw.PrintLine("hue=%d -> R=%d G=%d B=%d", hue, rgb.red, rgb.green,
+                   rgb.blue);
+
+      // Try direct (common cathode) first
+      red.Set(rgb.red);
+      green.Set(rgb.green);
+      blue.Set(rgb.blue);
+
+      prev_ticks = ticks;
     }
   }
 }
