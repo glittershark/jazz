@@ -1,27 +1,28 @@
-#include "granular.hpp"
-#include "gtest/gtest.h"
 #include <cstddef>
 #include <memory>
 
+#include "granular.hpp"
+#include "gtest/gtest.h"
+
 TEST(IndicesToUpdateTest, Prepend) {
-  IndicesToUpdate *itu = nullptr;
+  IndicesToUpdate* itu = nullptr;
   IndicesToUpdate::Prepend(&itu, 1);
 
   ASSERT_EQ((*itu).index(), 1);
   ASSERT_EQ((*itu).next(), nullptr);
 
-  for (auto &&itu_ : itu->iter()) {
+  for (auto&& itu_ : itu->iter()) {
     ASSERT_EQ((*itu).index(), 1);
   }
 
-  for (auto &&itu_ : itu->drain()) {
+  for (auto&& itu_ : itu->drain()) {
     ASSERT_EQ((*itu).index(), 1);
   }
 }
 
 TEST(IndicesToUpdateTest, IterEmpty) {
-  IndicesToUpdate *itu = nullptr;
-  for (auto &&itu_ : itu->iter()) {
+  IndicesToUpdate* itu = nullptr;
+  for (auto&& itu_ : itu->iter()) {
     ASSERT_FALSE(true);
   }
 }
@@ -54,7 +55,7 @@ TEST(BufferValueTest, SampleWithUpdates) {
 }
 
 class GranularTest : public ::testing::Test {
-protected:
+ protected:
   std::unique_ptr<Granular> granular = nullptr;
 
   void SetUp() override { granular = std::make_unique<Granular>(); }
@@ -67,7 +68,9 @@ TEST_F(GranularTest, BufferZeroed) {
   }
 }
 
-TEST_F(GranularTest, WriteOne) { granular->Write(0, 0, 0.5); }
+TEST_F(GranularTest, WriteOne) {
+  granular->Write(0, 0, 0.5);
+}
 
 TEST_F(GranularTest, JustRead) {
   EXPECT_NEAR(granular->Read(0, 0), 0.0, 0.0001);
@@ -102,7 +105,7 @@ TEST_F(GranularTest, WriteVeryMany) {
     granular->PreHousekeeping(clock_time);
     auto index = clock_time % BUFFER_LEN;
     // Cycle through all problematic values to test they all work
-    size_t samples = (clock_time % 64) + 1; // Test values 1-64
+    size_t samples = (clock_time % 64) + 1;  // Test values 1-64
     granular->Write(index, clock_time, 0.5, samples);
   };
 }

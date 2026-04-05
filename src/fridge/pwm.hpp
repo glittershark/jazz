@@ -18,11 +18,11 @@ using namespace daisy;
 class Channel {
   friend class Timer;
 
-  volatile uint32_t *ccr_;
+  volatile uint32_t* ccr_;
 
-  Channel(volatile uint32_t *ccr) : ccr_(ccr) {}
+  Channel(volatile uint32_t* ccr) : ccr_(ccr) {}
 
-public:
+ public:
   /** Set duty cycle from 0-255 */
   void Set(uint8_t duty);
 
@@ -57,11 +57,11 @@ public:
  */
 class Timer {
   TimerHandle::Config::Peripheral periph_;
-  void *tim_handle_; // TIM_HandleTypeDef*, opaque to avoid HAL in header
+  void* tim_handle_;  // TIM_HandleTypeDef*, opaque to avoid HAL in header
 
-public:
-  Timer(const Timer &) = delete;
-  Timer &operator=(const Timer &) = delete;
+ public:
+  Timer(const Timer&) = delete;
+  Timer& operator=(const Timer&) = delete;
 
   /**
    * Initialize a timer for PWM generation.
@@ -85,8 +85,8 @@ public:
   void Start();
 };
 
-} // namespace pwm
+}  // namespace pwm
 
-#endif // UNIT_TEST
+#endif  // UNIT_TEST
 
-#endif // FRIDGE_PWM_H_
+#endif  // FRIDGE_PWM_H_

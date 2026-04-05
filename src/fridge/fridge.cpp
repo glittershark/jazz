@@ -1,12 +1,13 @@
 #ifndef UNIT_TEST
+#include "fridge.hpp"
+
+#include <cassert>
+#include <cstdint>
+
 #include "daisy_seed.h"
 #include "hid/rgb_led.h"
 #include "per/gpio.h"
 #include "per/tim.h"
-#include <cassert>
-#include <cstdint>
-
-#include "fridge.hpp"
 
 namespace fridge {
 namespace io {
@@ -35,7 +36,7 @@ GpioInMux::GpioInMux(Pin pin) : pin_(), last_value_({}), callbacks_({}) {
 
 void GpioInMux::RegisterCallback(uint8_t channel, Callback<bool> callback) {
   assert(channel < kNumChannels);
-  for (auto &cb : callbacks_[channel]) {
+  for (auto& cb : callbacks_[channel]) {
     if (!cb.has_value()) {
       cb = callback;
       return;
@@ -57,7 +58,7 @@ void GpioInMux::AfterChange(uint8_t channel, bool prev_value) {
   // NOTE: we call the callbacks after updating the selected channel, to keep
   // the hardware timing as close to 1 microsecond as possible
   if (new_value != prev_value) {
-    for (auto &cb : callbacks_[channel]) {
+    for (auto& cb : callbacks_[channel]) {
       if (cb.has_value()) {
         cb->callback(cb->data, new_value);
       }
@@ -70,11 +71,11 @@ bool GpioInMux::Read(uint8_t channel) const {
   return last_value_[channel];
 }
 
-void GpioInMux::Channel::OnChange(void (*callback)(void *, bool), void *data) {
+void GpioInMux::Channel::OnChange(void (*callback)(void*, bool), void* data) {
   mux_->RegisterCallback(channel_, {callback, data});
 }
 
-} // namespace mux
+}  // namespace mux
 
 QuadratureEncoder::QuadratureEncoder(mux::GpioInMux::Channel a,
                                      mux::GpioInMux::Channel b,
@@ -91,7 +92,9 @@ void QuadratureEncoder::BChanged(bool new_value) {
   ticks_ += ((new_value ^ a_.Read()) ? -1 : 1);
 }
 
-int32_t QuadratureEncoder::Ticks() const { return ticks_; }
+int32_t QuadratureEncoder::Ticks() const {
+  return ticks_;
+}
 
 float QuadratureEncoder::Turns() const {
   return ((float)Ticks()) / ((float)ticks_per_turn_);
@@ -101,9 +104,11 @@ float QuadratureEncoder::Turns() const {
 
 RgbLed::RgbLed(TimerHandle::Config::Peripheral timer, Pin red_pin,
                Pin green_pin, Pin blue_pin, bool invert)
-    : timer_(timer), red_(timer_.InitChannel(1, red_pin)),
+    : timer_(timer),
+      red_(timer_.InitChannel(1, red_pin)),
       green_(timer_.InitChannel(2, green_pin)),
-      blue_(timer_.InitChannel(3, blue_pin)), invert_(invert) {}
+      blue_(timer_.InitChannel(3, blue_pin)),
+      invert_(invert) {}
 
 void RgbLed::Set(color::RGB c) {
   if (invert_) {
@@ -117,9 +122,9 @@ void RgbLed::Set(color::RGB c) {
   }
 }
 
-} // namespace io
+}  // namespace io
 
-} // namespace fridge
+}  // namespace fridge
 
 using namespace daisy;
 using namespace daisy::seed;
@@ -129,7 +134,7 @@ DaisySeed hw;
 int main(void) {
   hw.Init();
   hw.SetAudioBlockSize(8);
-  hw.StartLog(true); // wait for serial connection
+  hw.StartLog(true);  // wait for serial connection
 
   hw.PrintLine("Hello");
 

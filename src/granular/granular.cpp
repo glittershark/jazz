@@ -1,18 +1,19 @@
+#include "granular.hpp"
+
 #include <array>
 #include <cstddef>
 #include <iostream>
 #include <optional>
 #include <random>
 
-#include "granular.hpp"
 #include "libjazz/slab.hpp"
 #include "libjazz/value.hpp"
 
 #ifndef UNIT_TEST
-#include "system.h"
 #include "daisy_seed.h"
 #include "daisysp.h"
 #include "hid/logger.h"
+#include "system.h"
 
 using namespace daisy;
 using namespace daisysp;
@@ -23,7 +24,7 @@ DaisySeed hw;
 Slab<BufferValue::SampleWithUpdates, UPDATE_CAP> BufferValue::SAMPLES;
 Slab<IndicesToUpdate, UPDATE_CAP> IndicesToUpdate::SLAB;
 
-Update *BufferValue::PushBack(Update &&update) {
+Update* BufferValue::PushBack(Update&& update) {
   if (isSampleWithUpdates()) {
     auto head = asSampleWithUpdates();
 
@@ -31,7 +32,7 @@ Update *BufferValue::PushBack(Update &&update) {
       head->first_update = UPDATES.Alloc(std::move(update));
       return head->first_update;
     } else {
-      Update *cur = asSampleWithUpdates()->first_update;
+      Update* cur = asSampleWithUpdates()->first_update;
       while (cur->next_ != nullptr) {
         cur = cur->next_;
       }
@@ -49,7 +50,7 @@ Update *BufferValue::PushBack(Update &&update) {
   }
 }
 
-Update **BufferValue::FirstUpdate() {
+Update** BufferValue::FirstUpdate() {
   if (isSampleWithUpdates()) {
     return &asSampleWithUpdates()->first_update;
   } else {
@@ -61,7 +62,7 @@ void BufferValue::Housekeep() {
   if (isSampleWithUpdates() && asSampleWithUpdates()->first_update == nullptr) {
     auto sample_ = sample();
     auto sample_with_updates = asSampleWithUpdates();
-    for (auto &&_ : DrainingIterator(&*sample_with_updates)) {
+    for (auto&& _ : DrainingIterator(&*sample_with_updates)) {
     }
     SAMPLES.FreePtr(asSampleWithUpdates());
     new (this) BufferValue(sample_);
@@ -182,7 +183,7 @@ void Granular::PreHousekeeping(size_t clock_time) {
     return;
   }
 
-  for (auto &&index : indices_to_update->drain()) {
+  for (auto&& index : indices_to_update->drain()) {
     DoUpdate(index.index(), clock_time);
   }
 }
@@ -268,7 +269,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
   for (size_t i = 0; i < size; i++) {
     auto sample = in[0][i];
 
-    for (auto &&head : heads) {
+    for (auto&& head : heads) {
       head.Process(sample);
     }
 

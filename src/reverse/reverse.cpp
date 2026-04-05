@@ -1,4 +1,5 @@
 #include <cstddef>
+
 #include "libjazz/value.hpp"
 
 #ifndef UNIT_TEST
@@ -40,7 +41,6 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 
 #ifndef UNIT_TEST
 int main(void) {
-
   hw.Configure();
   hw.Init();
   hw.SetAudioBlockSize(4);
