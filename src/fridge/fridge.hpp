@@ -1,47 +1,26 @@
 #ifndef FRIDGE_H_
 #define FRIDGE_H_
 
-#include "hid/rgb_led.h"
 #ifndef UNIT_TEST
 
-#include "daisy_seed.h"
-#include "per/gpio.h"
-#include "per/tim.h"
-#include "pwm.hpp"
 #include <array>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
 
+#include "daisy_seed.h"
+#include "hid/rgb_led.h"
+#include "per/gpio.h"
+#include "per/tim.h"
+
+#include "color.hpp"
+#include "pwm.hpp"
+
 template <typename T> struct Callback {
   void (*callback)(void *, T);
   void *data;
 };
-
-namespace color {
-
-struct HSV;
-
-struct RGB {
-  uint8_t red;
-  uint8_t green;
-  uint8_t blue;
-
-  RGB(uint8_t r, uint8_t g, uint8_t b) : red(r), green(g), blue(b) {}
-  RGB(const HSV &hsv);
-};
-
-struct HSV {
-  uint8_t hue;
-  uint8_t saturation;
-  uint8_t value;
-
-  HSV(uint8_t h, uint8_t s, uint8_t v) : hue(h), saturation(s), value(v) {}
-  HSV(const RGB &rgb);
-};
-
-} // namespace color
 
 namespace fridge {
 
@@ -395,6 +374,6 @@ struct Update {
 
 } // namespace fridge
 
-#endif
+#endif // UNIT_TEST
 
 #endif // FRIDGE_H_
