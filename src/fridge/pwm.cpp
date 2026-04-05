@@ -1,8 +1,9 @@
 #include "pwm.hpp"
 
 #ifndef UNIT_TEST
-#include "sys/system.h"
 #include <cassert>
+
+#include "sys/system.h"
 
 // Include HAL for direct hardware access
 #include "stm32h7xx_hal.h"
@@ -14,8 +15,8 @@ using namespace daisy;
 /// GPIO Helpers
 
 // Get GPIO port from Pin
-static GPIO_TypeDef *GetGpioPort(Pin pin) {
-  constexpr GPIO_TypeDef *ports[] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF,
+static GPIO_TypeDef* GetGpioPort(Pin pin) {
+  constexpr GPIO_TypeDef* ports[] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF,
                                      GPIOG, GPIOH, GPIOI, GPIOJ, GPIOK};
   if (pin.port <= PORTK) {
     return ports[pin.port];
@@ -24,7 +25,9 @@ static GPIO_TypeDef *GetGpioPort(Pin pin) {
 }
 
 // Get GPIO pin mask from Pin
-static uint16_t GetGpioPin(Pin pin) { return 1 << pin.pin; }
+static uint16_t GetGpioPin(Pin pin) {
+  return 1 << pin.pin;
+}
 
 // Enable GPIO port clock
 static void EnableGpioClock(Pin pin) {
@@ -86,7 +89,7 @@ static uint8_t GetTimerAF(TimerHandle::Config::Peripheral periph) {
 }
 
 // Get the TIM instance for a peripheral enum
-static TIM_TypeDef *GetTimerInstance(TimerHandle::Config::Peripheral periph) {
+static TIM_TypeDef* GetTimerInstance(TimerHandle::Config::Peripheral periph) {
   switch (periph) {
   case TimerHandle::Config::Peripheral::TIM_2:
     return TIM2;
@@ -162,7 +165,7 @@ Timer::Timer(TimerHandle::Config::Peripheral periph, uint32_t frequency_hz)
   assert(idx < 4);
   assert(!pwm_tim_initialized[idx] && "Timer already in use");
 
-  TIM_HandleTypeDef *htim = &pwm_tim_handles[idx];
+  TIM_HandleTypeDef* htim = &pwm_tim_handles[idx];
   tim_handle_ = htim;
 
   EnableTimerClock(periph);
@@ -178,7 +181,7 @@ Timer::Timer(TimerHandle::Config::Peripheral periph, uint32_t frequency_hz)
 
   htim->Init.Prescaler = prescaler;
   htim->Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim->Init.Period = 255; // 8-bit resolution for 0-255 duty cycle
+  htim->Init.Period = 255;  // 8-bit resolution for 0-255 duty cycle
   htim->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
 
@@ -190,10 +193,10 @@ Timer::Timer(TimerHandle::Config::Peripheral periph, uint32_t frequency_hz)
 Channel Timer::InitChannel(uint8_t channel, Pin pin) {
   assert(channel >= 1 && channel <= 4);
 
-  TIM_HandleTypeDef *htim = static_cast<TIM_HandleTypeDef *>(tim_handle_);
+  TIM_HandleTypeDef* htim = static_cast<TIM_HandleTypeDef*>(tim_handle_);
 
   // Configure GPIO for alternate function
-  GPIO_TypeDef *port = GetGpioPort(pin);
+  GPIO_TypeDef* port = GetGpioPort(pin);
   uint16_t gpio_pin = GetGpioPin(pin);
 
   EnableGpioClock(pin);
@@ -209,7 +212,7 @@ Channel Timer::InitChannel(uint8_t channel, Pin pin) {
   // Configure PWM channel
   TIM_OC_InitTypeDef oc_config = {};
   oc_config.OCMode = TIM_OCMODE_PWM1;
-  oc_config.Pulse = 0; // Start at 0% duty cycle
+  oc_config.Pulse = 0;  // Start at 0% duty cycle
   oc_config.OCPolarity = TIM_OCPOLARITY_HIGH;
   oc_config.OCFastMode = TIM_OCFAST_DISABLE;
 
@@ -218,7 +221,7 @@ Channel Timer::InitChannel(uint8_t channel, Pin pin) {
   HAL_TIM_PWM_Start(htim, hal_channel);
 
   // Return a Channel pointing to the correct CCR register
-  volatile uint32_t *ccr;
+  volatile uint32_t* ccr;
   switch (channel) {
   case 1:
     ccr = &htim->Instance->CCR1;
@@ -245,5 +248,5 @@ void Timer::Start() {
   // but kept for API consistency if we want to batch-start later
 }
 
-} // namespace pwm
-#endif // UNIT_TEST
+}  // namespace pwm
+#endif  // UNIT_TEST

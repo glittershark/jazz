@@ -17,6 +17,8 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
       - name: install nix dependencies
         run: nix-shell --run true
+      - name: check formatting
+        run: nix-shell --run "make fmt-check"
       - name: build ARM firmware
         run: nix-shell --run make
       - name: run tests

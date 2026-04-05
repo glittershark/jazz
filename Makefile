@@ -1,4 +1,6 @@
-.PHONY: all test console flash st-flash logs debug clean compile-commands
+.PHONY: all test console flash st-flash logs debug clean compile-commands fmt fmt-check
+
+SOURCES := $(shell find src lib tests -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | grep -v -e vendor -e CMakeFiles)
 
 # Build for ARM
 all:
@@ -52,6 +54,15 @@ compile-commands:
 	elif [ -f build-test/compile_commands.json ]; then \
 		cp build-test/compile_commands.json .; \
 	fi
+
+
+# Format code in place
+fmt:
+	clang-format -i $(SOURCES)
+
+# Check formatting (for CI)
+fmt-check:
+	clang-format --dry-run --Werror $(SOURCES)
 
 clean:
 	rm -rf build build-test compile_commands.json

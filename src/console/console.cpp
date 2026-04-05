@@ -1,6 +1,6 @@
 #ifdef UNIT_TEST
 
-#include "granular.hpp"
+#include <sys/wait.h>
 
 #include <algorithm>
 #include <array>
@@ -17,8 +17,9 @@
 #include <regex>
 #include <sstream>
 #include <string>
-#include <sys/wait.h>
 #include <vector>
+
+#include "granular.hpp"
 
 namespace {
 
@@ -68,19 +69,19 @@ struct ParseResult {
   Options options;
 };
 
-const char *EffectListText() {
+const char* EffectListText() {
   return "bypass, granular, clip, anticlip, lowpass, highpass, "
          "cursed_lowpass, cursed_highpass, la_sort";
 }
 
 std::string ToLower(std::string value) {
-  for (char &c : value) {
+  for (char& c : value) {
     c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
   }
   return value;
 }
 
-std::string Trim(const std::string &value) {
+std::string Trim(const std::string& value) {
   size_t start = 0;
   while (start < value.size() &&
          std::isspace(static_cast<unsigned char>(value[start]))) {
@@ -96,7 +97,7 @@ std::string Trim(const std::string &value) {
   return value.substr(start, end - start);
 }
 
-std::optional<std::string> Unquote(const std::string &value) {
+std::optional<std::string> Unquote(const std::string& value) {
   const std::string trimmed = Trim(value);
   if (trimmed.size() < 2) {
     return std::nullopt;
@@ -109,7 +110,7 @@ std::optional<std::string> Unquote(const std::string &value) {
 
 std::string CanonicalKey(std::string key) {
   key = ToLower(Trim(key));
-  for (char &c : key) {
+  for (char& c : key) {
     if (c == '-') {
       c = '_';
     }
@@ -117,8 +118,8 @@ std::string CanonicalKey(std::string key) {
   return key;
 }
 
-bool ParseInt(const std::string &value, int *out) {
-  char *end = nullptr;
+bool ParseInt(const std::string& value, int* out) {
+  char* end = nullptr;
   long parsed = std::strtol(value.c_str(), &end, 10);
   if (*value.c_str() == '\0' || *end != '\0') {
     return false;
@@ -130,8 +131,8 @@ bool ParseInt(const std::string &value, int *out) {
   return true;
 }
 
-bool ParseFloat(const std::string &value, float *out) {
-  char *end = nullptr;
+bool ParseFloat(const std::string& value, float* out) {
+  char* end = nullptr;
   const float parsed = std::strtof(value.c_str(), &end);
   if (*value.c_str() == '\0' || *end != '\0') {
     return false;
@@ -143,7 +144,7 @@ bool ParseFloat(const std::string &value, float *out) {
   return true;
 }
 
-std::optional<EffectKind> ParseEffect(const std::string &name) {
+std::optional<EffectKind> ParseEffect(const std::string& name) {
   const std::string effect = CanonicalKey(name);
   if (effect == "bypass") {
     return EffectKind::kBypass;
@@ -175,7 +176,7 @@ std::optional<EffectKind> ParseEffect(const std::string &name) {
   return std::nullopt;
 }
 
-std::vector<std::string> SplitCommaList(const std::string &value) {
+std::vector<std::string> SplitCommaList(const std::string& value) {
   std::vector<std::string> items;
   std::stringstream ss(value);
   std::string part;
@@ -189,15 +190,15 @@ std::vector<std::string> SplitCommaList(const std::string &value) {
   return items;
 }
 
-bool SetEffectChainFromSpec(const std::string &spec, std::vector<std::string> *out,
-                            std::string *error) {
+bool SetEffectChainFromSpec(const std::string& spec,
+                            std::vector<std::string>* out, std::string* error) {
   const std::vector<std::string> names = SplitCommaList(spec);
   if (names.empty()) {
     *error = "effect chain is empty";
     return false;
   }
 
-  for (const std::string &name : names) {
+  for (const std::string& name : names) {
     if (!ParseEffect(name).has_value()) {
       *error = "invalid effect: " + name;
       return false;
@@ -208,11 +209,11 @@ bool SetEffectChainFromSpec(const std::string &spec, std::vector<std::string> *o
   return true;
 }
 
-bool ApplyParamValue(const std::string &key, float value, EffectParams *params,
-                     std::string *error) {
+bool ApplyParamValue(const std::string& key, float value, EffectParams* params,
+                     std::string* error) {
   const std::string k = CanonicalKey(key);
 
-  auto expect_range = [&](float lo, float hi, const char *label) {
+  auto expect_range = [&](float lo, float hi, const char* label) {
     if (value < lo || value > hi) {
       *error = std::string(label) + " must be in [" + std::to_string(lo) +
                ", " + std::to_string(hi) + "]";
@@ -296,8 +297,8 @@ bool ApplyParamValue(const std::string &key, float value, EffectParams *params,
   return false;
 }
 
-bool ApplyConfigKV(const std::string &key, const std::string &value,
-                   Options *options, std::string *error) {
+bool ApplyConfigKV(const std::string& key, const std::string& value,
+                   Options* options, std::string* error) {
   const std::string k = CanonicalKey(key);
 
   if (k == "effect" || k == "effects" || k == "effect_chain") {
@@ -337,8 +338,8 @@ bool ApplyConfigKV(const std::string &key, const std::string &value,
   return ApplyParamValue(k, v, &options->params, error);
 }
 
-bool ParseTomlPreset(const std::string &text, Options *options,
-                     std::string *error) {
+bool ParseTomlPreset(const std::string& text, Options* options,
+                     std::string* error) {
   std::istringstream in(text);
   std::string line;
 
@@ -384,7 +385,7 @@ bool ParseTomlPreset(const std::string &text, Options *options,
           *error = "effect_chain array is empty";
           return false;
         }
-        for (const auto &name : chain) {
+        for (const auto& name : chain) {
           if (!ParseEffect(name).has_value()) {
             *error = "invalid effect in effect_chain: " + name;
             return false;
@@ -408,12 +409,11 @@ bool ParseTomlPreset(const std::string &text, Options *options,
   return true;
 }
 
-bool ParseJsonPreset(const std::string &text, Options *options,
-                     std::string *error) {
+bool ParseJsonPreset(const std::string& text, Options* options,
+                     std::string* error) {
   std::smatch match;
-  std::regex chain_array(
-      "\"effect_chain\"\\s*:\\s*\\[(.*?)\\]",
-      std::regex::icase | std::regex::optimize);
+  std::regex chain_array("\"effect_chain\"\\s*:\\s*\\[(.*?)\\]",
+                         std::regex::icase | std::regex::optimize);
 
   if (std::regex_search(text, match, chain_array)) {
     const std::string inside = match[1].str();
@@ -429,7 +429,7 @@ bool ParseJsonPreset(const std::string &text, Options *options,
       *error = "effect_chain JSON array is empty";
       return false;
     }
-    for (const auto &name : chain) {
+    for (const auto& name : chain) {
       if (!ParseEffect(name).has_value()) {
         *error = "invalid effect in effect_chain: " + name;
         return false;
@@ -438,9 +438,8 @@ bool ParseJsonPreset(const std::string &text, Options *options,
     options->effect_chain = chain;
   }
 
-  std::regex string_pair(
-      "\"([A-Za-z0-9_-]+)\"\\s*:\\s*\"([^\"]*)\"",
-      std::regex::icase | std::regex::optimize);
+  std::regex string_pair("\"([A-Za-z0-9_-]+)\"\\s*:\\s*\"([^\"]*)\"",
+                         std::regex::icase | std::regex::optimize);
   auto sbegin = std::sregex_iterator(text.begin(), text.end(), string_pair);
   auto send = std::sregex_iterator();
   for (auto it = sbegin; it != send; ++it) {
@@ -456,7 +455,8 @@ bool ParseJsonPreset(const std::string &text, Options *options,
   }
 
   std::regex number_pair(
-      "\"([A-Za-z0-9_-]+)\"\\s*:\\s*(-?(?:\\d+\\.?\\d*|\\.\\d+)(?:[eE][+\\-]?\\d+)?)",
+      "\"([A-Za-z0-9_-]+)\"\\s*:\\s*(-?(?:\\d+\\.?\\d*|\\.\\d+)(?:[eE][+\\-]?"
+      "\\d+)?)",
       std::regex::icase | std::regex::optimize);
   auto nbegin = std::sregex_iterator(text.begin(), text.end(), number_pair);
   auto nend = std::sregex_iterator();
@@ -468,9 +468,8 @@ bool ParseJsonPreset(const std::string &text, Options *options,
     }
   }
 
-  std::regex effect_str(
-      "\"effect\"\\s*:\\s*\"([^\"]+)\"",
-      std::regex::icase | std::regex::optimize);
+  std::regex effect_str("\"effect\"\\s*:\\s*\"([^\"]+)\"",
+                        std::regex::icase | std::regex::optimize);
   if (std::regex_search(text, match, effect_str)) {
     std::vector<std::string> chain;
     if (!SetEffectChainFromSpec(match[1].str(), &chain, error)) {
@@ -482,7 +481,7 @@ bool ParseJsonPreset(const std::string &text, Options *options,
   return true;
 }
 
-bool LoadPreset(const std::string &path, Options *options, std::string *error) {
+bool LoadPreset(const std::string& path, Options* options, std::string* error) {
   std::ifstream file(path);
   if (!file.good()) {
     *error = "failed to open preset file: " + path;
@@ -513,23 +512,24 @@ bool LoadPreset(const std::string &path, Options *options, std::string *error) {
   return ParseTomlPreset(text, options, error);
 }
 
-void PrintUsage(const char *argv0) {
+void PrintUsage(const char* argv0) {
   std::cerr << "Usage: " << argv0
             << " <input.mp3> [--output output.mp3] [--no-play]"
                " [--sample-rate hz] [--channels n]"
                " [--effect e1,e2,...] [--preset preset.{json|toml}]"
                " [--list-effects]\n";
   std::cerr << "Effects: " << EffectListText() << "\n";
-  std::cerr << "Params:\n"
-            << "  --clip-threshold [0..1] --clip-gain [0..64]\n"
-            << "  --anticlip-threshold [0..1] --anticlip-gain [0..64]\n"
-            << "  --lowpass-alpha [0..1] --highpass-alpha [0..1]\n"
-            << "  --cursed-lowpass-alpha [0..1] --cursed-highpass-alpha [0..1]\n"
-            << "  --la-sort-weight-center [0..1]"
-            << " --la-sort-weight-sharpness [0..32]\n";
+  std::cerr
+      << "Params:\n"
+      << "  --clip-threshold [0..1] --clip-gain [0..64]\n"
+      << "  --anticlip-threshold [0..1] --anticlip-gain [0..64]\n"
+      << "  --lowpass-alpha [0..1] --highpass-alpha [0..1]\n"
+      << "  --cursed-lowpass-alpha [0..1] --cursed-highpass-alpha [0..1]\n"
+      << "  --la-sort-weight-center [0..1]"
+      << " --la-sort-weight-sharpness [0..32]\n";
 }
 
-ParseResult ParseArgs(int argc, char **argv) {
+ParseResult ParseArgs(int argc, char** argv) {
   ParseResult result;
   Options options;
 
@@ -553,7 +553,7 @@ ParseResult ParseArgs(int argc, char **argv) {
     }
   }
 
-  auto parse_next_float = [&](int *idx, float *out, const char *name) {
+  auto parse_next_float = [&](int* idx, float* out, const char* name) {
     if (*idx + 1 >= argc || !ParseFloat(argv[++*idx], out)) {
       std::cerr << "invalid " << name << "\n";
       return false;
@@ -561,7 +561,7 @@ ParseResult ParseArgs(int argc, char **argv) {
     return true;
   };
 
-  auto apply_param = [&](const char *key, float value) {
+  auto apply_param = [&](const char* key, float value) {
     std::string error;
     if (!ApplyParamValue(key, value, &options.params, &error)) {
       std::cerr << error << "\n";
@@ -738,7 +738,7 @@ ParseResult ParseArgs(int argc, char **argv) {
   return result;
 }
 
-std::string ShellEscape(const std::string &input) {
+std::string ShellEscape(const std::string& input) {
   std::string escaped = "'";
   for (char c : input) {
     if (c == '\'') {
@@ -751,7 +751,7 @@ std::string ShellEscape(const std::string &input) {
   return escaped;
 }
 
-bool CommandExists(const std::string &command) {
+bool CommandExists(const std::string& command) {
   std::string check = "command -v " + command + " >/dev/null 2>&1";
   return std::system(check.c_str()) == 0;
 }
@@ -814,35 +814,35 @@ std::array<Head, NUM_HEADS> MakeDefaultHeads() {
 }
 
 class SampleProcessor {
-public:
+ public:
   virtual ~SampleProcessor() = default;
   virtual float Process(float sample) = 0;
 };
 
 class BypassProcessor final : public SampleProcessor {
-public:
+ public:
   float Process(float sample) override { return sample; }
 };
 
 class GranularProcessor final : public SampleProcessor {
-public:
+ public:
   GranularProcessor() : heads_(MakeDefaultHeads()) {}
 
   float Process(float sample) override {
-    for (auto &head : heads_) {
+    for (auto& head : heads_) {
       head.Process(sample);
     }
     const float wet_signal = granular_.FullCycle(heads_);
     return std::clamp(sample + wet_signal, -1.0f, 1.0f);
   }
 
-private:
+ private:
   Granular granular_;
   std::array<Head, NUM_HEADS> heads_;
 };
 
 class ClipProcessor final : public SampleProcessor {
-public:
+ public:
   ClipProcessor(float threshold, float gain)
       : threshold_(threshold), gain_(gain) {}
 
@@ -853,13 +853,13 @@ public:
     return amplified - residue;
   }
 
-private:
+ private:
   float threshold_;
   float gain_;
 };
 
 class AnticlipProcessor final : public SampleProcessor {
-public:
+ public:
   AnticlipProcessor(float threshold, float gain)
       : threshold_(threshold), gain_(gain) {}
 
@@ -870,13 +870,13 @@ public:
     return amplified + residue;
   }
 
-private:
+ private:
   float threshold_;
   float gain_;
 };
 
 class LowPassProcessor final : public SampleProcessor {
-public:
+ public:
   explicit LowPassProcessor(float alpha) : alpha_(alpha) {}
 
   float Process(float sample) override {
@@ -884,13 +884,13 @@ public:
     return last_output_;
   }
 
-private:
+ private:
   float alpha_;
   float last_output_ = 0.0f;
 };
 
 class HighPassProcessor final : public SampleProcessor {
-public:
+ public:
   explicit HighPassProcessor(float alpha) : alpha_(alpha) {}
 
   float Process(float sample) override {
@@ -899,14 +899,14 @@ public:
     return last_output_;
   }
 
-private:
+ private:
   float alpha_;
   float last_output_ = 0.0f;
   float last_input_ = 0.0f;
 };
 
 class CursedLowPassProcessor final : public SampleProcessor {
-public:
+ public:
   explicit CursedLowPassProcessor(float alpha) : alpha_(alpha) {}
 
   float Process(float sample) override {
@@ -923,13 +923,13 @@ public:
     return last_output_;
   }
 
-private:
+ private:
   float alpha_;
   float last_output_ = 1.0f;
 };
 
 class CursedHighPassProcessor final : public SampleProcessor {
-public:
+ public:
   explicit CursedHighPassProcessor(float alpha) : alpha_(alpha) {}
 
   float Process(float sample) override {
@@ -953,14 +953,14 @@ public:
     return last_output_;
   }
 
-private:
+ private:
   float alpha_;
   float last_output_ = 1.0f;
   float last_input_ = 1.0f;
 };
 
 class LaSortProcessor final : public SampleProcessor {
-public:
+ public:
   LaSortProcessor(float weight_center, float weight_sharpness)
       : weight_center_(weight_center), weight_sharpness_(weight_sharpness) {}
 
@@ -969,7 +969,7 @@ public:
     return WeightedTap();
   }
 
-private:
+ private:
   static constexpr size_t kBufferSize = 64;
   std::array<float, kBufferSize> insertion_buffer_{};
   std::array<float, kBufferSize> sorted_samples_{};
@@ -1056,7 +1056,7 @@ private:
 };
 
 std::unique_ptr<SampleProcessor> MakeProcessor(EffectKind effect,
-                                               const EffectParams &params) {
+                                               const EffectParams& params) {
   switch (effect) {
   case EffectKind::kBypass:
     return std::make_unique<BypassProcessor>();
@@ -1086,10 +1086,9 @@ std::unique_ptr<SampleProcessor> MakeProcessor(EffectKind effect,
   return std::make_unique<BypassProcessor>();
 }
 
-bool WriteAll(FILE *stream, const float *buffer, size_t samples) {
+bool WriteAll(FILE* stream, const float* buffer, size_t samples) {
   const size_t bytes_total = samples * sizeof(float);
-  const unsigned char *cursor =
-      reinterpret_cast<const unsigned char *>(buffer);
+  const unsigned char* cursor = reinterpret_cast<const unsigned char*>(buffer);
   size_t bytes_written = 0;
 
   while (bytes_written < bytes_total) {
@@ -1104,7 +1103,7 @@ bool WriteAll(FILE *stream, const float *buffer, size_t samples) {
   return true;
 }
 
-int PcloseStatus(FILE *stream) {
+int PcloseStatus(FILE* stream) {
   if (stream == nullptr) {
     return 0;
   }
@@ -1118,9 +1117,9 @@ int PcloseStatus(FILE *stream) {
   return 1;
 }
 
-} // namespace
+}  // namespace
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   const ParseResult parsed = ParseArgs(argc, argv);
   if (parsed.kind == ParseKind::kHelp) {
     return 0;
@@ -1134,7 +1133,7 @@ int main(int argc, char **argv) {
 
   std::vector<EffectKind> effect_chain;
   effect_chain.reserve(options.effect_chain.size());
-  for (const auto &name : options.effect_chain) {
+  for (const auto& name : options.effect_chain) {
     const auto kind = ParseEffect(name);
     if (!kind.has_value()) {
       std::cerr << "invalid effect in chain: " << name << "\n";
@@ -1156,8 +1155,8 @@ int main(int argc, char **argv) {
   if (options.play) {
     channel_layout = ChannelLayoutForCount(options.channels);
     if (!channel_layout.has_value()) {
-      std::cerr << "unsupported channel count for playback: " << options.channels
-                << "\n";
+      std::cerr << "unsupported channel count for playback: "
+                << options.channels << "\n";
       return 1;
     }
   }
@@ -1168,18 +1167,18 @@ int main(int argc, char **argv) {
       std::to_string(options.channels) + " -ar " +
       std::to_string(options.sample_rate) + " pipe:1";
 
-  FILE *decoder = popen(decoder_command.c_str(), "r");
+  FILE* decoder = popen(decoder_command.c_str(), "r");
   if (decoder == nullptr) {
     std::cerr << "failed to start ffmpeg decoder\n";
     return 1;
   }
 
-  FILE *player = nullptr;
+  FILE* player = nullptr;
   if (options.play) {
     const std::string player_command =
         "ffplay -hide_banner -loglevel error -nodisp -autoexit -f f32le -ar " +
-        std::to_string(options.sample_rate) + " -ch_layout " +
-        *channel_layout + " -i -";
+        std::to_string(options.sample_rate) + " -ch_layout " + *channel_layout +
+        " -i -";
     player = popen(player_command.c_str(), "w");
     if (player == nullptr) {
       std::cerr << "failed to start ffplay\n";
@@ -1188,10 +1187,11 @@ int main(int argc, char **argv) {
     }
   }
 
-  FILE *encoder = nullptr;
+  FILE* encoder = nullptr;
   if (options.output_path.has_value()) {
     const std::string encoder_command =
-        "ffmpeg -hide_banner -loglevel error -y -f f32le -acodec pcm_f32le -ac " +
+        "ffmpeg -hide_banner -loglevel error -y -f f32le -acodec pcm_f32le "
+        "-ac " +
         std::to_string(options.channels) + " -ar " +
         std::to_string(options.sample_rate) +
         " -i pipe:0 -vn -codec:a libmp3lame -q:a 2 " +
@@ -1210,7 +1210,7 @@ int main(int argc, char **argv) {
   std::vector<std::vector<std::unique_ptr<SampleProcessor>>> chains;
   chains.resize(options.channels);
   for (int channel = 0; channel < options.channels; channel++) {
-    auto &chain = chains[channel];
+    auto& chain = chains[channel];
     chain.reserve(effect_chain.size());
     for (EffectKind effect : effect_chain) {
       chain.push_back(MakeProcessor(effect, options.params));
@@ -1230,7 +1230,7 @@ int main(int argc, char **argv) {
     for (size_t i = 0; i < read_samples; i++) {
       const int channel = i % options.channels;
       float sample = chunk[i];
-      for (auto &processor : chains[channel]) {
+      for (auto& processor : chains[channel]) {
         sample = processor->Process(sample);
       }
       chunk[i] = std::clamp(sample, -1.0f, 1.0f);
