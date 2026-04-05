@@ -1,11 +1,12 @@
 #ifndef UNIT_TEST
-#include "fridge.h"
 #include "daisy_seed.h"
 #include "hid/rgb_led.h"
 #include "per/gpio.h"
 #include "per/tim.h"
 #include <cassert>
 #include <cstdint>
+
+#include "fridge.hpp"
 
 namespace fridge {
 namespace io {

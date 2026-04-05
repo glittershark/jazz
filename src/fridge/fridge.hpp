@@ -14,8 +14,8 @@
 #include "per/gpio.h"
 #include "per/tim.h"
 
-#include "color.h"
-#include "pwm.h"
+#include "color.hpp"
+#include "pwm.hpp"
 
 template <typename T> struct Callback {
   void (*callback)(void *, T);
