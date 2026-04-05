@@ -1,6 +1,8 @@
 #ifndef FRIDGE_PWM_H_
 #define FRIDGE_PWM_H_
 
+#ifndef UNIT_TEST
+
 #include "daisy_seed.h"
 #include "per/tim.h"
 
@@ -84,5 +86,7 @@ public:
 };
 
 } // namespace pwm
+
+#endif // UNIT_TEST
 
 #endif // FRIDGE_PWM_H_

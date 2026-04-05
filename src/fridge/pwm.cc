@@ -1,4 +1,5 @@
 #include "pwm.h"
+#ifndef UNIT_TEST
 #include "sys/system.h"
 #include <cassert>
 
@@ -244,3 +245,4 @@ void Timer::Start() {
 }
 
 } // namespace pwm
+#endif // UNIT_TEST
