@@ -26,7 +26,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
   }
 }
 
-int main(void) {
+int main() {
   hw.Configure();
   hw.Init();
   hw.SetAudioBlockSize(4);

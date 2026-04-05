@@ -29,20 +29,20 @@ Update* BufferValue::PushBack(Update&& update) {
     auto head = asSampleWithUpdates();
 
     if (head->first_update == nullptr) {
-      head->first_update = UPDATES.Alloc(std::move(update));
+      head->first_update = UPDATES.Alloc(update);
       return head->first_update;
     } else {
       Update* cur = asSampleWithUpdates()->first_update;
       while (cur->next_ != nullptr) {
         cur = cur->next_;
       }
-      cur->next_ = UPDATES.Alloc(std::move(update));
+      cur->next_ = UPDATES.Alloc(update);
 
       return cur->next_;
     }
   } else {
     float sample = asSample();
-    auto upd = UPDATES.Alloc(std::move(update));
+    auto upd = UPDATES.Alloc(update);
     decltype(SAMPLES)::Ptr<&SAMPLES> head =
         SAMPLES.AllocPtr<&SAMPLES>(sample, upd);
     new (this) BufferValue(head);
@@ -227,7 +227,8 @@ void Head::Process(float sample) {
   }
 
   if (random) {
-    if ((random->grain_remaining -= step) == 0) {
+    random->grain_remaining -= step;
+    if (random->grain_remaining == 0) {
       random->fade = {
           .countdown = MAX_FADE_TIME,
           .old_index = index,
@@ -279,7 +280,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 #endif
 
 #ifndef UNIT_TEST
-int main(void) {
+int main() {
   hw.Configure();
   hw.Init();
   hw.SetAudioBlockSize(16);

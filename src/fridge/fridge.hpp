@@ -263,6 +263,8 @@ class RgbLed {
 
 }  // namespace io
 
+// TODO(aspen): Remove once this is all actually used
+// NOLINTBEGIN(clang-diagnostic-unused-*)
 namespace config {
 
 struct Feedback {
@@ -336,6 +338,7 @@ class Config {
 };
 
 }  // namespace config
+// NOLINTEND(clang-diagnostic-unused-*)
 
 namespace state {}  // namespace state
 

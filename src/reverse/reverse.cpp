@@ -16,7 +16,7 @@ DaisySeed hw;
 #define BUFFER_LEN 44100 * 2 /* 2 seconds */
 
 static int delay_samples = 22000;
-static int feedback = 0.3;
+static float feedback = 0.3;
 static float buffer[BUFFER_LEN] = {};
 static int read_pos = BUFFER_LEN;
 static int write_pos = 0;
@@ -40,7 +40,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 #endif
 
 #ifndef UNIT_TEST
-int main(void) {
+int main() {
   hw.Configure();
   hw.Init();
   hw.SetAudioBlockSize(4);

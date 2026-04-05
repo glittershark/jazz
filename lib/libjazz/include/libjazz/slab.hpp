@@ -12,7 +12,9 @@ class Slab {
   union Entry {
     T val;
     size_t next;
+    std::nullptr_t empty;
 
+    Entry() : empty() {};
     ~Entry() {}
   };
 
@@ -69,6 +71,7 @@ class Slab {
 
   template <Slab<T, CAP>* SLAB>
   Ptr<SLAB> Get(T* ptr) const {
+    // NOLINTNEXTLINE(clang-analyzer-security.PointerSub)
     return reinterpret_cast<Entry*>(ptr) - entries_;
   }
 
