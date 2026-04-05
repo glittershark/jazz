@@ -18,15 +18,11 @@ function(add_gtest source_file)
     jazz::reverse
     jazz::granular
     jazz::rachel
+    jazz::fridge
     Threads::Threads
     gtest
     gtest_main
     rapidcheck
-  )
-
-  # Set any compile definitions
-  target_compile_definitions(${test_name} PRIVATE
-    UNIT_TEST
   )
 
   # Set the properties

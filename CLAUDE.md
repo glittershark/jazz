@@ -2,31 +2,27 @@
 
 ## Building
 
-Build a firmware project:
+Build all ARM firmware:
 ```bash
-make -C src/fridge          # Just build
-make flash DIR=fridge       # Build and flash via DFU (requires boot mode)
-make st-flash DIR=fridge    # Build and flash via STLink
+make                        # Build all firmware for ARM
+```
+
+Build and run tests:
+```bash
+make test                   # Build for host and run tests
 ```
 
 ## Flashing
 
-Two methods available:
-
-1. **DFU** (requires holding BOOT button during reset):
-   ```bash
-   make flash DIR=fridge
-   ```
-
-2. **STLink** (always works when connected):
-   ```bash
-   make st-flash DIR=fridge
-   ```
-   Or manually:
-   ```bash
-   st-flash write src/fridge/build/fridge.bin 0x08000000
-   st-flash reset
-   ```
+Flash via STLink (always works when connected):
+```bash
+make flash DIR=fridge
+```
+Or manually:
+```bash
+st-flash write build/src/fridge/fridge.bin 0x08000000
+st-flash reset
+```
 
 ## Serial Logs
 
@@ -56,7 +52,7 @@ This starts `st-util` (GDB server) and connects GDB. The board must be flashed f
 Manual GDB commands:
 ```bash
 st-util -p 4242 --semihosting &
-arm-none-eabi-gdb -ex "file src/fridge/build/fridge.elf" -ex "target remote localhost:4242"
+arm-none-eabi-gdb -ex "file build/src/fridge/fridge.elf" -ex "target remote localhost:4242"
 ```
 
 Useful GDB commands:
