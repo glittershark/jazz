@@ -21,7 +21,7 @@
     }
   ],
   "buildPresets": [
-    {"name": "arm", "configurePreset": "arm"},
-    {"name": "host", "configurePreset": "host"}
+    { "name": "arm", "configurePreset": "arm" },
+    { "name": "host", "configurePreset": "host" }
   ]
 }
