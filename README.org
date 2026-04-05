@@ -19,7 +19,7 @@ to run tests:
 $ make test
 #+end_src
 
-note: cmake generates ~compile_commands.json~ in the build directory and creates a symlink in the project root for clangd/language server support.
+~compile_commands.json~ is automatically merged from both ARM and host builds into the project root for clangd/language server support.
 
 * host audio CLI
 
@@ -124,10 +124,17 @@ the CLI depends on ~ffmpeg~ and ~ffplay~ being available in your shell.
 
 * flashing to daisy seed
 
-to flash a particular effect to a daisy seed (in reset mode!):
+to flash a particular effect to a daisy seed via STLink:
 
 #+begin_src shell-session
 $ make flash DIR=delay
+#+end_src
+
+or manually:
+
+#+begin_src shell-session
+$ st-flash write build/src/delay/delay.bin 0x08000000
+$ st-flash reset
 #+end_src
 
 * printing stuff
