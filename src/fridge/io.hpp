@@ -1,34 +1,18 @@
-#ifndef FRIDGE_H_
-#define FRIDGE_H_
+#ifndef IO_H_
+#define IO_H_
+
+#include <array>
+#include <optional>
+
+#include "callback.hpp"
+#include "color.hpp"
+#include "pwm.hpp"
 
 #ifndef UNIT_TEST
 
-#include <array>
-#include <cassert>
-#include <cstddef>
-#include <cstdint>
-#include <optional>
-
-#include "color.hpp"
 #include "daisy_seed.h"
-#include "hid/rgb_led.h"
-#include "per/gpio.h"
-#include "per/tim.h"
-#include "pwm.hpp"
 
-template <typename T>
-struct Callback {
-  void (*callback)(void*, T);
-  void* data;
-};
-
-namespace fridge {
-
-constexpr const size_t NUM_HEADS = 8;
-constexpr const size_t NUM_LFOS = 8;
-constexpr const size_t MAX_TARGET_PARAMS = 64;  // ??
-
-namespace io {
+namespace fridge::io {
 
 using namespace daisy;
 using namespace daisy::seed;
@@ -78,7 +62,7 @@ class ChannelScan {
 
   ChannelScan(Address address, TimerHandle::Config::Peripheral timer,
               CB& callback)
-      : address_(std::move(address)), timer_(), callback_(callback) {
+      : address_(std::move(address)), callback_(callback) {
     TimerHandle::Config timer_config;
     timer_config.periph = timer;
     timer_config.enable_irq = true;
@@ -261,126 +245,8 @@ class RgbLed {
   void Set(color::RGB color);
 };
 
-}  // namespace io
-
-// TODO(aspen): Remove once this is all actually used
-// NOLINTBEGIN(clang-diagnostic-unused-*)
-namespace config {
-
-struct Feedback {
-  enum class Kind { kRead, kErase } kind_;
-  float amount_;
-};
-
-class Head {
-  // Position relative to the global clock
-  size_t position_;
-  float write_amount_;
-  float read_amount_;
-  float erase_amount_;
-  Feedback feedback_;
-
- public:
-  Head()
-      : position_(0),
-        write_amount_(1.),
-        read_amount_(1.),
-        erase_amount_(1.),
-        feedback_({.kind_ = Feedback::Kind::kRead, .amount_ = 0.}) {}
-
-  size_t& position() { return position_; }
-  float& write_amount() { return write_amount_; }
-  float& read_amount() { return read_amount_; }
-  float& erase_amount() { return erase_amount_; }
-  Feedback& feedback() { return feedback_; }
-};
-
-enum class TargetParameter {
-  Position,
-  WriteAmount,
-  ReadAmount,
-  EraseAmount,
-  Feedback,
-};
-
-class Target {
-  TargetParameter parameter_;
-  size_t head_idx_;
-
- public:
-  Target(const Target&) = default;
-};
-
-class LFO {
-  // The duration over which the LFO oscillates
-  size_t range_;
-  size_t max_grain_size_;
-  size_t min_grain_size_;
-  // Value between 0 and 1
-  float reverse_chance_;
-  // Value between 0 and 1
-  float teleport_chance_;
-  // Value between 0 and 1
-  float pitch_shift_chance_;
-  // Value between 0 and 1
-  float low_octave_chance_;
-  // Value between 0 and 1
-  float high_octave_chance_;
-
-  std::array<std::optional<Target>, MAX_TARGET_PARAMS> targets_;
-};
-
-class Config {
-  std::array<Head, NUM_HEADS> heads_;
-  std::array<LFO, NUM_LFOS> lfos_;
-  float dry_;
-  float wet_;
-};
-
-}  // namespace config
-// NOLINTEND(clang-diagnostic-unused-*)
-
-namespace state {}  // namespace state
-
-namespace sound {
-
-struct Update {
-  enum Kind { kErase, kWrite } kind;
-  size_t finished_at;
-  float value;
-  size_t samples;
-  Update* next_;
-
-  class Iterator {
-    const Update* cur;
-
-   public:
-    using difference_type = std::ptrdiff_t;
-    using value_type = Update;
-
-    Iterator(const Update* cur) : cur(cur) {}
-
-    const Update& operator*() const { return *cur; }
-    void operator++(int) { ++*this; };
-    Iterator& operator++() {
-      cur = cur->next_;
-      return *this;
-    };
-
-    bool operator!=(Iterator& other) const { return other.cur != cur; }
-  };
-  friend Iterator;
-
-  Iterator begin() const { return Iterator(this); }
-  Iterator end() const { return Iterator(nullptr); }
-
-  static_assert(std::input_iterator<Iterator>);
-};
-
-}  // namespace sound
-
-}  // namespace fridge
+}  // namespace fridge::io
 
 #endif  // UNIT_TEST
 
-#endif  // FRIDGE_H_
+#endif  // IO_H_
