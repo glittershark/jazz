@@ -1,4 +1,5 @@
-#include "pwm.h"
+#include "pwm.hpp"
+
 #ifndef UNIT_TEST
 #include "sys/system.h"
 #include <cassert>

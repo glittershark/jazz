@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # Check if we're building for tests only
 if(TEST_ONLY)
     # Create fridge library for testing (without Daisy dependencies)
-    add_library(fridge STATIC fridge.cc pwm.cc color.cc)
+    add_library(fridge STATIC fridge.cpp pwm.cpp color.cpp)
     
     # Link against libjazz library only
     target_link_libraries(fridge PUBLIC jazz::libjazz)
@@ -32,7 +32,7 @@ else()
     # 3. Link against the Daisy libraries
 
     # Create fridge executable (requires Daisy libraries)
-    add_executable(fridge fridge.cc pwm.cc color.cc)
+    add_executable(fridge fridge.cpp pwm.cpp color.cpp)
 
     # Link against libjazz library and Daisy libraries
     target_link_libraries(fridge PRIVATE
