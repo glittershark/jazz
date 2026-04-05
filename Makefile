@@ -1,4 +1,4 @@
-.PHONY: all test console flash st-flash logs debug clean compile-commands fmt fmt-check
+.PHONY: all test console flash st-flash logs debug clean compile-commands lint fmt fmt-check
 
 SOURCES := $(shell find src lib tests -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | grep -v -e vendor -e CMakeFiles)
 
@@ -55,6 +55,12 @@ compile-commands:
 		cp build-test/compile_commands.json .; \
 	fi
 
+# Run clang-tidy (strips ARM-specific flags for host clang compatibility)
+lint: compile-commands
+	@sed 's/-mcpu=[^ ]*//g; s/-mthumb//g; s/-mfpu=[^ ]*//g; s/-mfloat-abi=[^ ]*//g' \
+		compile_commands.json > compile_commands.lint.json
+	clang-tidy -p compile_commands.lint.json $(SOURCES)
+	@rm -f compile_commands.lint.json
 
 # Format code in place
 fmt:

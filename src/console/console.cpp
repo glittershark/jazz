@@ -1088,7 +1088,7 @@ std::unique_ptr<SampleProcessor> MakeProcessor(EffectKind effect,
 
 bool WriteAll(FILE* stream, const float* buffer, size_t samples) {
   const size_t bytes_total = samples * sizeof(float);
-  const unsigned char* cursor = reinterpret_cast<const unsigned char*>(buffer);
+  const auto cursor = reinterpret_cast<const unsigned char*>(buffer);
   size_t bytes_written = 0;
 
   while (bytes_written < bytes_total) {

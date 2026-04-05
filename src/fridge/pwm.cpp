@@ -16,8 +16,8 @@ using namespace daisy;
 
 // Get GPIO port from Pin
 static GPIO_TypeDef* GetGpioPort(Pin pin) {
-  constexpr GPIO_TypeDef* ports[] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF,
-                                     GPIOG, GPIOH, GPIOI, GPIOJ, GPIOK};
+  static GPIO_TypeDef* ports[] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF,
+                                  GPIOG, GPIOH, GPIOI, GPIOJ, GPIOK};
   if (pin.port <= PORTK) {
     return ports[pin.port];
   }
@@ -30,6 +30,7 @@ static uint16_t GetGpioPin(Pin pin) {
 }
 
 // Enable GPIO port clock
+// NOLINTBEGIN(clang-analyzer-core.FixedAddressDereference)
 static void EnableGpioClock(Pin pin) {
   switch (pin.port) {
   case PORTA:
@@ -137,6 +138,7 @@ static uint32_t GetHalChannel(uint8_t channel) {
     return 0;
   }
 }
+// NOLINTEND(clang-analyzer-core.FixedAddressDereference)
 
 /// Channel
 
@@ -146,10 +148,12 @@ void Channel::Set(uint8_t duty) {
 }
 
 void Channel::SetFloat(float duty) {
-  if (duty < 0.0f)
+  if (duty < 0.0f) {
     duty = 0.0f;
-  if (duty > 1.0f)
+  }
+  if (duty > 1.0f) {
     duty = 1.0f;
+  }
   *ccr_ = (uint32_t)(duty * 255.0f);
 }
 
@@ -193,7 +197,7 @@ Timer::Timer(TimerHandle::Config::Peripheral periph, uint32_t frequency_hz)
 Channel Timer::InitChannel(uint8_t channel, Pin pin) {
   assert(channel >= 1 && channel <= 4);
 
-  TIM_HandleTypeDef* htim = static_cast<TIM_HandleTypeDef*>(tim_handle_);
+  auto* htim = static_cast<TIM_HandleTypeDef*>(tim_handle_);
 
   // Configure GPIO for alternate function
   GPIO_TypeDef* port = GetGpioPort(pin);

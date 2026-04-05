@@ -166,7 +166,6 @@ class BufferValue {
   static Slab<SampleWithUpdates, UPDATE_CAP> SAMPLES;
   using SlabPtr = decltype(SAMPLES)::Ptr<&SAMPLES>;
 
-  enum { kSample, kSampleWithUpdates } kind_;
   union {
     float float_;
     SlabPtr ptr_;
@@ -285,7 +284,7 @@ class Granular {
   float Read(size_t index, size_t clock_time);
   void PreHousekeeping(size_t clock_time);
 
-  ~Granular() {}
+  ~Granular() = default;
 
   size_t global_clock_max() const { return global_clock_max_; }
 

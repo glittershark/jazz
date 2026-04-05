@@ -22,6 +22,7 @@ TEST(IndicesToUpdateTest, Prepend) {
 
 TEST(IndicesToUpdateTest, IterEmpty) {
   IndicesToUpdate* itu = nullptr;
+  // NOLINTNEXTLINE(clang-analyzer-core.CallAndMessage)
   for (auto&& itu_ : itu->iter()) {
     ASSERT_FALSE(true);
   }

@@ -33,8 +33,10 @@ class Value {
   };
 
   static const StorageType MaxFloat =
+      // NOLINTNEXTLINE(clang-diagnostic-constant-conversion)
       sizeof(void*) == 4 ? 0xfff80000ULL : 0xfff8000000000000ULL;
   static const StorageType PtrTag =
+      // NOLINTNEXTLINE(clang-diagnostic-constant-conversion)
       sizeof(void*) == 4 ? 0xfffa0000ULL : 0xfffa000000000000ULL;
 
  public:
@@ -51,7 +53,7 @@ class Value {
 #endif
 
   inline Value(void* pointer) {
-    uintptr_t ptr_val = reinterpret_cast<uintptr_t>(pointer);
+    auto ptr_val = reinterpret_cast<uintptr_t>(pointer);
     assert((ptr_val & PtrTag) == 0);
 
 #if UINTPTR_MAX == 0xFFFFFFFF

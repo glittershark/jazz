@@ -23,3 +23,6 @@ jobs:
         run: nix-shell --run make
       - name: run tests
         run: nix-shell --run "make test"
+      # TODO(aspen): Fix this and get it running
+      # - name: lint
+      #   run: nix-shell --run "make lint"

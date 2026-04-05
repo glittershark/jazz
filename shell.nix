@@ -13,6 +13,7 @@ pkgs.mkShell {
       pkgs.uucp
       pkgs.cmake
       pkgs.gtest
+      pkgs.clang-tools
       pkgs.git
       # Workaround https://github.com/NixOS/nixpkgs/issues/296348
       (pkgs.rapidcheck.overrideDerivation (oldAttrs: {
@@ -25,5 +26,6 @@ pkgs.mkShell {
     ]
     ++ lib.optionals (!pkgs.stdenv.isDarwin) [
       pkgs.stlink
+      pkgs.pkgsi686Linux.glibc.dev  # 32-bit headers for clang-tidy with ARM
     ];
 }
