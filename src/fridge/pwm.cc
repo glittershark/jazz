@@ -1,4 +1,4 @@
-#include "pwm.hpp"
+#include "pwm.h"
 #include "sys/system.h"
 #include <cassert>
 
@@ -13,9 +13,8 @@ using namespace daisy;
 
 // Get GPIO port from Pin
 static GPIO_TypeDef *GetGpioPort(Pin pin) {
-  constexpr GPIO_TypeDef *ports[] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE,
-                                     GPIOF, GPIOG, GPIOH, GPIOI, GPIOJ,
-                                     GPIOK};
+  constexpr GPIO_TypeDef *ports[] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF,
+                                     GPIOG, GPIOH, GPIOI, GPIOJ, GPIOK};
   if (pin.port <= PORTK) {
     return ports[pin.port];
   }

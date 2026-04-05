@@ -1,5 +1,5 @@
 TARGET = fridge
-CPP_SOURCES = fridge.cpp pwm.cpp
+CC_SOURCES = fridge.cc pwm.cc color.cc
 LIBDAISY_DIR = ../../vendor/libDaisy/
 DAISYSP_DIR = ../../vendor/DaisySP/
 LIBJAZZ_DIR = ../../lib/libjazz/

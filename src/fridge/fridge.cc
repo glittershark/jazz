@@ -4,7 +4,7 @@
 #include <memory>
 #ifndef UNIT_TEST
 #include "daisy_seed.h"
-#include "fridge.hpp"
+#include "fridge.h"
 #include <cassert>
 #include <cstdint>
 
