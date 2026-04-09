@@ -5,13 +5,11 @@
 #include <cstddef>
 #include <optional>
 
+#include "constants.hpp"
+
 // TODO(aspen): Remove once this is all actually used
 // NOLINTBEGIN(clang-diagnostic-unused-*)
 namespace fridge::config {
-
-constexpr const size_t NUM_HEADS = 8;
-constexpr const size_t NUM_LFOS = 8;
-constexpr const size_t MAX_TARGET_PARAMS = 64;  // ??
 
 struct Feedback {
   enum class Kind { kRead, kErase } kind_;
