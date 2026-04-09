@@ -3,15 +3,15 @@
 #include <algorithm>
 #include <cmath>
 
-namespace {
+namespace fridge::transform {
 
 // ----- Validation
 
-float ClampFinite(float value, float fallback = 0.0f) {
+float state::ClampFinite(float value, float fallback) {
   return std::isfinite(value) ? value : fallback;
 }
 
-float ClampChance(float value) {
+float state::ClampChance(float value) {
   if (!std::isfinite(value)) {
     return 0.0f;
   }
@@ -19,7 +19,7 @@ float ClampChance(float value) {
   return std::clamp(value, 0.0f, 1.0f);
 }
 
-size_t ClampSize(float value, size_t minimum) {
+size_t state::ClampSize(float value, size_t minimum) {
   if (!std::isfinite(value)) {
     return minimum;
   }
@@ -28,8 +28,8 @@ size_t ClampSize(float value, size_t minimum) {
       std::max<float>(static_cast<float>(minimum), std::lround(value)));
 }
 
-fridge::config::LFO SanitizeLfo(const fridge::config::LFO& lfo) {
-  fridge::config::LFO sanitized(
+config::LFO state::SanitizeLfo(const config::LFO& lfo) {
+  config::LFO sanitized(
       ClampSize(static_cast<float>(lfo.range()), 0),
       ClampSize(static_cast<float>(lfo.max_grain_size()), 1),
       ClampSize(static_cast<float>(lfo.min_grain_size()), 1),
@@ -42,9 +42,8 @@ fridge::config::LFO SanitizeLfo(const fridge::config::LFO& lfo) {
   return sanitized;
 }
 
-fridge::config::Config SanitizeConfig(
-    const fridge::config::Config& root_config) {
-  fridge::config::Config sanitized = root_config;
+config::Config state::SanitizeConfig(const config::Config& root_config) {
+  config::Config sanitized = root_config;
 
   for (auto& head : sanitized.heads()) {
     head.write_amount() = ClampFinite(head.write_amount());
@@ -62,8 +61,8 @@ fridge::config::Config SanitizeConfig(
   return sanitized;
 }
 
-bool MatchesSanitizedTarget(const std::optional<fridge::config::Target>& input,
-                            const std::optional<fridge::config::Target>& sanitized) {
+bool state::MatchesSanitizedTarget(const std::optional<config::Target>& input,
+                                   const std::optional<config::Target>& sanitized) {
   if (input.has_value() != sanitized.has_value()) {
     return false;
   }
@@ -77,8 +76,8 @@ bool MatchesSanitizedTarget(const std::optional<fridge::config::Target>& input,
          input->object_idx() == sanitized->object_idx();
 }
 
-bool MatchesSanitizedLfo(const fridge::config::LFO& input,
-                         const fridge::config::LFO& sanitized) {
+bool state::MatchesSanitizedLfo(const config::LFO& input,
+                                const config::LFO& sanitized) {
   if (ClampSize(static_cast<float>(input.range()), 0) != sanitized.range() ||
       ClampSize(static_cast<float>(input.max_grain_size()), 1) !=
           sanitized.max_grain_size() ||
@@ -101,11 +100,11 @@ bool MatchesSanitizedLfo(const fridge::config::LFO& input,
   return true;
 }
 
-bool MatchesSanitizedConfig(const fridge::config::Config& input,
-                           const fridge::config::Config& sanitized) {
+bool state::MatchesSanitizedConfig(const config::Config& input,
+                                   const config::Config& sanitized) {
   for (size_t i = 0; i < NUM_HEADS; ++i) {
-    const fridge::config::Head& input_head = input.heads()[i];
-    const fridge::config::Head& sanitized_head = sanitized.heads()[i];
+    const config::Head& input_head = input.heads()[i];
+    const config::Head& sanitized_head = sanitized.heads()[i];
     if (input_head.position() != sanitized_head.position() ||
         ClampFinite(input_head.write_amount()) != sanitized_head.write_amount() ||
         ClampFinite(input_head.read_amount()) != sanitized_head.read_amount() ||
@@ -127,17 +126,17 @@ bool MatchesSanitizedConfig(const fridge::config::Config& input,
          ClampFinite(input.wet()) == sanitized.wet();
 }
 
-void ApplyTargetDelta(fridge::config::Config& config,
-                      const fridge::config::Target& target, float delta) {
-  using fridge::config::TargetObject;
-  using fridge::config::TargetParameter;
+void state::ApplyTargetDelta(config::Config& config,
+                             const config::Target& target, float delta) {
+  using config::TargetObject;
+  using config::TargetParameter;
 
   if (target.object() == TargetObject::kHead) {
     if (target.object_idx() >= NUM_HEADS) {
       return;
     }
 
-    fridge::config::Head& head = config.heads()[target.object_idx()];
+    config::Head& head = config.heads()[target.object_idx()];
     switch (target.parameter()) {
       case TargetParameter::kPosition:
         head.position() =
@@ -166,7 +165,7 @@ void ApplyTargetDelta(fridge::config::Config& config,
       return;
     }
 
-    fridge::config::LFO& lfo = config.lfos()[target.object_idx()];
+    config::LFO& lfo = config.lfos()[target.object_idx()];
     switch (target.parameter()) {
       case TargetParameter::kRange:
         lfo.range() = ClampSize(static_cast<float>(lfo.range()) + delta, 0);
@@ -216,7 +215,7 @@ void ApplyTargetDelta(fridge::config::Config& config,
   }
 }
 
-void ApplyLfoDelta(fridge::config::Config& config, size_t lfo_idx, float delta) {
+void state::ApplyLfoDelta(config::Config& config, size_t lfo_idx, float delta) {
   if (lfo_idx >= NUM_LFOS || delta == 0.0f) {
     return;
   }
@@ -229,11 +228,7 @@ void ApplyLfoDelta(fridge::config::Config& config, size_t lfo_idx, float delta) 
   }
 }
 
-}  // namespace
-
-namespace fridge {
-
-void LFOSystem::Initialize(const config::Config& root_config) {
+void state::Initialize(const config::Config& root_config) {
   time_ = 0.0f;
   initialized_ = true;
   root_config_ = SanitizeConfig(root_config);
@@ -242,33 +237,35 @@ void LFOSystem::Initialize(const config::Config& root_config) {
   for (size_t i = 0; i < NUM_LFOS; ++i) {
     config::LFO lfo_config = root_config_.lfos()[i];
     lfo_engines_[i] =
-        state::LFOEngine(lfo_config, seed_ + static_cast<uint32_t>(i));
+        fridge::state::LFOEngine(lfo_config, seed_ + static_cast<uint32_t>(i));
     lfo_engines_[i].Reset(static_cast<float>(lfo_config.range()) * 0.5f,
-                          state::Direction::kForwards);
+                          fridge::state::Direction::kForwards);
     lfo_initial_values_[i] = lfo_engines_[i].value();
   }
 }
 
-void LFOSystem::RebaseRootConfig(const config::Config& root_config) {
-  root_config_ = SanitizeConfig(root_config);
-  output_config_ = root_config_;
-
+void state::ApplyCurrentDeltas(config::Config& config) const {
   for (size_t i = 0; i < NUM_LFOS; ++i) {
-    ApplyLfoDelta(output_config_, i, CurrentDelta(i));
+    ApplyLfoDelta(config, i, CurrentDelta(i));
   }
 }
 
-float LFOSystem::CurrentDelta(size_t lfo_idx) const {
+void state::RebaseRootConfig(const config::Config& root_config) {
+  root_config_ = SanitizeConfig(root_config);
+  output_config_ = root_config_;
+  ApplyCurrentDeltas(output_config_);
+}
+
+float state::CurrentDelta(size_t lfo_idx) const {
   return lfo_engines_[lfo_idx].value() - lfo_initial_values_[lfo_idx];
 }
 
-const config::Config& LFOSystem::Reset(const config::Config& root_config) {
+const config::Config& state::Reset(const config::Config& root_config) {
   Initialize(root_config);
   return output_config_;
 }
 
-const config::Config& LFOSystem::Update(const config::Config& root_config,
-                                        float dt) {
+const config::Config& state::Update(const config::Config& root_config, float dt) {
   if (!initialized_) {
     Initialize(root_config);
   } else if (!MatchesSanitizedConfig(root_config, root_config_)) {
@@ -289,7 +286,7 @@ const config::Config& LFOSystem::Update(const config::Config& root_config,
     lfo_engines_[i].SetConfig(output_config_.lfos()[i]);
   }
 
-  for (state::LFOEngine& engine : lfo_engines_) {
+  for (fridge::state::LFOEngine& engine : lfo_engines_) {
     engine.Tick(step);
   }
 
@@ -303,4 +300,4 @@ const config::Config& LFOSystem::Update(const config::Config& root_config,
   return output_config_;
 }
 
-}  // namespace fridge
+}  // namespace fridge::transform
