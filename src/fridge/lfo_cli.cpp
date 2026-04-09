@@ -92,21 +92,21 @@ Direction ParseDirection(const std::string& value) {
 void ApplySetting(RunConfig& config, const std::string& key,
                   const std::string& value) {
   if (key == "range") {
-    config.lfo.range() = ParseSize(key, value);
+    config.lfo.range = ParseSize(key, value);
   } else if (key == "max_grain_size") {
-    config.lfo.max_grain_size() = ParseSize(key, value);
+    config.lfo.max_grain_size = ParseSize(key, value);
   } else if (key == "min_grain_size") {
-    config.lfo.min_grain_size() = ParseSize(key, value);
+    config.lfo.min_grain_size = ParseSize(key, value);
   } else if (key == "reverse_chance") {
-    config.lfo.reverse_chance() = ParseFloat(key, value);
+    config.lfo.reverse_chance = ParseFloat(key, value);
   } else if (key == "teleport_chance") {
-    config.lfo.teleport_chance() = ParseFloat(key, value);
+    config.lfo.teleport_chance = ParseFloat(key, value);
   } else if (key == "pitch_shift_chance") {
-    config.lfo.pitch_shift_chance() = ParseFloat(key, value);
+    config.lfo.pitch_shift_chance = ParseFloat(key, value);
   } else if (key == "low_octave_chance") {
-    config.lfo.low_octave_chance() = ParseFloat(key, value);
+    config.lfo.low_octave_chance = ParseFloat(key, value);
   } else if (key == "high_octave_chance") {
-    config.lfo.high_octave_chance() = ParseFloat(key, value);
+    config.lfo.high_octave_chance = ParseFloat(key, value);
   } else if (key == "duration") {
     config.duration = ParseFloat(key, value);
   } else if (key == "dt") {
@@ -251,7 +251,7 @@ void PrintGraph(const RunConfig& config,
                 const std::vector<SamplePoint>& samples) {
   size_t width = std::max<size_t>(2, config.width);
   size_t height = std::max<size_t>(2, config.height);
-  float max_value = std::max(1.0f, static_cast<float>(config.lfo.range()));
+  float max_value = std::max(1.0f, static_cast<float>(config.lfo.range));
 
   std::vector<std::string> grid(height, std::string(width, ' '));
 
@@ -272,7 +272,7 @@ void PrintGraph(const RunConfig& config,
              y_for(samples[i].value));
   }
 
-  std::cout << "range=" << config.lfo.range() << " duration=" << config.duration
+  std::cout << "range=" << config.lfo.range << " duration=" << config.duration
             << " dt=" << config.dt << " seed=" << config.seed << '\n';
   std::cout << "speed uses 1.0, 0.5, or 2.0 depending on pitch-shift settings"
             << '\n';
@@ -349,27 +349,27 @@ int main(int argc, char** argv) {
       } else if (arg == "--direction") {
         config.direction = ParseDirection(require_value("--direction"));
       } else if (arg == "--range") {
-        config.lfo.range() = ParseSize("range", require_value("--range"));
+        config.lfo.range = ParseSize("range", require_value("--range"));
       } else if (arg == "--max-grain-size") {
-        config.lfo.max_grain_size() =
+        config.lfo.max_grain_size =
             ParseSize("max_grain_size", require_value("--max-grain-size"));
       } else if (arg == "--min-grain-size") {
-        config.lfo.min_grain_size() =
+        config.lfo.min_grain_size =
             ParseSize("min_grain_size", require_value("--min-grain-size"));
       } else if (arg == "--reverse-chance") {
-        config.lfo.reverse_chance() =
+        config.lfo.reverse_chance =
             ParseFloat("reverse_chance", require_value("--reverse-chance"));
       } else if (arg == "--teleport-chance") {
-        config.lfo.teleport_chance() =
+        config.lfo.teleport_chance =
             ParseFloat("teleport_chance", require_value("--teleport-chance"));
       } else if (arg == "--pitch-shift-chance") {
-        config.lfo.pitch_shift_chance() = ParseFloat(
+        config.lfo.pitch_shift_chance = ParseFloat(
             "pitch_shift_chance", require_value("--pitch-shift-chance"));
       } else if (arg == "--low-octave-chance") {
-        config.lfo.low_octave_chance() = ParseFloat(
+        config.lfo.low_octave_chance = ParseFloat(
             "low_octave_chance", require_value("--low-octave-chance"));
       } else if (arg == "--high-octave-chance") {
-        config.lfo.high_octave_chance() = ParseFloat(
+        config.lfo.high_octave_chance = ParseFloat(
             "high_octave_chance", require_value("--high-octave-chance"));
       } else if (arg == "--width") {
         config.width = ParseSize("width", require_value("--width"));
