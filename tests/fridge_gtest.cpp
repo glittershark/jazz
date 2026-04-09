@@ -164,6 +164,20 @@ TEST(FridgeLFOSystemTest, ResetStartsAtStaticKnobPositions) {
   EXPECT_FLOAT_EQ(system.time(), 0.0f);
 }
 
+TEST(FridgeLFOSystemTest, ResetAndUpdateReturnStableConfigReference) {
+  fridge::config::Config config;
+  config.lfos()[0] = DeterministicLfo();
+  config.lfos()[0].targets()[0] =
+      Target(TargetObject::kMixer, TargetParameter::kDry);
+
+  LFOSystem system(1234);
+  const fridge::config::Config* reset_output = &system.Reset(config);
+  const fridge::config::Config* paused_output = &system.Update(config, 0.0f);
+
+  EXPECT_EQ(reset_output, paused_output);
+  EXPECT_FLOAT_EQ(paused_output->dry(), 1.0f);
+}
+
 TEST(FridgeLFOSystemTest, UpdateCreatesVirtualHeadKnobPositions) {
   fridge::config::Config config;
   config.heads()[0].write_amount() = 0.25f;
@@ -295,6 +309,25 @@ TEST(FridgeLFOSystemTest, NonPositiveDtReturnsCurrentVirtualConfig) {
   fridge::config::Config paused = system.Update(config, 0.0f);
 
   EXPECT_FLOAT_EQ(paused.dry(), advanced.dry());
+  EXPECT_FLOAT_EQ(system.time(), 1.5f);
+}
+
+TEST(FridgeLFOSystemTest, RootConfigChangesRebaseTheCurrentVirtualConfig) {
+  fridge::config::Config config;
+  config.dry() = 0.25f;
+  config.lfos()[0] = DeterministicLfo();
+  config.lfos()[0].targets()[0] =
+      Target(TargetObject::kMixer, TargetParameter::kDry);
+
+  LFOSystem system(1234);
+  system.Reset(config);
+  const fridge::config::Config& first_output = system.Update(config, 1.5f);
+  EXPECT_FLOAT_EQ(first_output.dry(), 1.75f);
+
+  config.dry() = 4.0f;
+  const fridge::config::Config& rebased_output = system.Update(config, 0.0f);
+
+  EXPECT_FLOAT_EQ(rebased_output.dry(), 5.5f);
   EXPECT_FLOAT_EQ(system.time(), 1.5f);
 }
 

@@ -62,6 +62,71 @@ fridge::config::Config SanitizeConfig(
   return sanitized;
 }
 
+bool MatchesSanitizedTarget(const std::optional<fridge::config::Target>& input,
+                            const std::optional<fridge::config::Target>& sanitized) {
+  if (input.has_value() != sanitized.has_value()) {
+    return false;
+  }
+
+  if (!input.has_value()) {
+    return true;
+  }
+
+  return input->object() == sanitized->object() &&
+         input->parameter() == sanitized->parameter() &&
+         input->object_idx() == sanitized->object_idx();
+}
+
+bool MatchesSanitizedLfo(const fridge::config::LFO& input,
+                         const fridge::config::LFO& sanitized) {
+  if (ClampSize(static_cast<float>(input.range()), 0) != sanitized.range() ||
+      ClampSize(static_cast<float>(input.max_grain_size()), 1) !=
+          sanitized.max_grain_size() ||
+      ClampSize(static_cast<float>(input.min_grain_size()), 1) !=
+          sanitized.min_grain_size() ||
+      ClampChance(input.reverse_chance()) != sanitized.reverse_chance() ||
+      ClampChance(input.teleport_chance()) != sanitized.teleport_chance() ||
+      ClampChance(input.pitch_shift_chance()) != sanitized.pitch_shift_chance() ||
+      ClampChance(input.low_octave_chance()) != sanitized.low_octave_chance() ||
+      ClampChance(input.high_octave_chance()) != sanitized.high_octave_chance()) {
+    return false;
+  }
+
+  for (size_t i = 0; i < MAX_TARGET_PARAMS; ++i) {
+    if (!MatchesSanitizedTarget(input.targets()[i], sanitized.targets()[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool MatchesSanitizedConfig(const fridge::config::Config& input,
+                           const fridge::config::Config& sanitized) {
+  for (size_t i = 0; i < NUM_HEADS; ++i) {
+    const fridge::config::Head& input_head = input.heads()[i];
+    const fridge::config::Head& sanitized_head = sanitized.heads()[i];
+    if (input_head.position() != sanitized_head.position() ||
+        ClampFinite(input_head.write_amount()) != sanitized_head.write_amount() ||
+        ClampFinite(input_head.read_amount()) != sanitized_head.read_amount() ||
+        ClampFinite(input_head.erase_amount()) != sanitized_head.erase_amount() ||
+        input_head.feedback().kind() != sanitized_head.feedback().kind() ||
+        ClampFinite(input_head.feedback().amount()) !=
+            sanitized_head.feedback().amount()) {
+      return false;
+    }
+  }
+
+  for (size_t i = 0; i < NUM_LFOS; ++i) {
+    if (!MatchesSanitizedLfo(input.lfos()[i], sanitized.lfos()[i])) {
+      return false;
+    }
+  }
+
+  return ClampFinite(input.dry()) == sanitized.dry() &&
+         ClampFinite(input.wet()) == sanitized.wet();
+}
+
 void ApplyTargetDelta(fridge::config::Config& config,
                       const fridge::config::Target& target, float delta) {
   using fridge::config::TargetObject;
@@ -171,10 +236,11 @@ namespace fridge {
 void LFOSystem::Initialize(const config::Config& root_config) {
   time_ = 0.0f;
   initialized_ = true;
-  config::Config sanitized_root = SanitizeConfig(root_config);
+  root_config_ = SanitizeConfig(root_config);
+  output_config_ = root_config_;
 
   for (size_t i = 0; i < NUM_LFOS; ++i) {
-    config::LFO lfo_config = sanitized_root.lfos()[i];
+    config::LFO lfo_config = root_config_.lfos()[i];
     lfo_engines_[i] =
         state::LFOEngine(lfo_config, seed_ + static_cast<uint32_t>(i));
     lfo_engines_[i].Reset(static_cast<float>(lfo_config.range()) * 0.5f,
@@ -183,30 +249,44 @@ void LFOSystem::Initialize(const config::Config& root_config) {
   }
 }
 
-config::Config LFOSystem::Reset(const config::Config& root_config) {
-  Initialize(root_config);
-  return BuildVirtualConfig(root_config);
+void LFOSystem::RebaseRootConfig(const config::Config& root_config) {
+  root_config_ = SanitizeConfig(root_config);
+  output_config_ = root_config_;
+
+  for (size_t i = 0; i < NUM_LFOS; ++i) {
+    ApplyLfoDelta(output_config_, i, CurrentDelta(i));
+  }
 }
 
-config::Config LFOSystem::Update(const config::Config& root_config, float dt) {
+float LFOSystem::CurrentDelta(size_t lfo_idx) const {
+  return lfo_engines_[lfo_idx].value() - lfo_initial_values_[lfo_idx];
+}
+
+const config::Config& LFOSystem::Reset(const config::Config& root_config) {
+  Initialize(root_config);
+  return output_config_;
+}
+
+const config::Config& LFOSystem::Update(const config::Config& root_config,
+                                        float dt) {
   if (!initialized_) {
     Initialize(root_config);
+  } else if (!MatchesSanitizedConfig(root_config, root_config_)) {
+    RebaseRootConfig(root_config);
   }
 
   float step = std::max(0.0f, dt);
-  config::Config output_config = BuildVirtualConfig(root_config);
-
   if (step <= 0.0f) {
-    return output_config;
+    return output_config_;
   }
 
   std::array<float, NUM_LFOS> previous_deltas{};
   for (size_t i = 0; i < NUM_LFOS; ++i) {
-    previous_deltas[i] = lfo_engines_[i].value() - lfo_initial_values_[i];
+    previous_deltas[i] = CurrentDelta(i);
   }
 
   for (size_t i = 0; i < NUM_LFOS; ++i) {
-    lfo_engines_[i].SetConfig(output_config.lfos()[i]);
+    lfo_engines_[i].SetConfig(output_config_.lfos()[i]);
   }
 
   for (state::LFOEngine& engine : lfo_engines_) {
@@ -216,24 +296,11 @@ config::Config LFOSystem::Update(const config::Config& root_config, float dt) {
   time_ += step;
 
   for (size_t i = 0; i < NUM_LFOS; ++i) {
-    float delta_change =
-        (lfo_engines_[i].value() - lfo_initial_values_[i]) - previous_deltas[i];
-    ApplyLfoDelta(output_config, i, delta_change);
+    float delta_change = CurrentDelta(i) - previous_deltas[i];
+    ApplyLfoDelta(output_config_, i, delta_change);
   }
 
-  return output_config;
-}
-
-config::Config LFOSystem::BuildVirtualConfig(
-    const config::Config& root_config) const {
-  config::Config virtual_config = SanitizeConfig(root_config);
-
-  for (size_t i = 0; i < NUM_LFOS; ++i) {
-    ApplyLfoDelta(virtual_config, i,
-                  lfo_engines_[i].value() - lfo_initial_values_[i]);
-  }
-
-  return virtual_config;
+  return output_config_;
 }
 
 }  // namespace fridge

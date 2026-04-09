@@ -14,17 +14,20 @@ class LFOSystem {
   uint32_t seed_;
   float time_ = 0.0f;
   bool initialized_ = false;
+  config::Config root_config_{};
+  config::Config output_config_{};
   std::array<float, NUM_LFOS> lfo_initial_values_{};
   std::array<state::LFOEngine, NUM_LFOS> lfo_engines_{};
 
   void Initialize(const config::Config& root_config);
-  config::Config BuildVirtualConfig(const config::Config& root_config) const;
+  void RebaseRootConfig(const config::Config& root_config);
+  float CurrentDelta(size_t lfo_idx) const;
 
  public:
   explicit LFOSystem(uint32_t seed = std::random_device{}()) : seed_(seed) {}
 
-  config::Config Reset(const config::Config& root_config);
-  config::Config Update(const config::Config& root_config, float dt);
+  const config::Config& Reset(const config::Config& root_config);
+  const config::Config& Update(const config::Config& root_config, float dt);
   float time() const { return time_; }
 };
 
