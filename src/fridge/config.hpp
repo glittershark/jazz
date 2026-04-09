@@ -32,11 +32,11 @@ class Head {
         erase_amount_(1.),
         feedback_({.kind_ = Feedback::Kind::kRead, .amount_ = 0.}) {}
 
-  size_t& position() { return position_; }
-  float& write_amount() { return write_amount_; }
-  float& read_amount() { return read_amount_; }
-  float& erase_amount() { return erase_amount_; }
-  Feedback& feedback() { return feedback_; }
+  const size_t& position() const { return position_; }
+  const float& write_amount() const { return write_amount_; }
+  const float& read_amount() const { return read_amount_; }
+  const float& erase_amount() const { return erase_amount_; }
+  const Feedback& feedback() const { return feedback_; }
 };
 
 enum class TargetParameter {
@@ -81,10 +81,10 @@ class Config {
   float wet_;
 
  public:
-  std::array<Head, NUM_HEADS>& heads() { return heads_; }
-  std::array<LFO, NUM_LFOS>& lfos() { return lfos_; }
-  float& dry() { return dry_; }
-  float& wet() { return wet_; }
+  const std::array<Head, NUM_HEADS>& heads() const { return heads_; }
+  const std::array<LFO, NUM_LFOS>& lfos() { return lfos_; }
+  const float& dry() const { return dry_; }
+  const float& wet() const { return wet_; }
 };
 
 }  // namespace fridge::config

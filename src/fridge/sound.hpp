@@ -264,7 +264,7 @@ class Sound {
   /**
    * Process an audio sample. Moves the internal clock forwards by 1
    */
-  float ProcessSample(fridge::config::Config& config, float sample);
+  float ProcessSample(const fridge::config::Config& config, float sample);
 };
 
 }  // namespace fridge::sound

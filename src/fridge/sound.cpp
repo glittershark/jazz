@@ -117,7 +117,7 @@ void Sound::Erase(size_t position, float amount) {
       &indices_to_update_[(global_clock_ + FADE_TIME) % FADE_TIME], position);
 }
 
-float Sound::ProcessSample(fridge::config::Config& config, float sample) {
+float Sound::ProcessSample(const fridge::config::Config& config, float sample) {
   PreHousekeeping(global_clock_);
 
   float wet_signal = 0.f;
