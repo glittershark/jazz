@@ -1,1 +1,7 @@
-jazz_add_firmware(fridge SOURCES fridge.cpp pwm.cpp color.cpp io.cpp)
+jazz_add_firmware(fridge SOURCES
+  fridge.cpp
+  pwm.cpp
+  color.cpp
+  io.cpp
+  sound.cpp
+)

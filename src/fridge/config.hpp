@@ -17,7 +17,7 @@ struct Feedback {
 };
 
 class Head {
-  // Position relative to the global clock
+  // Current position in the buffer
   size_t position_;
   float write_amount_;
   float read_amount_;
