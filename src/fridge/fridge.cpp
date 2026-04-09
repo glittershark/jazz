@@ -52,6 +52,7 @@ int main() {
 
   scan.Start();
 
+  // Debug: try fixed red first (try both polarities)
   hw.PrintLine("Testing red=255 (ON if common cathode)");
   red.Set(255);
   green.Set(0);
@@ -73,6 +74,7 @@ int main() {
       hw.PrintLine("hue=%d -> R=%d G=%d B=%d", hue, rgb.red, rgb.green,
                    rgb.blue);
 
+      // Try direct (common cathode) first
       red.Set(rgb.red);
       green.Set(rgb.green);
       blue.Set(rgb.blue);

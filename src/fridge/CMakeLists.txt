@@ -1,4 +1,12 @@
-jazz_add_firmware(fridge SOURCES fridge.cpp pwm.cpp color.cpp io.cpp lfo.cpp config_transform.cpp)
+jazz_add_firmware(fridge SOURCES
+  fridge.cpp
+  pwm.cpp
+  color.cpp
+  io.cpp
+  lfo.cpp
+  config_transform.cpp
+  sound.cpp
+)
 
 if(NOT CMAKE_CROSSCOMPILING AND TARGET fridge)
   add_executable(fridge-lfo-cli lfo_cli.cpp)
