@@ -5,6 +5,9 @@
 
 namespace fridge::sound {
 
+Slab<BufferValue::SampleWithUpdates, UPDATE_CAP> BufferValue::SAMPLES;
+Slab<IndicesToUpdate, UPDATE_CAP> IndicesToUpdate::SLAB;
+
 Update* BufferValue::PushBack(Update&& update) {
   if (isSampleWithUpdates()) {
     auto head = asSampleWithUpdates();
