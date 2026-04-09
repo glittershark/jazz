@@ -3,5 +3,13 @@ jazz_add_firmware(fridge SOURCES
   pwm.cpp
   color.cpp
   io.cpp
+  lfo.cpp
+  config_transform.cpp
   sound.cpp
 )
+
+if(NOT CMAKE_CROSSCOMPILING AND TARGET fridge)
+  add_executable(fridge-lfo-cli lfo_cli.cpp)
+  target_link_libraries(fridge-lfo-cli PRIVATE jazz::fridge)
+  target_compile_features(fridge-lfo-cli PRIVATE cxx_std_20)
+endif()
