@@ -1,2 +1,0 @@
-/usr/bin/ar qc liblibjazz.a CMakeFiles/libjazz.dir/src/value.cpp.o CMakeFiles/libjazz.dir/src/slab.cpp.o
-/usr/bin/ranlib liblibjazz.a

@@ -1,2 +1,0 @@
-/usr/bin/ar qc libgranular.a CMakeFiles/granular.dir/granular.cpp.o
-/usr/bin/ranlib libgranular.a

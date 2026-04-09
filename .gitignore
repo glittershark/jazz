@@ -124,6 +124,7 @@ cube/Daisy_Seed_Rev3/
 /**/VisualGDB
 # Build directories
 /**/build
+/build*/
 build/
 build-test/
 bin/

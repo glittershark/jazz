@@ -1,2 +1,0 @@
-/usr/bin/ar qc libreverse.a CMakeFiles/reverse.dir/reverse.cpp.o
-/usr/bin/ranlib libreverse.a
