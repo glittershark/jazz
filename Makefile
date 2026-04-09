@@ -1,74 +1,74 @@
-.PHONY: all test flash clean cmake-build cmake-configure merge-compile-commands fridge-lfo-cli
+.PHONY: all test console flash st-flash logs debug clean compile-commands lint fmt fmt-check
 
-# Default target - build everything via CMake
-all: cmake-build merge-compile-commands
+SOURCES := $(shell find src lib tests -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | grep -v -e vendor -e CMakeFiles)
 
-# Test target - build and run tests on host platform
+# Build for ARM
+all:
+	cmake --preset arm
+	cmake --build --preset arm
+	$(MAKE) compile-commands
+
+# Build and run tests
 test:
-	mkdir -p build-test
-	cd build-test && cmake -DTEST_ONLY=ON -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug ..
-	cd build-test && make
-	cd build-test && ctest --output-on-failure
-	$(MAKE) merge-compile-commands
+	cmake --preset host
+	cmake --build --preset host
+	ctest --test-dir build-test --output-on-failure
+	$(MAKE) compile-commands
 
-fridge-lfo-cli:
-	mkdir -p build-test
-	cd build-test && cmake -DTEST_ONLY=ON -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release ..
-	cd build-test && make fridge-lfo-cli
-	$(MAKE) merge-compile-commands
+# Build the host-side audio CLI
+console:
+	cmake --preset host
+	cmake --build --preset host --target jazz-console
+	$(MAKE) compile-commands
 
-# Create build directory and configure CMake
-cmake-configure: build/Makefile
+# Flash via ST-Link
+flash:
+	@test -n "$(DIR)" || (echo "Usage: make flash DIR=fridge"; exit 1)
+	st-flash write build/src/$(DIR)/$(DIR).bin 0x08000000
+	st-flash reset
 
-build/Makefile:
-	mkdir -p build
-	cd build && cmake ..
+# Alias for flash
+st-flash: flash
 
-# Build using CMake
-cmake-build: cmake-configure
-	cd build && make
+# Serial logs
+logs:
+	st-flash reset
+	@echo "Waiting for USB..."
+	@while ! ls /dev/ttyACM[0-9] >/dev/null 2>&1; do sleep 0.1; done
+	@sleep 1
+	cat /dev/ttyACM[0-9]
 
-# Flash target - build hardware project and flash to device
-flash: deps
-	@test $(DIR) || (echo "DIR must be set (eg \`make flash DIR=delay\`)"; exit 1)
-	${MAKE} -C src/$(DIR) program-dfu
-
-debug: deps
-	@test $(DIR) || (echo "DIR must be set (eg \`make debug DIR=delay\`)"; exit 1)
-	@[ -f src/$(DIR)/build/$(DIR).elf ] || (echo "You should probably build and flash first."; exit 1)
+# GDB debugging
+debug:
+	@test -n "$(DIR)" || (echo "Usage: make debug DIR=fridge"; exit 1)
 	pgrep st-util || setsid st-util -p 4242 --no-reset --semihosting >/dev/null 2>&1 &
-	gdb -ex "file src/$(DIR)/build/$(DIR).elf" -ex "target remote localhost:4242"
+	gdb -ex "file build/src/$(DIR)/$(DIR).elf" -ex "target remote localhost:4242"
 
-# Dependencies for hardware projects (libDaisy)
-deps: vendor/libDaisy/build/libdaisy.a vendor/DaisySP/build/libdaisysp.a
-
-vendor/libDaisy/build/libdaisy.a: vendor/libDaisy/*
-	make -C vendor/libDaisy
-
-vendor/DaisySP/build/libdaisysp.a: vendor/DaisySP/*
-	make -C vendor/DaisySP
-
-# Merge compile commands from both build directories for clangd
-merge-compile-commands:
+# Merge compile_commands.json from both builds
+compile-commands:
 	@if [ -f build/compile_commands.json ] && [ -f build-test/compile_commands.json ]; then \
-		jq -s 'add' build/compile_commands.json build-test/compile_commands.json > compile_commands.json; \
-		echo "Merged compile commands from build/ and build-test/"; \
+		jq -s 'add | unique_by(.file)' build/compile_commands.json build-test/compile_commands.json > compile_commands.json; \
+		echo "Merged compile_commands.json"; \
 	elif [ -f build/compile_commands.json ]; then \
-		cp build/compile_commands.json compile_commands.json; \
-		echo "Copied compile commands from build/"; \
+		cp build/compile_commands.json .; \
 	elif [ -f build-test/compile_commands.json ]; then \
-		cp build-test/compile_commands.json compile_commands.json; \
-		echo "Copied compile commands from build-test/"; \
-	else \
-		echo "No compile_commands.json found in build/ or build-test/"; \
+		cp build-test/compile_commands.json .; \
 	fi
 
-# Clean everything
+# Run clang-tidy (strips ARM-specific flags for host clang compatibility)
+lint: compile-commands
+	@sed 's/-mcpu=[^ ]*//g; s/-mthumb//g; s/-mfpu=[^ ]*//g; s/-mfloat-abi=[^ ]*//g' \
+		compile_commands.json > compile_commands.lint.json
+	clang-tidy -p compile_commands.lint.json $(SOURCES)
+	@rm -f compile_commands.lint.json
+
+# Format code in place
+fmt:
+	clang-format -i $(SOURCES)
+
+# Check formatting (for CI)
+fmt-check:
+	clang-format --dry-run --Werror $(SOURCES)
+
 clean:
 	rm -rf build build-test compile_commands.json
-	${MAKE} -C src/delay clean || true
-	${MAKE} -C src/reverse clean || true
-	${MAKE} -C src/granular clean || true
-	${MAKE} -C src/fridge clean || true
-	${MAKE} -C src/identity clean || true
-	${MAKE} -C src/rachel clean || true

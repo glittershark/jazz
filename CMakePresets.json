@@ -1,0 +1,27 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "arm",
+      "displayName": "ARM (Daisy Seed)",
+      "binaryDir": "${sourceDir}/build",
+      "toolchainFile": "${sourceDir}/cmake/arm-none-eabi-toolchain.cmake",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "host",
+      "displayName": "Host (Tests)",
+      "binaryDir": "${sourceDir}/build-test",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "BUILD_TESTING": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "arm", "configurePreset": "arm" },
+    { "name": "host", "configurePreset": "host" }
+  ]
+}

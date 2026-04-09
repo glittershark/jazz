@@ -9,7 +9,8 @@ DaisySeed hw;
 // Simple one-pole highpass filter state
 static float last_output = 0.0f;
 static float last_input = 0.0f;
-static float alpha = 0.1f; // Filter coefficient (0.0 = no filtering, 1.0 = full filtering)
+static float alpha =
+    0.1f;  // Filter coefficient (0.0 = no filtering, 1.0 = full filtering)
 
 float highpass(float sample) {
   // First-order IIR highpass filter: y[n] = alpha * (y[n-1] + x[n] - x[n-1])
@@ -27,7 +28,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
   }
 }
 
-int main(void) {
+int main() {
   hw.Configure();
   hw.Init();
   hw.SetAudioBlockSize(4);
@@ -40,9 +41,9 @@ int main(void) {
   hw.StartAudio(AudioCallback);
   for (;;) {
     // Map ADC value (0.0-1.0) to filter coefficient (0.0-1.0)
-    // Lower values = less filtering (lower cutoff), higher values = more filtering (higher cutoff)
+    // Lower values = less filtering (lower cutoff), higher values = more
+    // filtering (higher cutoff)
     alpha = hw.adc.GetFloat(0);
     System::Delay(1);
   }
 }
-

@@ -42,8 +42,8 @@ TEST(FridgeLFOTest, GrainBoundaryCanTeleport) {
   LFO config(10, 1, 1, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f);
   LFOEngine engine(config, 1234);
 
-  float before_boundary = engine.Tick(1.0f);
-  float after_boundary = engine.value();
+  float before_boundary = engine.Tick(0.5f);
+  float after_boundary = engine.Tick(0.5f);
 
   EXPECT_GE(before_boundary, 0.0f);
   EXPECT_LE(before_boundary, 10.0f);
@@ -69,6 +69,39 @@ TEST(FridgeLFOTest, LargeDtCarriesAcrossMultipleGrains) {
   EXPECT_FLOAT_EQ(engine.Tick(5.0f), 5.0f);
   EXPECT_EQ(engine.grain_size(), 2u);
   EXPECT_FLOAT_EQ(engine.speed(), 1.0f);
+}
+
+TEST(FridgeLFOTest, ResetClampsInitialValueAndPreservesDirection) {
+  LFO config(3, 2, 2, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+  LFOEngine engine(config, 1234);
+
+  engine.Reset(99.0f, Direction::kBackwards);
+
+  EXPECT_FLOAT_EQ(engine.value(), 3.0f);
+  EXPECT_EQ(engine.direction(), Direction::kBackwards);
+  EXPECT_EQ(engine.grain_size(), 2u);
+}
+
+TEST(FridgeLFOTest, NonPositiveDtDoesNotAdvanceState) {
+  LFO config(8, 3, 3, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+  LFOEngine engine(config, 1234);
+
+  EXPECT_FLOAT_EQ(engine.Tick(0.0f), 0.0f);
+  EXPECT_FLOAT_EQ(engine.Tick(-4.0f), 0.0f);
+  EXPECT_FLOAT_EQ(engine.value(), 0.0f);
+  EXPECT_FLOAT_EQ(engine.grain_time_remaining(), 3.0f);
+}
+
+TEST(FridgeLFOTest, SetConfigClampsCurrentValueToNewRange) {
+  LFO initial_config(10, 2, 2, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+  LFOEngine engine(initial_config, 1234);
+  ASSERT_FLOAT_EQ(engine.Tick(7.0f), 7.0f);
+
+  LFO smaller_range(4, 2, 2, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+  engine.SetConfig(smaller_range);
+
+  EXPECT_FLOAT_EQ(engine.value(), 4.0f);
+  EXPECT_EQ(engine.config().range(), 4u);
 }
 
 TEST(FridgeStateConfigTest, StartsAtStaticKnobPositions) {
@@ -113,6 +146,23 @@ TEST(FridgeStateConfigTest, LfoCreatesVirtualHeadKnobPositions) {
   EXPECT_FLOAT_EQ(state.time(), 1.5f);
 }
 
+TEST(FridgeStateConfigTest, LfoCanModulateMixerKnobs) {
+  fridge::config::Config config;
+  config.dry() = 0.2f;
+  config.wet() = 0.4f;
+  config.lfos()[0] = LFO(10, 4, 4, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+  config.lfos()[0].targets()[0] =
+      Target(TargetObject::kMixer, TargetParameter::kDry);
+  config.lfos()[0].targets()[1] =
+      Target(TargetObject::kMixer, TargetParameter::kWet);
+
+  Config state(config, 1234);
+  state.Tick(1.25f);
+
+  EXPECT_FLOAT_EQ(state.dry().value(), 1.45f);
+  EXPECT_FLOAT_EQ(state.wet().value(), 1.65f);
+}
+
 TEST(FridgeStateConfigTest, LfoModulatesAnotherLfoOnTheNextTick) {
   fridge::config::Config config;
   config.lfos()[0] = LFO(2, 2, 2, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
@@ -132,4 +182,53 @@ TEST(FridgeStateConfigTest, LfoModulatesAnotherLfoOnTheNextTick) {
   state.Tick(1.0f);
 
   EXPECT_EQ(state.lfo_engines()[1].direction(), Direction::kBackwards);
+}
+
+TEST(FridgeStateConfigTest, ResetRestoresStaticVirtualState) {
+  fridge::config::Config config;
+  config.heads()[0].position() = 9;
+  config.lfos()[0] = LFO(10, 4, 4, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+  config.lfos()[0].targets()[0] =
+      Target(TargetObject::kHead, TargetParameter::kPosition, 0);
+
+  Config state(config, 1234);
+  state.Tick(2.0f);
+  ASSERT_NE(state.heads()[0].position().value(), 9.0f);
+
+  state.Reset();
+
+  EXPECT_FLOAT_EQ(state.heads()[0].position().value(), 9.0f);
+  EXPECT_FLOAT_EQ(state.time(), 0.0f);
+}
+
+TEST(FridgeStateConfigTest, InvalidTargetsAreIgnored) {
+  fridge::config::Config config;
+  config.heads()[0].write_amount() = 0.25f;
+  config.lfos()[0] = LFO(10, 4, 4, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+  config.lfos()[0].targets()[0] =
+      Target(TargetObject::kHead, TargetParameter::kWriteAmount, 99);
+  config.lfos()[0].targets()[1] =
+      Target(TargetObject::kMixer, TargetParameter::kWriteAmount);
+
+  Config state(config, 1234);
+  state.Tick(2.0f);
+
+  EXPECT_FLOAT_EQ(state.heads()[0].write_amount().value(), 0.25f);
+}
+
+TEST(FridgeStateConfigTest, ModulatedLfoRangeIsClampedForNextTick) {
+  fridge::config::Config config;
+  config.lfos()[0] = LFO(2, 2, 2, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+  config.lfos()[0].targets()[0] =
+      Target(TargetObject::kLFO, TargetParameter::kRange, 1);
+  config.lfos()[1] = LFO(0, 1, 1, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+
+  Config state(config, 1234);
+  EXPECT_FLOAT_EQ(state.lfos()[1].range().value(), 0.0f);
+
+  state.Tick(1.0f);
+  EXPECT_FLOAT_EQ(state.lfos()[1].range().value(), 1.0f);
+
+  state.Tick(1.0f);
+  EXPECT_LE(state.lfo_engines()[1].value(), 1.0f);
 }

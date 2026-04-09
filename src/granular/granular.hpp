@@ -1,7 +1,5 @@
 #pragma once
 
-#include "libjazz/slab.hpp"
-#include "libjazz/value.hpp"
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -9,6 +7,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
+
+#include "libjazz/slab.hpp"
+#include "libjazz/value.hpp"
 
 // Constants
 constexpr const size_t BUFFER_LEN = 22050 * 1; /* 1 second */
@@ -46,25 +47,25 @@ struct Update {
   size_t finished_at;
   float value;
   size_t samples;
-  Update *next_;
+  Update* next_;
 
   class Iterator {
-    const Update *cur;
+    const Update* cur;
 
-  public:
+   public:
     using difference_type = std::ptrdiff_t;
     using value_type = Update;
 
-    Iterator(const Update *cur) : cur(cur) {}
+    Iterator(const Update* cur) : cur(cur) {}
 
-    const Update &operator*() const { return *cur; }
+    const Update& operator*() const { return *cur; }
     void operator++(int) { ++*this; };
-    Iterator &operator++() {
+    Iterator& operator++() {
       cur = cur->next_;
       return *this;
     };
 
-    bool operator!=(Iterator &other) const { return other.cur != cur; }
+    bool operator!=(Iterator& other) const { return other.cur != cur; }
   };
   friend Iterator;
 
@@ -77,15 +78,16 @@ struct Update {
 static Slab<Update, UPDATE_CAP> UPDATES;
 
 class IndicesToUpdate {
-private:
+ private:
   size_t index_;
-  IndicesToUpdate *next_;
+  IndicesToUpdate* next_ = nullptr;
   static Slab<IndicesToUpdate, UPDATE_CAP> SLAB;
 
-public:
+ public:
+  IndicesToUpdate() : index_(0) {}
   IndicesToUpdate(size_t index) : index_(index) {}
 
-  static void Prepend(IndicesToUpdate **head, size_t index) {
+  static void Prepend(IndicesToUpdate** head, size_t index) {
     auto new_head = SLAB.Alloc(index);
     new_head->next_ = *head;
     *head = new_head;
@@ -93,25 +95,25 @@ public:
 
   size_t index() const { return index_; }
 
-  IndicesToUpdate *next() const { return next_; }
+  IndicesToUpdate* next() const { return next_; }
 
   class Iterator {
-    const IndicesToUpdate *cur_;
+    const IndicesToUpdate* cur_;
 
-  public:
+   public:
     using difference_type = std::ptrdiff_t;
     using value_type = IndicesToUpdate;
 
-    Iterator(const IndicesToUpdate *cur) : cur_(cur) {}
+    Iterator(const IndicesToUpdate* cur) : cur_(cur) {}
 
-    const IndicesToUpdate &operator*() const { return *cur_; }
+    const IndicesToUpdate& operator*() const { return *cur_; }
     void operator++(int) { ++*this; };
-    Iterator &operator++() {
+    Iterator& operator++() {
       cur_ = cur_->next_;
       return *this;
     };
 
-    bool operator!=(Iterator &other) const { return other.cur_ != cur_; }
+    bool operator!=(Iterator& other) const { return other.cur_ != cur_; }
 
     Iterator begin() const { return *this; }
     Iterator end() const { return Iterator(nullptr); }
@@ -119,24 +121,24 @@ public:
   friend Iterator;
 
   class DrainingIterator {
-    IndicesToUpdate *cur_;
+    IndicesToUpdate* cur_;
 
-  public:
+   public:
     using difference_type = std::ptrdiff_t;
     using value_type = IndicesToUpdate;
 
-    DrainingIterator(IndicesToUpdate *cur) : cur_(cur) {}
+    DrainingIterator(IndicesToUpdate* cur) : cur_(cur) {}
 
-    const IndicesToUpdate &operator*() const { return *cur_; }
+    const IndicesToUpdate& operator*() const { return *cur_; }
     void operator++(int) { ++*this; };
-    DrainingIterator &operator++() {
+    DrainingIterator& operator++() {
       auto old = cur_;
       cur_ = cur_->next_;
       IndicesToUpdate::SLAB.Free(old);
       return *this;
     };
 
-    bool operator!=(DrainingIterator &other) const {
+    bool operator!=(DrainingIterator& other) const {
       return other.cur_ != cur_;
     }
 
@@ -153,31 +155,33 @@ public:
 };
 
 class BufferValue {
-public:
+ public:
   struct SampleWithUpdates {
     float sample;
-    Update *first_update;
+    Update* first_update;
+
+    SampleWithUpdates(float sample = 0.0f, Update* first_update = nullptr)
+        : sample(sample), first_update(first_update) {}
   };
   static Slab<SampleWithUpdates, UPDATE_CAP> SAMPLES;
   using SlabPtr = decltype(SAMPLES)::Ptr<&SAMPLES>;
 
-  enum { kSample, kSampleWithUpdates } kind_;
   union {
     float float_;
     SlabPtr ptr_;
     std::ptrdiff_t pd_;
   };
 
-  static const size_t INT_TAG = 1ull << (sizeof(void *) * 8 - 1);
+  static const size_t INT_TAG = 1ull << (sizeof(void*) * 8 - 1);
 
-protected:
+ protected:
   SlabPtr asSampleWithUpdates() {
     assert(isSampleWithUpdates());
     return SlabPtr::FromInt(pd_ & ~INT_TAG);
   }
   float asSample() { return float_ - 1.0f; }
 
-public:
+ public:
   BufferValue(SlabPtr ptr) : ptr_(ptr) { pd_ |= INT_TAG; }
   BufferValue(float sample) : float_(std::clamp(sample, -1.0f, 1.0f) + 1.0) {
     pd_ &= ~INT_TAG;
@@ -206,30 +210,31 @@ public:
     if (isSampleWithUpdates()) {
       asSampleWithUpdates()->sample = sample;
     } else {
-      asSampleWithUpdates()->sample = std::clamp(sample, -1.0f, 1.0f) + 1.0;
+      float_ = std::clamp(sample, -1.0f, 1.0f) + 1.0f;
+      pd_ &= ~INT_TAG;
     }
   }
 
-  Update *PushBack(Update &&update);
+  Update* PushBack(Update&& update);
 
-  Update **FirstUpdate();
+  Update** FirstUpdate();
 
   void Housekeep();
 
   class DrainingIterator {
     enum { kHead, kUpdate } kind_;
     union {
-      SampleWithUpdates *head_;
-      Update *update_;
+      SampleWithUpdates* head_;
+      Update* update_;
     };
 
-  public:
+   public:
     using difference_type = std::ptrdiff_t;
     using value_type = IndicesToUpdate;
 
-    DrainingIterator(SampleWithUpdates *head) : kind_(kHead), head_(head) {}
+    DrainingIterator(SampleWithUpdates* head) : kind_(kHead), head_(head) {}
 
-    const Update &operator*() const {
+    const Update& operator*() const {
       if (kind_ == kHead) {
         return *head_->first_update;
       } else {
@@ -238,7 +243,7 @@ public:
     }
 
     void operator++(int) { ++*this; };
-    DrainingIterator &operator++() {
+    DrainingIterator& operator++() {
       if (kind_ == kHead) {
         auto old = head_;
         kind_ = kUpdate;
@@ -252,7 +257,7 @@ public:
       return *this;
     };
 
-    bool operator!=(DrainingIterator &other) const {
+    bool operator!=(DrainingIterator& other) const {
       return other.head_ == head_;
     }
 
@@ -263,13 +268,12 @@ public:
 };
 
 class Granular {
-
-private:
-  std::array<IndicesToUpdate *, MAX_FADE_TIME> indices_to_update_;
+ private:
+  std::array<IndicesToUpdate*, MAX_FADE_TIME> indices_to_update_;
   size_t global_clock_max_ = SIZE_MAX;
   size_t global_clock_ = 0;
 
-public:
+ public:
   std::array<BufferValue, BUFFER_LEN> BUFFER;
 
   void Erase(size_t index, size_t clock_time, float value,
@@ -280,15 +284,16 @@ public:
   float Read(size_t index, size_t clock_time);
   void PreHousekeeping(size_t clock_time);
 
-  ~Granular() {}
+  ~Granular() = default;
 
   size_t global_clock_max() const { return global_clock_max_; }
 
-  template <size_t HEADS> float FullCycle(std::array<Head, HEADS> heads) {
+  template <size_t HEADS>
+  float FullCycle(std::array<Head, HEADS> heads) {
     PreHousekeeping(global_clock_);
     float wet_signal = 0.f;
 
-    for (auto &&head : heads) {
+    for (auto&& head : heads) {
       switch (head.kind) {
       case Head::Kind::kRead: {
         // TODO(aspen): Refactor; pull out a helper function pls

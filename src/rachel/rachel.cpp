@@ -7,7 +7,7 @@
 using namespace daisy;
 using namespace daisysp;
 
-Oscillator lfo; // LFO for modulation
+Oscillator lfo;  // LFO for modulation
 DaisySeed hw;
 #endif
 
@@ -29,9 +29,8 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
     auto sample = in[0][i] * 0.3f;
     float o = sample;
     for (size_t buf = 0; buf < nbuffers; buf++) {
-
       float delay_mod =
-          delay_samples[buf] * (1.0f + lfo_val * 0.5f); // 10% modulation
+          delay_samples[buf] * (1.0f + lfo_val * 0.5f);  // 10% modulation
       int delay_samples = (int)delay_mod;
 
       int read_pos = buffer_pos[buf] % (delay_samples - 1);
@@ -54,7 +53,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 #endif
 
 #ifndef UNIT_TEST
-int main(void) {
+int main() {
   hw.Configure();
   hw.Init();
   hw.SetAudioBlockSize(4);
@@ -62,7 +61,7 @@ int main(void) {
 
   // Initialize LFO (slow oscillation, like 0.5-2 Hz)
   lfo.Init(sample_rate);
-  lfo.SetFreq(0.5f); // 1 Hz oscillation
+  lfo.SetFreq(0.5f);  // 1 Hz oscillation
   lfo.SetWaveform(Oscillator::WAVE_SIN);
   lfo.SetAmp(1.0f);
 

@@ -1,18 +1,19 @@
+#include "granular.hpp"
+
 #include <array>
 #include <cstddef>
 #include <iostream>
 #include <optional>
 #include <random>
 
-#include "granular.hpp"
 #include "libjazz/slab.hpp"
 #include "libjazz/value.hpp"
-#include "system.h"
 
 #ifndef UNIT_TEST
 #include "daisy_seed.h"
 #include "daisysp.h"
 #include "hid/logger.h"
+#include "system.h"
 
 using namespace daisy;
 using namespace daisysp;
@@ -23,25 +24,25 @@ DaisySeed hw;
 Slab<BufferValue::SampleWithUpdates, UPDATE_CAP> BufferValue::SAMPLES;
 Slab<IndicesToUpdate, UPDATE_CAP> IndicesToUpdate::SLAB;
 
-Update *BufferValue::PushBack(Update &&update) {
+Update* BufferValue::PushBack(Update&& update) {
   if (isSampleWithUpdates()) {
     auto head = asSampleWithUpdates();
 
     if (head->first_update == nullptr) {
-      head->first_update = UPDATES.Alloc(std::move(update));
+      head->first_update = UPDATES.Alloc(update);
       return head->first_update;
     } else {
-      Update *cur = asSampleWithUpdates()->first_update;
+      Update* cur = asSampleWithUpdates()->first_update;
       while (cur->next_ != nullptr) {
         cur = cur->next_;
       }
-      cur->next_ = UPDATES.Alloc(std::move(update));
+      cur->next_ = UPDATES.Alloc(update);
 
       return cur->next_;
     }
   } else {
     float sample = asSample();
-    auto upd = UPDATES.Alloc(std::move(update));
+    auto upd = UPDATES.Alloc(update);
     decltype(SAMPLES)::Ptr<&SAMPLES> head =
         SAMPLES.AllocPtr<&SAMPLES>(sample, upd);
     new (this) BufferValue(head);
@@ -49,7 +50,7 @@ Update *BufferValue::PushBack(Update &&update) {
   }
 }
 
-Update **BufferValue::FirstUpdate() {
+Update** BufferValue::FirstUpdate() {
   if (isSampleWithUpdates()) {
     return &asSampleWithUpdates()->first_update;
   } else {
@@ -61,7 +62,7 @@ void BufferValue::Housekeep() {
   if (isSampleWithUpdates() && asSampleWithUpdates()->first_update == nullptr) {
     auto sample_ = sample();
     auto sample_with_updates = asSampleWithUpdates();
-    for (auto &&_ : DrainingIterator(&*sample_with_updates)) {
+    for (auto&& _ : DrainingIterator(&*sample_with_updates)) {
     }
     SAMPLES.FreePtr(asSampleWithUpdates());
     new (this) BufferValue(sample_);
@@ -182,7 +183,7 @@ void Granular::PreHousekeeping(size_t clock_time) {
     return;
   }
 
-  for (auto &&index : indices_to_update->drain()) {
+  for (auto&& index : indices_to_update->drain()) {
     DoUpdate(index.index(), clock_time);
   }
 }
@@ -226,7 +227,8 @@ void Head::Process(float sample) {
   }
 
   if (random) {
-    if ((random->grain_remaining -= step) == 0) {
+    random->grain_remaining -= step;
+    if (random->grain_remaining == 0) {
       random->fade = {
           .countdown = MAX_FADE_TIME,
           .old_index = index,
@@ -250,12 +252,13 @@ void Head::Process(float sample) {
   }
 
   index = (BUFFER_LEN + index + step_by) % BUFFER_LEN;
-  if (random->fade) {
+  if (random && random->fade) {
     if (random->fade->countdown-- == 0) {
       random->fade = std::nullopt;
+    } else {
+      random->fade->old_index =
+          (BUFFER_LEN + random->fade->old_index + step_by) % BUFFER_LEN;
     }
-    random->fade->old_index =
-        (BUFFER_LEN + random->fade->old_index + step_by) % BUFFER_LEN;
   }
 }
 
@@ -267,7 +270,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
   for (size_t i = 0; i < size; i++) {
     auto sample = in[0][i];
 
-    for (auto &&head : heads) {
+    for (auto&& head : heads) {
       head.Process(sample);
     }
 
@@ -277,7 +280,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 #endif
 
 #ifndef UNIT_TEST
-int main(void) {
+int main() {
   hw.Configure();
   hw.Init();
   hw.SetAudioBlockSize(16);

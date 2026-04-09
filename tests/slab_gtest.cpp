@@ -1,7 +1,9 @@
-#include "libjazz/slab.hpp"
+#include <gtest/gtest.h>
+
 #include <atomic>
 #include <cstdint>
-#include <gtest/gtest.h>
+
+#include "libjazz/slab.hpp"
 
 TEST(SlabTest, IntSlab) {
   Slab<uint64_t, 10> slab;
@@ -31,11 +33,11 @@ TEST(SlabTest, IntSlab) {
 }
 
 class CstrDestr {
-  std::atomic<int> *m_cstr_calls;
-  std::atomic<int> *m_destr_calls;
+  std::atomic<int>* m_cstr_calls;
+  std::atomic<int>* m_destr_calls;
 
-public:
-  CstrDestr(std::atomic<int> *cstr_calls, std::atomic<int> *destr_calls)
+ public:
+  CstrDestr(std::atomic<int>* cstr_calls, std::atomic<int>* destr_calls)
       : m_cstr_calls(cstr_calls), m_destr_calls(destr_calls) {
     (*m_cstr_calls)++;
   }
@@ -69,7 +71,7 @@ TEST(SlabTest, CstrDestrUniquePtr) {
   std::atomic<int> cstr_calls{0};
   std::atomic<int> destr_calls{0};
 
-  void *orig_x;
+  void* orig_x;
   {
     auto x = slab.MakeUnique(&cstr_calls, &destr_calls);
     orig_x = x.get();

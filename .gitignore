@@ -136,8 +136,12 @@ MyProjects/
 .cortex-debug.registers.state.json
 .cortex-debug.peripherals.state.json
 compile_commands.json
+compile_commands.lint.json
 .clangd/
 .cache/
 
 # Claude Code
 .claude
+
+# Local audio assets
+mp3s/
