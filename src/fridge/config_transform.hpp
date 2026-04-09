@@ -31,15 +31,17 @@ class state {
   static size_t ClampSize(float value, size_t minimum);
   static config::LFO SanitizeLfo(const config::LFO& lfo);
   static config::Config SanitizeConfig(const config::Config& root_config);
-  static bool MatchesSanitizedTarget(const std::optional<config::Target>& input,
-                                     const std::optional<config::Target>& sanitized);
+  static bool MatchesSanitizedTarget(
+      const std::optional<config::Target>& input,
+      const std::optional<config::Target>& sanitized);
   static bool MatchesSanitizedLfo(const config::LFO& input,
                                   const config::LFO& sanitized);
   static bool MatchesSanitizedConfig(const config::Config& input,
                                      const config::Config& sanitized);
   static void ApplyTargetDelta(config::Config& config,
                                const config::Target& target, float delta);
-  static void ApplyLfoDelta(config::Config& config, size_t lfo_idx, float delta);
+  static void ApplyLfoDelta(config::Config& config, size_t lfo_idx,
+                            float delta);
 
  public:
   explicit state(uint32_t seed = std::random_device{}()) : seed_(seed) {}

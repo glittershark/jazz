@@ -1,5 +1,3 @@
-#include "fridge.hpp"
-
 #include <cstdint>
 #include <fstream>
 #include <iomanip>
@@ -8,6 +6,8 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include "fridge.hpp"
 
 namespace {
 
@@ -39,7 +39,7 @@ struct SamplePoint {
   float grain_time_remaining;
 };
 
-std::string Trim(const std::string &input) {
+std::string Trim(const std::string& input) {
   size_t start = input.find_first_not_of(" \t\r\n");
   if (start == std::string::npos) {
     return "";
@@ -49,7 +49,7 @@ std::string Trim(const std::string &input) {
   return input.substr(start, end - start + 1);
 }
 
-float ParseFloat(const std::string &name, const std::string &value) {
+float ParseFloat(const std::string& name, const std::string& value) {
   try {
     size_t idx = 0;
     float parsed = std::stof(value, &idx);
@@ -57,12 +57,12 @@ float ParseFloat(const std::string &name, const std::string &value) {
       throw std::invalid_argument("trailing characters");
     }
     return parsed;
-  } catch (const std::exception &) {
+  } catch (const std::exception&) {
     throw std::runtime_error("invalid float for " + name + ": " + value);
   }
 }
 
-size_t ParseSize(const std::string &name, const std::string &value) {
+size_t ParseSize(const std::string& name, const std::string& value) {
   try {
     size_t idx = 0;
     unsigned long parsed = std::stoul(value, &idx);
@@ -70,16 +70,16 @@ size_t ParseSize(const std::string &name, const std::string &value) {
       throw std::invalid_argument("trailing characters");
     }
     return static_cast<size_t>(parsed);
-  } catch (const std::exception &) {
+  } catch (const std::exception&) {
     throw std::runtime_error("invalid integer for " + name + ": " + value);
   }
 }
 
-uint32_t ParseSeed(const std::string &name, const std::string &value) {
+uint32_t ParseSeed(const std::string& name, const std::string& value) {
   return static_cast<uint32_t>(ParseSize(name, value));
 }
 
-Direction ParseDirection(const std::string &value) {
+Direction ParseDirection(const std::string& value) {
   if (value == "forward") {
     return Direction::kForwards;
   }
@@ -89,8 +89,8 @@ Direction ParseDirection(const std::string &value) {
   throw std::runtime_error("direction must be forward or backward");
 }
 
-void ApplySetting(RunConfig &config, const std::string &key,
-                  const std::string &value) {
+void ApplySetting(RunConfig& config, const std::string& key,
+                  const std::string& value) {
   if (key == "range") {
     config.lfo.range() = ParseSize(key, value);
   } else if (key == "max_grain_size") {
@@ -122,7 +122,7 @@ void ApplySetting(RunConfig &config, const std::string &key,
   }
 }
 
-void LoadConfigFile(RunConfig &config, const std::string &path) {
+void LoadConfigFile(RunConfig& config, const std::string& path) {
   std::ifstream input(path);
   if (!input) {
     throw std::runtime_error("unable to open config: " + path);
@@ -149,7 +149,7 @@ void LoadConfigFile(RunConfig &config, const std::string &path) {
   }
 }
 
-void PrintUsage(std::ostream &out) {
+void PrintUsage(std::ostream& out) {
   out << "Usage: fridge-lfo-cli [--config FILE] [options]\n"
       << "Render an ASCII graph of the fridge LFO over time.\n\n"
       << "Options:\n"
@@ -176,14 +176,14 @@ void PrintUsage(std::ostream &out) {
       << "  --help\n";
 }
 
-void PrintExamples(std::ostream &out) {
+void PrintExamples(std::ostream& out) {
   out << "configs/fridge/slow_scan.cfg\n"
       << "configs/fridge/reverse_bounce.cfg\n"
       << "configs/fridge/teleport_sparks.cfg\n"
       << "configs/fridge/pitch_chaos.cfg\n";
 }
 
-void PrintPoint(float time, const LFOEngine &engine) {
+void PrintPoint(float time, const LFOEngine& engine) {
   std::cout << std::fixed << std::setprecision(6) << time << ','
             << engine.value() << ',' << engine.speed() << ','
             << (engine.direction() == Direction::kForwards ? "forward"
@@ -192,7 +192,7 @@ void PrintPoint(float time, const LFOEngine &engine) {
             << engine.grain_time_remaining() << '\n';
 }
 
-std::vector<SamplePoint> CollectTrace(const RunConfig &config) {
+std::vector<SamplePoint> CollectTrace(const RunConfig& config) {
   LFOEngine engine(config.lfo, config.seed);
   engine.Reset(config.initial_value, config.direction);
 
@@ -218,7 +218,7 @@ std::vector<SamplePoint> CollectTrace(const RunConfig &config) {
   return samples;
 }
 
-void PlotLine(std::vector<std::string> &grid, int x0, int y0, int x1, int y1) {
+void PlotLine(std::vector<std::string>& grid, int x0, int y0, int x1, int y1) {
   int dx = std::abs(x1 - x0);
   int sx = x0 < x1 ? 1 : -1;
   int dy = -std::abs(y1 - y0);
@@ -247,8 +247,8 @@ void PlotLine(std::vector<std::string> &grid, int x0, int y0, int x1, int y1) {
   }
 }
 
-void PrintGraph(const RunConfig &config,
-                const std::vector<SamplePoint> &samples) {
+void PrintGraph(const RunConfig& config,
+                const std::vector<SamplePoint>& samples) {
   size_t width = std::max<size_t>(2, config.width);
   size_t height = std::max<size_t>(2, config.height);
   float max_value = std::max(1.0f, static_cast<float>(config.lfo.range()));
@@ -284,24 +284,24 @@ void PrintGraph(const RunConfig &config,
               << " |" << grid[row] << '\n';
   }
 
-  std::cout << std::string(8, ' ') << '+'
-            << std::string(width, '-') << '\n';
+  std::cout << std::string(8, ' ') << '+' << std::string(width, '-') << '\n';
   std::ostringstream start;
   std::ostringstream end;
   start << std::fixed << std::setprecision(2) << 0.0f;
   end << std::fixed << std::setprecision(2) << config.duration;
-  size_t padding =
-      width > end.str().size() ? width - end.str().size() : static_cast<size_t>(0);
+  size_t padding = width > end.str().size() ? width - end.str().size()
+                                            : static_cast<size_t>(0);
   std::cout << std::string(9, ' ') << start.str()
-            << std::string(padding > start.str().size() ? padding - start.str().size()
-                                                        : 1,
+            << std::string(padding > start.str().size()
+                               ? padding - start.str().size()
+                               : 1,
                            ' ')
             << end.str() << '\n';
 }
 
-} // namespace
+}  // namespace
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   try {
     RunConfig config;
 
@@ -328,7 +328,7 @@ int main(int argc, char **argv) {
         continue;
       }
 
-      auto require_value = [&](const char *flag) -> std::string {
+      auto require_value = [&](const char* flag) -> std::string {
         if (i + 1 >= argc) {
           throw std::runtime_error(std::string("missing value for ") + flag);
         }
@@ -393,7 +393,7 @@ int main(int argc, char **argv) {
         std::cout
             << "time,value,speed,direction,grain_size,grain_time_remaining\n";
       }
-      for (const auto &sample : samples) {
+      for (const auto& sample : samples) {
         std::cout << std::fixed << std::setprecision(6) << sample.time << ','
                   << sample.value << ',' << sample.speed << ','
                   << (sample.direction == Direction::kForwards ? "forward"
@@ -406,7 +406,7 @@ int main(int argc, char **argv) {
     }
 
     return 0;
-  } catch (const std::exception &err) {
+  } catch (const std::exception& err) {
     std::cerr << "fridge-lfo-cli: " << err.what() << '\n';
     PrintUsage(std::cerr);
     return 1;

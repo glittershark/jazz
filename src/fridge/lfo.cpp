@@ -1,7 +1,7 @@
-#include "lfo_engine.hpp"
-
 #include <algorithm>
 #include <cmath>
+
+#include "lfo_engine.hpp"
 
 namespace {
 
@@ -33,8 +33,7 @@ void LFOEngine::SetConfig(const config::LFO& config) {
 }
 
 void LFOEngine::Reset(float initial_value, Direction direction) {
-  value_ =
-      std::clamp(initial_value, 0.0f, static_cast<float>(config_.range()));
+  value_ = std::clamp(initial_value, 0.0f, static_cast<float>(config_.range()));
   direction_ = direction;
   StartNewGrain(true);
 }
@@ -48,9 +47,9 @@ float LFOEngine::Tick(float dt) {
     }
 
     float slice = std::min(remaining, grain_time_remaining_);
-    value_ = std::clamp(value_ + (speed_ * DirectionMultiplier(direction_) *
-                                  slice),
-                        0.0f, static_cast<float>(config_.range()));
+    value_ =
+        std::clamp(value_ + (speed_ * DirectionMultiplier(direction_) * slice),
+                   0.0f, static_cast<float>(config_.range()));
     grain_time_remaining_ -= slice;
     remaining -= slice;
 
@@ -79,9 +78,8 @@ void LFOEngine::StartNewGrain(bool initial_grain) {
 }
 
 size_t LFOEngine::SampleGrainSize() {
-  size_t min_grain_size =
-      std::max<size_t>(1, std::min(config_.min_grain_size(),
-                                   config_.max_grain_size()));
+  size_t min_grain_size = std::max<size_t>(
+      1, std::min(config_.min_grain_size(), config_.max_grain_size()));
   size_t max_grain_size =
       std::max(min_grain_size,
                std::max(config_.min_grain_size(), config_.max_grain_size()));

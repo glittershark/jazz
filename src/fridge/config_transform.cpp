@@ -29,15 +29,14 @@ size_t state::ClampSize(float value, size_t minimum) {
 }
 
 config::LFO state::SanitizeLfo(const config::LFO& lfo) {
-  config::LFO sanitized(
-      ClampSize(static_cast<float>(lfo.range()), 0),
-      ClampSize(static_cast<float>(lfo.max_grain_size()), 1),
-      ClampSize(static_cast<float>(lfo.min_grain_size()), 1),
-      ClampChance(lfo.reverse_chance()),
-      ClampChance(lfo.teleport_chance()),
-      ClampChance(lfo.pitch_shift_chance()),
-      ClampChance(lfo.low_octave_chance()),
-      ClampChance(lfo.high_octave_chance()));
+  config::LFO sanitized(ClampSize(static_cast<float>(lfo.range()), 0),
+                        ClampSize(static_cast<float>(lfo.max_grain_size()), 1),
+                        ClampSize(static_cast<float>(lfo.min_grain_size()), 1),
+                        ClampChance(lfo.reverse_chance()),
+                        ClampChance(lfo.teleport_chance()),
+                        ClampChance(lfo.pitch_shift_chance()),
+                        ClampChance(lfo.low_octave_chance()),
+                        ClampChance(lfo.high_octave_chance()));
   sanitized.targets() = lfo.targets();
   return sanitized;
 }
@@ -61,8 +60,9 @@ config::Config state::SanitizeConfig(const config::Config& root_config) {
   return sanitized;
 }
 
-bool state::MatchesSanitizedTarget(const std::optional<config::Target>& input,
-                                   const std::optional<config::Target>& sanitized) {
+bool state::MatchesSanitizedTarget(
+    const std::optional<config::Target>& input,
+    const std::optional<config::Target>& sanitized) {
   if (input.has_value() != sanitized.has_value()) {
     return false;
   }
@@ -85,9 +85,11 @@ bool state::MatchesSanitizedLfo(const config::LFO& input,
           sanitized.min_grain_size() ||
       ClampChance(input.reverse_chance()) != sanitized.reverse_chance() ||
       ClampChance(input.teleport_chance()) != sanitized.teleport_chance() ||
-      ClampChance(input.pitch_shift_chance()) != sanitized.pitch_shift_chance() ||
+      ClampChance(input.pitch_shift_chance()) !=
+          sanitized.pitch_shift_chance() ||
       ClampChance(input.low_octave_chance()) != sanitized.low_octave_chance() ||
-      ClampChance(input.high_octave_chance()) != sanitized.high_octave_chance()) {
+      ClampChance(input.high_octave_chance()) !=
+          sanitized.high_octave_chance()) {
     return false;
   }
 
@@ -106,9 +108,11 @@ bool state::MatchesSanitizedConfig(const config::Config& input,
     const config::Head& input_head = input.heads()[i];
     const config::Head& sanitized_head = sanitized.heads()[i];
     if (input_head.position() != sanitized_head.position() ||
-        ClampFinite(input_head.write_amount()) != sanitized_head.write_amount() ||
+        ClampFinite(input_head.write_amount()) !=
+            sanitized_head.write_amount() ||
         ClampFinite(input_head.read_amount()) != sanitized_head.read_amount() ||
-        ClampFinite(input_head.erase_amount()) != sanitized_head.erase_amount() ||
+        ClampFinite(input_head.erase_amount()) !=
+            sanitized_head.erase_amount() ||
         input_head.feedback().kind() != sanitized_head.feedback().kind() ||
         ClampFinite(input_head.feedback().amount()) !=
             sanitized_head.feedback().amount()) {
@@ -138,25 +142,24 @@ void state::ApplyTargetDelta(config::Config& config,
 
     config::Head& head = config.heads()[target.object_idx()];
     switch (target.parameter()) {
-      case TargetParameter::kPosition:
-        head.position() =
-            ClampSize(static_cast<float>(head.position()) + delta, 0);
-        return;
-      case TargetParameter::kWriteAmount:
-        head.write_amount() = ClampFinite(head.write_amount() + delta);
-        return;
-      case TargetParameter::kReadAmount:
-        head.read_amount() = ClampFinite(head.read_amount() + delta);
-        return;
-      case TargetParameter::kEraseAmount:
-        head.erase_amount() = ClampFinite(head.erase_amount() + delta);
-        return;
-      case TargetParameter::kFeedbackAmount:
-        head.feedback().amount() =
-            ClampFinite(head.feedback().amount() + delta);
-        return;
-      default:
-        return;
+    case TargetParameter::kPosition:
+      head.position() =
+          ClampSize(static_cast<float>(head.position()) + delta, 0);
+      return;
+    case TargetParameter::kWriteAmount:
+      head.write_amount() = ClampFinite(head.write_amount() + delta);
+      return;
+    case TargetParameter::kReadAmount:
+      head.read_amount() = ClampFinite(head.read_amount() + delta);
+      return;
+    case TargetParameter::kEraseAmount:
+      head.erase_amount() = ClampFinite(head.erase_amount() + delta);
+      return;
+    case TargetParameter::kFeedbackAmount:
+      head.feedback().amount() = ClampFinite(head.feedback().amount() + delta);
+      return;
+    default:
+      return;
     }
   }
 
@@ -167,35 +170,34 @@ void state::ApplyTargetDelta(config::Config& config,
 
     config::LFO& lfo = config.lfos()[target.object_idx()];
     switch (target.parameter()) {
-      case TargetParameter::kRange:
-        lfo.range() = ClampSize(static_cast<float>(lfo.range()) + delta, 0);
-        return;
-      case TargetParameter::kMaxGrainSize:
-        lfo.max_grain_size() =
-            ClampSize(static_cast<float>(lfo.max_grain_size()) + delta, 1);
-        return;
-      case TargetParameter::kMinGrainSize:
-        lfo.min_grain_size() =
-            ClampSize(static_cast<float>(lfo.min_grain_size()) + delta, 1);
-        return;
-      case TargetParameter::kReverseChance:
-        lfo.reverse_chance() = ClampChance(lfo.reverse_chance() + delta);
-        return;
-      case TargetParameter::kTeleportChance:
-        lfo.teleport_chance() = ClampChance(lfo.teleport_chance() + delta);
-        return;
-      case TargetParameter::kPitchShiftChance:
-        lfo.pitch_shift_chance() = ClampChance(lfo.pitch_shift_chance() + delta);
-        return;
-      case TargetParameter::kLowOctaveChance:
-        lfo.low_octave_chance() = ClampChance(lfo.low_octave_chance() + delta);
-        return;
-      case TargetParameter::kHighOctaveChance:
-        lfo.high_octave_chance() =
-            ClampChance(lfo.high_octave_chance() + delta);
-        return;
-      default:
-        return;
+    case TargetParameter::kRange:
+      lfo.range() = ClampSize(static_cast<float>(lfo.range()) + delta, 0);
+      return;
+    case TargetParameter::kMaxGrainSize:
+      lfo.max_grain_size() =
+          ClampSize(static_cast<float>(lfo.max_grain_size()) + delta, 1);
+      return;
+    case TargetParameter::kMinGrainSize:
+      lfo.min_grain_size() =
+          ClampSize(static_cast<float>(lfo.min_grain_size()) + delta, 1);
+      return;
+    case TargetParameter::kReverseChance:
+      lfo.reverse_chance() = ClampChance(lfo.reverse_chance() + delta);
+      return;
+    case TargetParameter::kTeleportChance:
+      lfo.teleport_chance() = ClampChance(lfo.teleport_chance() + delta);
+      return;
+    case TargetParameter::kPitchShiftChance:
+      lfo.pitch_shift_chance() = ClampChance(lfo.pitch_shift_chance() + delta);
+      return;
+    case TargetParameter::kLowOctaveChance:
+      lfo.low_octave_chance() = ClampChance(lfo.low_octave_chance() + delta);
+      return;
+    case TargetParameter::kHighOctaveChance:
+      lfo.high_octave_chance() = ClampChance(lfo.high_octave_chance() + delta);
+      return;
+    default:
+      return;
     }
   }
 
@@ -204,14 +206,14 @@ void state::ApplyTargetDelta(config::Config& config,
   }
 
   switch (target.parameter()) {
-    case TargetParameter::kDry:
-      config.dry() = ClampFinite(config.dry() + delta);
-      return;
-    case TargetParameter::kWet:
-      config.wet() = ClampFinite(config.wet() + delta);
-      return;
-    default:
-      return;
+  case TargetParameter::kDry:
+    config.dry() = ClampFinite(config.dry() + delta);
+    return;
+  case TargetParameter::kWet:
+    config.wet() = ClampFinite(config.wet() + delta);
+    return;
+  default:
+    return;
   }
 }
 
@@ -222,8 +224,8 @@ void state::ApplyLfoDelta(config::Config& config, size_t lfo_idx, float delta) {
 
   for (size_t target_idx = 0; target_idx < MAX_TARGET_PARAMS; ++target_idx) {
     if (config.lfos()[lfo_idx].targets()[target_idx].has_value()) {
-      ApplyTargetDelta(config, config.lfos()[lfo_idx].targets()[target_idx].value(),
-                       delta);
+      ApplyTargetDelta(
+          config, config.lfos()[lfo_idx].targets()[target_idx].value(), delta);
     }
   }
 }
@@ -265,7 +267,8 @@ const config::Config& state::Reset(const config::Config& root_config) {
   return output_config_;
 }
 
-const config::Config& state::Update(const config::Config& root_config, float dt) {
+const config::Config& state::Update(const config::Config& root_config,
+                                    float dt) {
   if (!initialized_) {
     Initialize(root_config);
   } else if (!MatchesSanitizedConfig(root_config, root_config_)) {

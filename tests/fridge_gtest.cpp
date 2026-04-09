@@ -1,12 +1,12 @@
+#include <limits>
+
 #include "fridge.hpp"
 #include "gtest/gtest.h"
 
-#include <limits>
-
+using fridge::config::LFO;
 using fridge::config::Target;
 using fridge::config::TargetObject;
 using fridge::config::TargetParameter;
-using fridge::config::LFO;
 using fridge::state::Direction;
 using fridge::state::LFOEngine;
 using fridge::transform::state;
@@ -383,8 +383,10 @@ TEST(FridgeLFOSystemTest, UpdateClampsNonFiniteProbabilityInputsForEngines) {
   config.lfos()[0].teleport_chance() = std::numeric_limits<float>::infinity();
   config.lfos()[0].pitch_shift_chance() =
       -std::numeric_limits<float>::infinity();
-  config.lfos()[0].low_octave_chance() = std::numeric_limits<float>::quiet_NaN();
-  config.lfos()[0].high_octave_chance() = std::numeric_limits<float>::infinity();
+  config.lfos()[0].low_octave_chance() =
+      std::numeric_limits<float>::quiet_NaN();
+  config.lfos()[0].high_octave_chance() =
+      std::numeric_limits<float>::infinity();
 
   fridge::config::Config output = system.Update(config, 1.0f);
 
