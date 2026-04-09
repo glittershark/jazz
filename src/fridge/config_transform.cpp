@@ -29,34 +29,36 @@ size_t state::ClampSize(float value, size_t minimum) {
 }
 
 config::LFO state::SanitizeLfo(const config::LFO& lfo) {
-  config::LFO sanitized(ClampSize(static_cast<float>(lfo.range()), 0),
-                        ClampSize(static_cast<float>(lfo.max_grain_size()), 1),
-                        ClampSize(static_cast<float>(lfo.min_grain_size()), 1),
-                        ClampChance(lfo.reverse_chance()),
-                        ClampChance(lfo.teleport_chance()),
-                        ClampChance(lfo.pitch_shift_chance()),
-                        ClampChance(lfo.low_octave_chance()),
-                        ClampChance(lfo.high_octave_chance()));
-  sanitized.targets() = lfo.targets();
+  config::LFO sanitized{
+      .range = ClampSize(static_cast<float>(lfo.range), 0),
+      .max_grain_size = ClampSize(static_cast<float>(lfo.max_grain_size), 1),
+      .min_grain_size = ClampSize(static_cast<float>(lfo.min_grain_size), 1),
+      .reverse_chance = ClampChance(lfo.reverse_chance),
+      .teleport_chance = ClampChance(lfo.teleport_chance),
+      .pitch_shift_chance = ClampChance(lfo.pitch_shift_chance),
+      .low_octave_chance = ClampChance(lfo.low_octave_chance),
+      .high_octave_chance = ClampChance(lfo.high_octave_chance),
+  };
+  sanitized.targets = lfo.targets;
   return sanitized;
 }
 
 config::Config state::SanitizeConfig(const config::Config& root_config) {
   config::Config sanitized = root_config;
 
-  for (auto& head : sanitized.heads()) {
-    head.write_amount() = ClampFinite(head.write_amount());
-    head.read_amount() = ClampFinite(head.read_amount());
-    head.erase_amount() = ClampFinite(head.erase_amount());
-    head.feedback().amount() = ClampFinite(head.feedback().amount());
+  for (auto& head : sanitized.heads) {
+    head.write_amount = ClampFinite(head.write_amount);
+    head.read_amount = ClampFinite(head.read_amount);
+    head.erase_amount = ClampFinite(head.erase_amount);
+    head.feedback.amount = ClampFinite(head.feedback.amount);
   }
 
   for (size_t i = 0; i < NUM_LFOS; ++i) {
-    sanitized.lfos()[i] = SanitizeLfo(sanitized.lfos()[i]);
+    sanitized.lfos[i] = SanitizeLfo(sanitized.lfos[i]);
   }
 
-  sanitized.dry() = ClampFinite(sanitized.dry());
-  sanitized.wet() = ClampFinite(sanitized.wet());
+  sanitized.dry = ClampFinite(sanitized.dry);
+  sanitized.wet = ClampFinite(sanitized.wet);
   return sanitized;
 }
 
@@ -71,30 +73,28 @@ bool state::MatchesSanitizedTarget(
     return true;
   }
 
-  return input->object() == sanitized->object() &&
-         input->parameter() == sanitized->parameter() &&
-         input->object_idx() == sanitized->object_idx();
+  return input->object == sanitized->object &&
+         input->parameter == sanitized->parameter &&
+         input->object_idx == sanitized->object_idx;
 }
 
 bool state::MatchesSanitizedLfo(const config::LFO& input,
                                 const config::LFO& sanitized) {
-  if (ClampSize(static_cast<float>(input.range()), 0) != sanitized.range() ||
-      ClampSize(static_cast<float>(input.max_grain_size()), 1) !=
-          sanitized.max_grain_size() ||
-      ClampSize(static_cast<float>(input.min_grain_size()), 1) !=
-          sanitized.min_grain_size() ||
-      ClampChance(input.reverse_chance()) != sanitized.reverse_chance() ||
-      ClampChance(input.teleport_chance()) != sanitized.teleport_chance() ||
-      ClampChance(input.pitch_shift_chance()) !=
-          sanitized.pitch_shift_chance() ||
-      ClampChance(input.low_octave_chance()) != sanitized.low_octave_chance() ||
-      ClampChance(input.high_octave_chance()) !=
-          sanitized.high_octave_chance()) {
+  if (ClampSize(static_cast<float>(input.range), 0) != sanitized.range ||
+      ClampSize(static_cast<float>(input.max_grain_size), 1) !=
+          sanitized.max_grain_size ||
+      ClampSize(static_cast<float>(input.min_grain_size), 1) !=
+          sanitized.min_grain_size ||
+      ClampChance(input.reverse_chance) != sanitized.reverse_chance ||
+      ClampChance(input.teleport_chance) != sanitized.teleport_chance ||
+      ClampChance(input.pitch_shift_chance) != sanitized.pitch_shift_chance ||
+      ClampChance(input.low_octave_chance) != sanitized.low_octave_chance ||
+      ClampChance(input.high_octave_chance) != sanitized.high_octave_chance) {
     return false;
   }
 
   for (size_t i = 0; i < MAX_TARGET_PARAMS; ++i) {
-    if (!MatchesSanitizedTarget(input.targets()[i], sanitized.targets()[i])) {
+    if (!MatchesSanitizedTarget(input.targets[i], sanitized.targets[i])) {
       return false;
     }
   }
@@ -105,29 +105,26 @@ bool state::MatchesSanitizedLfo(const config::LFO& input,
 bool state::MatchesSanitizedConfig(const config::Config& input,
                                    const config::Config& sanitized) {
   for (size_t i = 0; i < NUM_HEADS; ++i) {
-    const config::Head& input_head = input.heads()[i];
-    const config::Head& sanitized_head = sanitized.heads()[i];
-    if (input_head.position() != sanitized_head.position() ||
-        ClampFinite(input_head.write_amount()) !=
-            sanitized_head.write_amount() ||
-        ClampFinite(input_head.read_amount()) != sanitized_head.read_amount() ||
-        ClampFinite(input_head.erase_amount()) !=
-            sanitized_head.erase_amount() ||
-        input_head.feedback().kind() != sanitized_head.feedback().kind() ||
-        ClampFinite(input_head.feedback().amount()) !=
-            sanitized_head.feedback().amount()) {
+    const config::Head& input_head = input.heads[i];
+    const config::Head& sanitized_head = sanitized.heads[i];
+    if (input_head.position != sanitized_head.position ||
+        ClampFinite(input_head.write_amount) != sanitized_head.write_amount ||
+        ClampFinite(input_head.read_amount) != sanitized_head.read_amount ||
+        ClampFinite(input_head.erase_amount) != sanitized_head.erase_amount ||
+        input_head.feedback.kind != sanitized_head.feedback.kind ||
+        ClampFinite(input_head.feedback.amount) != sanitized_head.feedback.amount) {
       return false;
     }
   }
 
   for (size_t i = 0; i < NUM_LFOS; ++i) {
-    if (!MatchesSanitizedLfo(input.lfos()[i], sanitized.lfos()[i])) {
+    if (!MatchesSanitizedLfo(input.lfos[i], sanitized.lfos[i])) {
       return false;
     }
   }
 
-  return ClampFinite(input.dry()) == sanitized.dry() &&
-         ClampFinite(input.wet()) == sanitized.wet();
+  return ClampFinite(input.dry) == sanitized.dry &&
+         ClampFinite(input.wet) == sanitized.wet;
 }
 
 void state::ApplyTargetDelta(config::Config& config,
@@ -135,82 +132,81 @@ void state::ApplyTargetDelta(config::Config& config,
   using config::TargetObject;
   using config::TargetParameter;
 
-  if (target.object() == TargetObject::kHead) {
-    if (target.object_idx() >= NUM_HEADS) {
+  if (target.object == TargetObject::kHead) {
+    if (target.object_idx >= NUM_HEADS) {
       return;
     }
 
-    config::Head& head = config.heads()[target.object_idx()];
-    switch (target.parameter()) {
+    config::Head& head = config.heads[target.object_idx];
+    switch (target.parameter) {
     case TargetParameter::kPosition:
-      head.position() =
-          ClampSize(static_cast<float>(head.position()) + delta, 0);
+      head.position = ClampSize(static_cast<float>(head.position) + delta, 0);
       return;
     case TargetParameter::kWriteAmount:
-      head.write_amount() = ClampFinite(head.write_amount() + delta);
+      head.write_amount = ClampFinite(head.write_amount + delta);
       return;
     case TargetParameter::kReadAmount:
-      head.read_amount() = ClampFinite(head.read_amount() + delta);
+      head.read_amount = ClampFinite(head.read_amount + delta);
       return;
     case TargetParameter::kEraseAmount:
-      head.erase_amount() = ClampFinite(head.erase_amount() + delta);
+      head.erase_amount = ClampFinite(head.erase_amount + delta);
       return;
     case TargetParameter::kFeedbackAmount:
-      head.feedback().amount() = ClampFinite(head.feedback().amount() + delta);
+      head.feedback.amount = ClampFinite(head.feedback.amount + delta);
       return;
     default:
       return;
     }
   }
 
-  if (target.object() == TargetObject::kLFO) {
-    if (target.object_idx() >= NUM_LFOS) {
+  if (target.object == TargetObject::kLFO) {
+    if (target.object_idx >= NUM_LFOS) {
       return;
     }
 
-    config::LFO& lfo = config.lfos()[target.object_idx()];
-    switch (target.parameter()) {
+    config::LFO& lfo = config.lfos[target.object_idx];
+    switch (target.parameter) {
     case TargetParameter::kRange:
-      lfo.range() = ClampSize(static_cast<float>(lfo.range()) + delta, 0);
+      lfo.range = ClampSize(static_cast<float>(lfo.range) + delta, 0);
       return;
     case TargetParameter::kMaxGrainSize:
-      lfo.max_grain_size() =
-          ClampSize(static_cast<float>(lfo.max_grain_size()) + delta, 1);
+      lfo.max_grain_size =
+          ClampSize(static_cast<float>(lfo.max_grain_size) + delta, 1);
       return;
     case TargetParameter::kMinGrainSize:
-      lfo.min_grain_size() =
-          ClampSize(static_cast<float>(lfo.min_grain_size()) + delta, 1);
+      lfo.min_grain_size =
+          ClampSize(static_cast<float>(lfo.min_grain_size) + delta, 1);
       return;
     case TargetParameter::kReverseChance:
-      lfo.reverse_chance() = ClampChance(lfo.reverse_chance() + delta);
+      lfo.reverse_chance = ClampChance(lfo.reverse_chance + delta);
       return;
     case TargetParameter::kTeleportChance:
-      lfo.teleport_chance() = ClampChance(lfo.teleport_chance() + delta);
+      lfo.teleport_chance = ClampChance(lfo.teleport_chance + delta);
       return;
     case TargetParameter::kPitchShiftChance:
-      lfo.pitch_shift_chance() = ClampChance(lfo.pitch_shift_chance() + delta);
+      lfo.pitch_shift_chance = ClampChance(lfo.pitch_shift_chance + delta);
       return;
     case TargetParameter::kLowOctaveChance:
-      lfo.low_octave_chance() = ClampChance(lfo.low_octave_chance() + delta);
+      lfo.low_octave_chance = ClampChance(lfo.low_octave_chance + delta);
       return;
     case TargetParameter::kHighOctaveChance:
-      lfo.high_octave_chance() = ClampChance(lfo.high_octave_chance() + delta);
+      lfo.high_octave_chance = ClampChance(lfo.high_octave_chance + delta);
       return;
     default:
       return;
     }
   }
 
-  if (target.object() != TargetObject::kMixer) {
+  if (target.object != TargetObject::kMixer) {
     return;
   }
 
-  switch (target.parameter()) {
+  switch (target.parameter) {
   case TargetParameter::kDry:
-    config.dry() = ClampFinite(config.dry() + delta);
+    config.dry = ClampFinite(config.dry + delta);
     return;
   case TargetParameter::kWet:
-    config.wet() = ClampFinite(config.wet() + delta);
+    config.wet = ClampFinite(config.wet + delta);
     return;
   default:
     return;
@@ -223,9 +219,9 @@ void state::ApplyLfoDelta(config::Config& config, size_t lfo_idx, float delta) {
   }
 
   for (size_t target_idx = 0; target_idx < MAX_TARGET_PARAMS; ++target_idx) {
-    if (config.lfos()[lfo_idx].targets()[target_idx].has_value()) {
-      ApplyTargetDelta(
-          config, config.lfos()[lfo_idx].targets()[target_idx].value(), delta);
+    if (config.lfos[lfo_idx].targets[target_idx].has_value()) {
+      ApplyTargetDelta(config, config.lfos[lfo_idx].targets[target_idx].value(),
+                       delta);
     }
   }
 }
@@ -237,10 +233,10 @@ void state::Initialize(const config::Config& root_config) {
   output_config_ = root_config_;
 
   for (size_t i = 0; i < NUM_LFOS; ++i) {
-    config::LFO lfo_config = root_config_.lfos()[i];
+    config::LFO lfo_config = root_config_.lfos[i];
     lfo_engines_[i] =
         fridge::state::LFOEngine(lfo_config, seed_ + static_cast<uint32_t>(i));
-    lfo_engines_[i].Reset(static_cast<float>(lfo_config.range()) * 0.5f,
+    lfo_engines_[i].Reset(static_cast<float>(lfo_config.range) * 0.5f,
                           fridge::state::Direction::kForwards);
     lfo_initial_values_[i] = lfo_engines_[i].value();
   }
@@ -286,7 +282,7 @@ const config::Config& state::Update(const config::Config& root_config,
   }
 
   for (size_t i = 0; i < NUM_LFOS; ++i) {
-    lfo_engines_[i].SetConfig(output_config_.lfos()[i]);
+    lfo_engines_[i].SetConfig(output_config_.lfos[i]);
   }
 
   for (fridge::state::LFOEngine& engine : lfo_engines_) {

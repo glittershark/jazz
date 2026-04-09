@@ -122,24 +122,24 @@ float Sound::ProcessSample(const fridge::config::Config& config, float sample) {
 
   float wet_signal = 0.f;
 
-  for (auto&& head : config.heads()) {
-    if (head.read_amount() > 0.f) {
-      auto value = Read(head.position());
-      wet_signal += value * head.read_amount();
+  for (auto&& head : config.heads) {
+    if (head.read_amount > 0.f) {
+      auto value = Read(head.position);
+      wet_signal += value * head.read_amount;
     }
 
-    if (head.write_amount() > 0.f) {
-      Write(head.position(), sample * head.write_amount());
+    if (head.write_amount > 0.f) {
+      Write(head.position, sample * head.write_amount);
     }
 
-    if (head.erase_amount() > 0.f) {
-      Erase(head.position(), head.erase_amount());
+    if (head.erase_amount > 0.f) {
+      Erase(head.position, head.erase_amount);
     }
   }
 
   global_clock_ = (global_clock_ + 1) % global_clock_max_;
 
-  return sample * config.dry() + wet_signal * config.wet();
+  return sample * config.dry + wet_signal * config.wet;
 }
 
 }  // namespace fridge::sound
