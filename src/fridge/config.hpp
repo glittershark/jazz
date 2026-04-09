@@ -79,6 +79,12 @@ class Config {
   std::array<LFO, NUM_LFOS> lfos_;
   float dry_;
   float wet_;
+
+ public:
+  std::array<Head, NUM_HEADS>& heads() { return heads_; }
+  std::array<LFO, NUM_LFOS>& lfos() { return lfos_; }
+  float& dry() { return dry_; }
+  float& wet() { return wet_; }
 };
 
 }  // namespace fridge::config
