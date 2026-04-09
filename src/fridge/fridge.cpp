@@ -1,3 +1,4 @@
+#include "sound.hpp"
 #ifndef UNIT_TEST
 
 #include <cassert>
@@ -14,12 +15,12 @@ using namespace daisy::seed;
 
 DaisySeed hw;
 
+fridge::sound::Sound sound;
+
 int main() {
   hw.Init();
   hw.SetAudioBlockSize(8);
   hw.StartLog(true);  // wait for serial connection
-
-  hw.PrintLine("Hello");
 
   fridge::io::mux::MultiGpioInMux<2> encoders({
       fridge::io::mux::GpioInMux(D4),

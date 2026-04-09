@@ -244,6 +244,9 @@ class Sound {
   /** Perform pre-tick housekeeping */
   void PreHousekeeping(size_t clock_time);
 
+  /** Apply finished updates to a buffer index */
+  void DoUpdate(size_t index);
+
   /**
    * Read the value from the buffer at `position` in the buffer.
    */

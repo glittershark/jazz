@@ -55,6 +55,60 @@ void BufferValue::Housekeep() {
 
 // class Sound
 
+void Sound::DoUpdate(size_t index) {
+  auto content = &buffer_[index];
+
+  // Apply erases
+  auto update_ptr = content->FirstUpdate();
+  while (update_ptr != nullptr && *update_ptr != nullptr) {
+    auto update = *update_ptr;
+    if (update->kind == Update::Kind::kErase) {
+      auto time_till_ripe =
+          (update->finished_at - global_clock_) % global_clock_max_;
+      if (time_till_ripe == 0) {
+        content->setSample(content->sample() * update->value);
+        *update_ptr = update->next_;
+        UPDATES.Free(update);
+        continue;
+      }
+    }
+    update_ptr = &update->next_;
+  }
+
+  // Apply writes
+  update_ptr = content->FirstUpdate();
+  while (update_ptr != nullptr && *update_ptr != nullptr) {
+    auto update = *update_ptr;
+    if (update->kind == Update::Kind::kWrite) {
+      auto time_till_ripe =
+          ((update->finished_at - global_clock_) + global_clock_max_) %
+          global_clock_max_;
+      if (time_till_ripe == 0) {
+        *update_ptr = update->next_;
+        UPDATES.Free(update);
+        content->setSample(content->sample() + update->value);
+        continue;
+      }
+    }
+    update_ptr = &update->next_;
+  }
+
+  content->Housekeep();
+}
+
+void Sound::PreHousekeeping(size_t clock_time) {
+  auto indices_to_update = indices_to_update_[clock_time % FADE_TIME];
+  indices_to_update_[clock_time % FADE_TIME] = nullptr;
+
+  if (indices_to_update == nullptr) {
+    return;
+  }
+
+  for (auto&& index : indices_to_update->drain()) {
+    DoUpdate(index.index());
+  }
+}
+
 float Sound::Read(size_t position) {
   auto content = &buffer_[position];
   auto value = content->sample();
