@@ -4,6 +4,7 @@
 #include <sys/types.h>
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 
 #include "callback.hpp"
@@ -22,17 +23,22 @@ class Knob {
   }
 
  public:
-  Callback<int, float> GetCallback() {
+  TypedCallback<Knob, int, float> GetCallback() {
     return {
         .callback = Knob::callback,
         .data = this,
     };
   }
 
-  V Value() const { return value_; };
-  operator V() const { return Value(); };
+  V::Raw_type Value() const { return value_; };
+  operator typename V::Raw_type() const { return value_; };
 
-  void Set(V value) { value_ = value; };
+  void Set(const V& value) { value_ = value; };
+  Knob& operator=(const V& rhs) {
+    Set(rhs);
+    return *this;
+  }
+
   void RawIncrement(int ticks, float turns) { value_ += V(ticks, turns); }
 };
 
@@ -41,14 +47,21 @@ class Infinite {
   V value_;
 
  public:
+  using Raw_type = V::Raw_type;
+
   Infinite() = default;
   Infinite(const int ticks, const float turns) : value_(ticks, turns) {}
   Infinite(const V value) : value_(value) {}
 
-  operator V() const { return value_; }
+  operator Raw_type() const { return value_; }
 
   Infinite operator+(const Infinite& rhs) const {
     return Infinite(value_ + rhs.value_);
+  }
+
+  Infinite& operator+=(const Infinite& rhs) {
+    *this = *this + rhs;
+    return *this;
   }
 
   Infinite& operator=(const V& rhs) {
@@ -57,24 +70,33 @@ class Infinite {
   }
 };
 
-template <typename V, V::Repr min, V::Repr max>
+template <typename V, V::Raw_type min, V::Raw_type max>
 class Bounded {
   V value_;
 
-  constexpr static V saturate(const V raw) {
-    return std::min(max, std::max(min, raw.value));
+  constexpr static V saturate(const V value) {
+    return std::min(max, std::max(min,
+                                  // i love c++
+                                  value.operator typename V::Raw_type()));
   };
 
  public:
+  using Raw_type = V::Raw_type;
+
   Bounded() : value_(saturate(V())) {}
   Bounded(const int ticks, const float turns)
       : value_(saturate(V(ticks, turns))) {}
-  Bounded(const V raw) : value_(saturate(raw)) {}
+  Bounded(const Raw_type raw) : value_(saturate(raw)) {}
 
-  operator V() const { return value_; }
+  operator Raw_type() const { return value_; }
 
   Bounded operator+(const Bounded& rhs) const {
     return Bounded(value_ + rhs.value_);
+  }
+
+  Bounded& operator+=(const Bounded& rhs) {
+    *this = *this + rhs;
+    return *this;
   }
 
   Bounded& operator=(const V& rhs) {
@@ -83,38 +105,80 @@ class Bounded {
   }
 };
 
+template <typename V>
 struct Ticks {
-  using Repr = ssize_t;
-  Repr value;
+  using Raw_type = V;
+  Raw_type value;
 
   Ticks() = default;
   Ticks(const int ticks, const float) : value(ticks) {}
-  Ticks(const Repr& value) : value(value) {}
+  Ticks(const Raw_type& value) : value(value) {}
 
-  operator Repr() const { return value; }
+  operator Raw_type() const { return value; }
 };
 
 struct Turns {
-  using Repr = float;
-  Repr value;
+  using Raw_type = float;
+  Raw_type value;
 
   Turns() = default;
   Turns(const int, const float turns) : value(turns) {}
-  Turns(const Repr& value) : value(value) {}
+  Turns(const Raw_type& value) : value(value) {}
 
-  operator Repr() const { return value; }
+  operator Raw_type() const { return value; }
+};
+
+class Feedback {
+  using V = Bounded<Turns, -1.0f, 1.0f>;
+  V value_;
+
+ public:
+  using Raw_type = config::Feedback;
+
+  Feedback() = default;
+  Feedback(const int, const float turns) : value_(turns) {}
+  Feedback(const V& value) : value_(value) {}
+  Feedback(const Raw_type& value)
+      : value_(value.amount *
+               // who says we can't make if-else an expression!?
+               ({
+                 float factor = 1.0f;
+                 if (value.kind == config::Feedback::Kind::kErase) {
+                   factor = -1.0f;
+                 }
+                 factor;
+               })) {}
+
+  operator Raw_type() const {
+    assert(false);
+    return Feedback{};
+  }
+
+  Feedback operator+(const Feedback& rhs) const {
+    return Feedback(value_ + rhs.value_);
+  }
+
+  Feedback& operator+=(const Feedback& rhs) {
+    *this = *this + rhs;
+    return *this;
+  }
+
+  Feedback& operator=(const V& rhs) {
+    value_ = rhs;
+    return *this;
+  }
 };
 
 using SingleTurn = Bounded<Turns, 0.0f, 1.0f>;
-using Position = Infinite<Ticks>;
-using Size = Bounded<Ticks, 0, 0xff>;  // TODO(nausicaa): is this sane?
+using Position = Bounded<Ticks<size_t>, 0, BUFFER_LEN>;
+using Size = Bounded<Ticks<size_t>, 0, 0xff>;  // TODO(nausicaa): is this sane?
 
 struct Head {
   Knob<Position> position;
   Knob<SingleTurn> write_amount;
   Knob<SingleTurn> read_amount;
   Knob<SingleTurn> erase_amount;
-  Knob<SingleTurn> feedback;
+  Knob<Feedback> feedback;
 
   void Select(const fridge::config::Head& head);
   fridge::config::Head Config() const;
@@ -147,8 +211,8 @@ struct UI {
 
   // TODO(nausicaa): head selection buttons, etc.
 
-  // TODO(nausicaa): LEDs (there are a bunch, one for each encoder and selection
-  // button)
+  // TODO(nausicaa): LEDs (there are a bunch, one for each encoder and
+  // selection button)
   void UpdateConfig(fridge::config::Config& config) const;
 };
 

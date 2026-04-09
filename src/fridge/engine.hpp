@@ -1,5 +1,6 @@
 #ifndef ENGINE_H_
 #define ENGINE_H_
+#ifndef UNIT_TEST
 
 #include <array>
 
@@ -41,4 +42,5 @@ class Engine {
 
 }  // namespace fridge::engine
 
+#endif  // UNIT_TEST
 #endif  // ENGINE_H_

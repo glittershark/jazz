@@ -1,4 +1,5 @@
 #include "engine.hpp"
+#ifndef UNIT_TEST
 
 #include "daisy_seed.h"
 #include "io.hpp"
@@ -33,3 +34,5 @@ Engine::Engine()
 }
 
 }  // namespace fridge::engine
+
+#endif  // UNIT_TEST
