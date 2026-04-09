@@ -182,7 +182,7 @@ class QuadratureEncoder {
   mux::GpioInMux::Channel a_;
   mux::GpioInMux::Channel b_;
   uint32_t ticks_per_turn_;
-  volatile int32_t ticks_;
+  Callback<int, float> on_change_;
 
   void AChanged(bool new_value);
   static void a_changed(void* this_, bool new_value) {
@@ -193,6 +193,8 @@ class QuadratureEncoder {
     ((QuadratureEncoder*)this_)->BChanged(new_value);
   }
 
+  void Changed(int ticks);
+
  public:
   QuadratureEncoder(const QuadratureEncoder&) = delete;
   QuadratureEncoder& operator=(const QuadratureEncoder&) = delete;
@@ -200,8 +202,7 @@ class QuadratureEncoder {
   QuadratureEncoder(mux::GpioInMux::Channel a, mux::GpioInMux::Channel b,
                     uint32_t ticks_per_turn = 1);
 
-  int32_t Ticks() const;
-  float Turns() const;
+  void OnChange(Callback<int, float>);
 };
 
 /**

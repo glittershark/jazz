@@ -72,24 +72,26 @@ void GpioInMux::Channel::OnChange(void (*callback)(void*, bool), void* data) {
 QuadratureEncoder::QuadratureEncoder(mux::GpioInMux::Channel a,
                                      mux::GpioInMux::Channel b,
                                      uint32_t ticks_per_turn)
-    : a_(a), b_(b), ticks_per_turn_(ticks_per_turn), ticks_(0) {
+    : a_(a), b_(b), ticks_per_turn_(ticks_per_turn) {
   a.OnChange(QuadratureEncoder::a_changed, this);
   b.OnChange(QuadratureEncoder::b_changed, this);
 }
 
 void QuadratureEncoder::AChanged(bool new_value) {
-  ticks_ += ((new_value ^ b_.Read()) ? 1 : -1);
+  Changed((new_value ^ b_.Read()) ? 1 : -1);
 }
+
 void QuadratureEncoder::BChanged(bool new_value) {
-  ticks_ += ((new_value ^ a_.Read()) ? -1 : 1);
+  Changed((new_value ^ a_.Read()) ? -1 : 1);
 }
 
-int32_t QuadratureEncoder::Ticks() const {
-  return ticks_;
+void QuadratureEncoder::Changed(int ticks) {
+  on_change_(ticks,
+             static_cast<float>(ticks) / static_cast<float>(ticks_per_turn_));
 }
 
-float QuadratureEncoder::Turns() const {
-  return ((float)Ticks()) / ((float)ticks_per_turn_);
+void QuadratureEncoder::OnChange(Callback<int> on_change) {
+  on_change_ = on_change;
 }
 
 /// RgbLed

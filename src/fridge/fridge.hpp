@@ -4,5 +4,6 @@
 #include "config.hpp"
 #include "config_transform.hpp"
 #include "lfo_engine.hpp"
+#include "ui.hpp"
 
 #endif  // FRIDGE_H_
