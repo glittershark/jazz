@@ -23,6 +23,10 @@ class Knob {
   }
 
  public:
+  Knob() = default;
+  Knob(Knob&&) = delete;
+  Knob(const Knob&) = delete;
+
   TypedCallback<Knob, int, float> GetCallback() {
     return {
         .callback = Knob::callback,
@@ -90,11 +94,9 @@ class Bounded {
 
   operator Raw_type() const { return value_; }
 
-  Bounded operator+(const Bounded& rhs) const {
-    return Bounded(value_ + rhs.value_);
-  }
+  Bounded operator+(const V& rhs) const { return Bounded(value_ + rhs); }
 
-  Bounded& operator+=(const Bounded& rhs) {
+  Bounded& operator+=(const V& rhs) {
     *this = *this + rhs;
     return *this;
   }
@@ -139,19 +141,21 @@ class Feedback {
   Feedback(const int, const float turns) : value_(turns) {}
   Feedback(const V& value) : value_(value) {}
   Feedback(const Raw_type& value)
-      : value_(value.amount *
-               // who says we can't make if-else an expression!?
-               ({
-                 float factor = 1.0f;
-                 if (value.kind == config::Feedback::Kind::kErase) {
-                   factor = -1.0f;
-                 }
-                 factor;
-               })) {}
+      : value_(value.kind == config::Feedback::Kind::kRead ? value.amount
+                                                           : -value.amount) {}
 
   operator Raw_type() const {
-    assert(false);
-    return Feedback{};
+    if (value_ >= 0.0f) {
+      return {
+          .kind = config::Feedback::Kind::kRead,
+          .amount = value_,
+      };
+    } else {
+      return {
+          .kind = config::Feedback::Kind::kErase,
+          .amount = -value_,
+      };
+    }
   }
 
   Feedback operator+(const Feedback& rhs) const {
@@ -180,8 +184,8 @@ struct Head {
   Knob<SingleTurn> erase_amount;
   Knob<Feedback> feedback;
 
-  void Select(const fridge::config::Head& head);
-  fridge::config::Head Config() const;
+  void Select(const config::Head& head);
+  config::Head Config() const;
 };
 
 struct LFO {
@@ -194,8 +198,8 @@ struct LFO {
   Knob<SingleTurn> low_octave_chance;
   Knob<SingleTurn> high_octave_chance;
 
-  void Select(const fridge::config::LFO& lfo);
-  fridge::config::LFO Config() const;
+  void Select(const config::LFO& lfo);
+  config::LFO Config() const;
 };
 
 struct UI {
@@ -213,10 +217,10 @@ struct UI {
 
   // TODO(nausicaa): LEDs (there are a bunch, one for each encoder and
   // selection button)
-  void UpdateConfig(fridge::config::Config& config) const;
+  void UpdateConfig(config::Config& config) const;
 };
 
-fridge::config::Config& operator|=(fridge::config::Config& config, UI& ui);
+config::Config& operator|=(config::Config& config, UI& ui);
 
 }  // namespace fridge::ui
 

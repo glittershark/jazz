@@ -1,8 +1,10 @@
 #include "ui.hpp"
 
+#include "config.hpp"
+
 namespace fridge::ui {
 
-fridge::config::Head Head::Config() const {
+config::Head Head::Config() const {
   return {
       .position = position,
       .write_amount = write_amount,
@@ -46,7 +48,7 @@ void LFO::Select(const fridge::config::LFO& lfo) {
 
 void fridge::ui::UI::UpdateConfig(fridge::config::Config& config) const {
   config.heads[selected_head] = head.Config();
-  config.lfos[selected_head] = lfo.Config();
+  config.lfos[selected_lfo] = lfo.Config();
   config.dry = dry;
   config.wet = wet;
 }

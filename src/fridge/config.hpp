@@ -16,6 +16,12 @@ struct Feedback {
 
   Kind kind = Kind::kRead;
   float amount = 0.0f;
+
+  bool operator==(const Feedback& rhs) const {
+    // now, now, we shouldn't directly compare floats... but this is mostly just
+    // for testing, so
+    return kind == rhs.kind && amount == rhs.amount;
+  }
 };
 
 struct Head {
