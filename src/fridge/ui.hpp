@@ -5,21 +5,39 @@
 
 #include <algorithm>
 #include <cassert>
+#include <concepts>
 #include <cstddef>
+#include <type_traits>
 
 #include "callback.hpp"
 #include "config.hpp"
 
 namespace fridge::ui {
 
-class Button {};
+// TODO(nausicaa): arithmetic concepts or something
 
 template <typename V>
+concept BackingValue = std::is_arithmetic_v<typename V::Raw_type> &&
+                       std::convertible_to<V, typename V::Raw_type> &&
+                       requires(const int ticks, const float turns) {
+                         {
+                           V::Raw(ticks, turns)
+                         } -> std::convertible_to<typename V::Raw_type>;
+                       } && requires(V v, V v1, V v2, typename V::Raw_type r) {
+                         v1 + r;
+                         v1 + v2;
+                         v1 += r;
+                         v1 += v2;
+                       };
+
+class Button {};
+
+template <BackingValue V>
 class Knob {
   V value_;
 
   static void callback(Knob* this_, int ticks, float turns) {
-    this_->RawIncrement(ticks, turns);
+    this_->Increment(ticks, turns);
   }
 
  public:
@@ -43,19 +61,24 @@ class Knob {
     return *this;
   }
 
-  void RawIncrement(int ticks, float turns) { value_ += V(ticks, turns); }
+  void Increment(int ticks, float turns) { value_.Increment(ticks, turns); }
 };
 
-template <typename V>
+template <BackingValue V>
 class Infinite {
   V value_;
 
  public:
   using Raw_type = V::Raw_type;
+  static Raw_type Raw(const int ticks, const float turns) {
+    return V::Raw(ticks, turns);
+  }
 
   Infinite() = default;
   Infinite(const int ticks, const float turns) : value_(ticks, turns) {}
   Infinite(const V value) : value_(value) {}
+
+  Infinite& Increment(const int ticks, const float turns) {}
 
   operator Raw_type() const { return value_; }
 
@@ -74,7 +97,7 @@ class Infinite {
   }
 };
 
-template <typename V, V::Raw_type min, V::Raw_type max>
+template <BackingValue V, V::Raw_type min, V::Raw_type max>
 class Bounded {
   V value_;
 
@@ -86,17 +109,26 @@ class Bounded {
 
  public:
   using Raw_type = V::Raw_type;
+  static Raw_type Raw(const int ticks, const float turns) {
+    return V::Raw(ticks, turns);
+  }
 
   Bounded() : value_(saturate(V())) {}
   Bounded(const int ticks, const float turns)
       : value_(saturate(V(ticks, turns))) {}
-  Bounded(const Raw_type raw) : value_(saturate(raw)) {}
+  Bounded(const Raw_type& raw) : value_(saturate(raw)) {}
 
   operator Raw_type() const { return value_; }
 
   Bounded operator+(const V& rhs) const { return Bounded(value_ + rhs); }
+  Bounded operator+(const Raw_type& rhs) const { return Bounded(value_ + rhs); }
 
   Bounded& operator+=(const V& rhs) {
+    *this = *this + rhs;
+    return *this;
+  }
+
+  Bounded& operator+=(const Raw_type& rhs) {
     *this = *this + rhs;
     return *this;
   }
@@ -108,26 +140,43 @@ class Bounded {
 };
 
 template <typename V>
+  requires std::is_integral_v<V>
 struct Ticks {
   using Raw_type = V;
   Raw_type value;
+
+  static Raw_type Raw(const int ticks, const float) { return Raw_type{ticks}; }
 
   Ticks() = default;
   Ticks(const int ticks, const float) : value(ticks) {}
   Ticks(const Raw_type& value) : value(value) {}
 
   operator Raw_type() const { return value; }
+
+  Ticks operator+(const Raw_type& rhs) { return Ticks(value + rhs); }
+  Ticks& operator+=(const Raw_type& rhs) {
+    value += rhs;
+    return *this;
+  }
 };
 
 struct Turns {
   using Raw_type = float;
   Raw_type value;
 
+  static Raw_type Raw(const int, const float turns) { return Raw_type{turns}; }
+
   Turns() = default;
   Turns(const int, const float turns) : value(turns) {}
   Turns(const Raw_type& value) : value(value) {}
 
   operator Raw_type() const { return value; }
+
+  Turns operator+(const Raw_type& rhs) { return Turns(value + rhs); }
+  Turns& operator+=(const Raw_type& rhs) {
+    value += rhs;
+    return *this;
+  }
 };
 
 class Feedback {
