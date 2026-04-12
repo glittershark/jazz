@@ -90,7 +90,7 @@ void QuadratureEncoder::Changed(int ticks) {
              static_cast<float>(ticks) / static_cast<float>(ticks_per_turn_));
 }
 
-void QuadratureEncoder::OnChange(Callback<int> on_change) {
+void QuadratureEncoder::OnChange(Callback<int, float> on_change) {
   on_change_ = on_change;
 }
 

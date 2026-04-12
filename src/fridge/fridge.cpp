@@ -66,22 +66,22 @@ int main() {
   int32_t prev_ticks = 0;
 
   for (;;) {
-    int32_t ticks = enc1.Ticks();
+    // int32_t ticks = enc1.Ticks();
 
-    if (ticks != prev_ticks) {
-      auto hue = (uint8_t)(ticks & 0xFF);
-      fridge::color::RGB rgb = fridge::color::HSV(hue, 255, 255);
+    // if (ticks != prev_ticks) {
+    //   auto hue = (uint8_t)(ticks & 0xFF);
+    //   fridge::color::RGB rgb = fridge::color::HSV(hue, 255, 255);
 
-      hw.PrintLine("hue=%d -> R=%d G=%d B=%d", hue, rgb.red, rgb.green,
-                   rgb.blue);
+    //   hw.PrintLine("hue=%d -> R=%d G=%d B=%d", hue, rgb.red, rgb.green,
+    //                rgb.blue);
 
-      // Try direct (common cathode) first
-      red.Set(rgb.red);
-      green.Set(rgb.green);
-      blue.Set(rgb.blue);
+    //   // Try direct (common cathode) first
+    //   red.Set(rgb.red);
+    //   green.Set(rgb.green);
+    //   blue.Set(rgb.blue);
 
-      prev_ticks = ticks;
-    }
+    //   prev_ticks = ticks;
+    // }
   }
 }
 
