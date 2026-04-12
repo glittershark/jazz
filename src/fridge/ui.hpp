@@ -55,12 +55,8 @@ class Knob {
     };
   }
 
-  operator typename V::Raw_type() const { return value_; };
-
-  Knob& operator=(const V& rhs) {
-    value_ = rhs;
-    return *this;
-  }
+  V::Raw_type Get() const { return value_; };
+  void Set(const V& rhs) { value_ = rhs; }
 
   V& Increment(int ticks, float turns) {
     return value_.Increment(ticks, turns);

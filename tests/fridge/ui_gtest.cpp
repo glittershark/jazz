@@ -53,7 +53,7 @@ TEST(UITest, update_head_knobs_via_callbacks) {
   {
     const float feedback_increment = -0.3f;
 
-    ASSERT_EQ(ui.head.feedback, config::Feedback{});
+    ASSERT_EQ(ui.head.feedback.Get(), config::Feedback{});
 
     auto callback = ui.head.feedback.GetCallback();
     callback(garbage, feedback_increment);
@@ -116,38 +116,38 @@ TEST(UITest, update_lfo_knobs_via_callbacks) {
 
 TEST(UITest, single_turn_knob_saturates) {
   ui::Knob<ui::SingleTurn> knob;
-  ASSERT_FLOAT_EQ(knob, 0.0f);
+  ASSERT_FLOAT_EQ(knob.Get(), 0.0f);
 
   knob.GetCallback()(0, 0.3f);
-  EXPECT_FLOAT_EQ(knob, 0.3f);
+  EXPECT_FLOAT_EQ(knob.Get(), 0.3f);
 
   knob.GetCallback()(0, 0.3f);
-  EXPECT_FLOAT_EQ(knob, 0.6f);
+  EXPECT_FLOAT_EQ(knob.Get(), 0.6f);
 
   knob.GetCallback()(0, 0.9f);
-  EXPECT_FLOAT_EQ(knob, 1.0f);
+  EXPECT_FLOAT_EQ(knob.Get(), 1.0f);
 
   knob.GetCallback()(0, -0.5f);
-  EXPECT_FLOAT_EQ(knob, 0.5f);
+  EXPECT_FLOAT_EQ(knob.Get(), 0.5f);
 
   knob.GetCallback()(0, -2.3f);
-  EXPECT_FLOAT_EQ(knob, 0.0f);
+  EXPECT_FLOAT_EQ(knob.Get(), 0.0f);
 }
 
 TEST(UITest, position_knob_saturates) {
   const int third_of_buffer = static_cast<int>(BUFFER_LEN) / 3;
   ui::Knob<ui::Position> knob;
 
-  ASSERT_EQ(knob, 0);
+  ASSERT_EQ(knob.Get(), 0);
 
   knob.GetCallback()(third_of_buffer, 0);
-  EXPECT_EQ(knob, third_of_buffer);
+  EXPECT_EQ(knob.Get(), third_of_buffer);
 
   knob.GetCallback()(-2 * third_of_buffer, 0);
-  EXPECT_EQ(knob, 0);
+  EXPECT_EQ(knob.Get(), 0);
 
   knob.GetCallback()(4 * third_of_buffer, 0);
-  EXPECT_EQ(knob, BUFFER_LEN);
+  EXPECT_EQ(knob.Get(), BUFFER_LEN);
 }
 
 }  // namespace
