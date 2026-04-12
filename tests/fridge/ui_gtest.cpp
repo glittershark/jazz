@@ -1,5 +1,4 @@
 #include "config.hpp"
-#include "fridge.hpp"
 #include "gtest/gtest.h"
 #include "ui.hpp"
 
@@ -133,6 +132,22 @@ TEST(UITest, single_turn_knob_saturates) {
 
   knob.GetCallback()(0, -2.3f);
   EXPECT_FLOAT_EQ(knob, 0.0f);
+}
+
+TEST(UITest, position_knob_saturates) {
+  const int third_of_buffer = static_cast<int>(BUFFER_LEN) / 3;
+  ui::Knob<ui::Position> knob;
+
+  ASSERT_EQ(knob, 0);
+
+  knob.GetCallback()(third_of_buffer, 0);
+  EXPECT_EQ(knob, third_of_buffer);
+
+  knob.GetCallback()(-2 * third_of_buffer, 0);
+  EXPECT_EQ(knob, 0);
+
+  knob.GetCallback()(4 * third_of_buffer, 0);
+  EXPECT_EQ(knob, BUFFER_LEN);
 }
 
 }  // namespace

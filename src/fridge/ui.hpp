@@ -7,6 +7,8 @@
 #include <cassert>
 #include <concepts>
 #include <cstddef>
+#include <limits>
+#include <numeric>
 #include <type_traits>
 
 #include "callback.hpp"
@@ -14,21 +16,22 @@
 
 namespace fridge::ui {
 
-// TODO(nausicaa): arithmetic concepts or something
-
 template <typename V>
-concept BackingValue = std::is_arithmetic_v<typename V::Raw_type> &&
-                       std::convertible_to<V, typename V::Raw_type> &&
-                       requires(const int ticks, const float turns) {
-                         {
-                           V::Raw(ticks, turns)
-                         } -> std::convertible_to<typename V::Raw_type>;
-                       } && requires(V v, V v1, V v2, typename V::Raw_type r) {
-                         v1 + r;
-                         v1 + v2;
-                         v1 += r;
-                         v1 += v2;
-                       };
+concept BackingValue =
+    std::convertible_to<V, typename V::Raw_type> &&
+    std::convertible_to<typename V::Raw_type, V> &&
+    requires(const V& vr, const V::Raw_type& raw, int ticks, float turns) {
+      V();
+      V(vr);
+      V(raw);
+      V(ticks, turns);
+    } && requires(V v, int ticks, float turns) {
+      { v.Increment(ticks, turns) } -> std::same_as<V&>;
+    } && requires(V v1, const V& v2) {
+      { v1 + v2 } -> std::same_as<V>;
+      { v1 = v2 } -> std::same_as<V&>;
+      { v1 += v2 } -> std::same_as<V&>;
+    };
 
 class Button {};
 
@@ -52,16 +55,16 @@ class Knob {
     };
   }
 
-  V::Raw_type Value() const { return value_; };
   operator typename V::Raw_type() const { return value_; };
 
-  void Set(const V& value) { value_ = value; };
   Knob& operator=(const V& rhs) {
-    Set(rhs);
+    value_ = rhs;
     return *this;
   }
 
-  void Increment(int ticks, float turns) { value_.Increment(ticks, turns); }
+  V& Increment(int ticks, float turns) {
+    return value_.Increment(ticks, turns);
+  }
 };
 
 template <BackingValue V>
@@ -70,13 +73,9 @@ class Infinite {
 
  public:
   using Raw_type = V::Raw_type;
-  static Raw_type Raw(const int ticks, const float turns) {
-    return V::Raw(ticks, turns);
-  }
 
   Infinite() = default;
   Infinite(const int ticks, const float turns) : value_(ticks, turns) {}
-  Infinite(const V value) : value_(value) {}
 
   Infinite& Increment(const int ticks, const float turns) {}
 
@@ -86,13 +85,10 @@ class Infinite {
     return Infinite(value_ + rhs.value_);
   }
 
+  Infinite& operator=(const Infinite& rhs) = default;
+
   Infinite& operator+=(const Infinite& rhs) {
     *this = *this + rhs;
-    return *this;
-  }
-
-  Infinite& operator=(const V& rhs) {
-    value_ = rhs;
     return *this;
   }
 };
@@ -109,72 +105,94 @@ class Bounded {
 
  public:
   using Raw_type = V::Raw_type;
-  static Raw_type Raw(const int ticks, const float turns) {
-    return V::Raw(ticks, turns);
-  }
 
   Bounded() : value_(saturate(V())) {}
+  Bounded(const Raw_type& raw) : value_(saturate(raw)) {}
   Bounded(const int ticks, const float turns)
       : value_(saturate(V(ticks, turns))) {}
-  Bounded(const Raw_type& raw) : value_(saturate(raw)) {}
+
+  Bounded& Increment(const int ticks, const float turns) {
+    value_ = saturate(value_.Increment(ticks, turns));
+    return *this;
+  }
 
   operator Raw_type() const { return value_; }
 
-  Bounded operator+(const V& rhs) const { return Bounded(value_ + rhs); }
-  Bounded operator+(const Raw_type& rhs) const { return Bounded(value_ + rhs); }
-
-  Bounded& operator+=(const V& rhs) {
-    *this = *this + rhs;
-    return *this;
+  Bounded operator+(const Bounded& rhs) const {
+    return Bounded(value_ + rhs.value_);
   }
 
-  Bounded& operator+=(const Raw_type& rhs) {
-    *this = *this + rhs;
-    return *this;
-  }
+  Bounded& operator=(const Bounded& rhs) = default;
 
-  Bounded& operator=(const V& rhs) {
-    value_ = saturate(rhs);
+  Bounded& operator+=(const Bounded& rhs) {
+    *this = *this + rhs;
     return *this;
   }
 };
 
 template <typename V>
   requires std::is_integral_v<V>
-struct Ticks {
+class Ticks {
+  V value_;
+
+ public:
   using Raw_type = V;
-  Raw_type value;
 
   static Raw_type Raw(const int ticks, const float) { return Raw_type{ticks}; }
 
   Ticks() = default;
-  Ticks(const int ticks, const float) : value(ticks) {}
-  Ticks(const Raw_type& value) : value(value) {}
+  Ticks(const int ticks, const float) : value_(ticks) {}
+  Ticks(const Raw_type& value_) : value_(value_) {}
 
-  operator Raw_type() const { return value; }
+  Ticks& Increment(const int ticks, const float) {
+    // value_ = std::add_sat(value_, ticks); // but we can't yet
+    if (ticks > 0) {
+      const auto max = std::numeric_limits<V>::max();
+      value_ = value_ > max - ticks ? max : value_ + ticks;
+    } else if (ticks < 0) {
+      const auto min = std::numeric_limits<V>::min();
+      value_ = value_ < min - ticks ? min : value_ - ticks;
+    }
 
-  Ticks operator+(const Raw_type& rhs) { return Ticks(value + rhs); }
+    // if ticks == 0, whatever
+    return *this;
+  }
+
+  operator Raw_type() const { return value_; }
+
+  Ticks operator+(const Raw_type& rhs) { return Ticks(value_ + rhs); }
+
+  Ticks& operator=(const Ticks& rhs) = default;
+
   Ticks& operator+=(const Raw_type& rhs) {
-    value += rhs;
+    value_ += rhs;
     return *this;
   }
 };
 
-struct Turns {
-  using Raw_type = float;
-  Raw_type value;
+class Turns {
+  float value_;
 
-  static Raw_type Raw(const int, const float turns) { return Raw_type{turns}; }
+ public:
+  using Raw_type = float;
 
   Turns() = default;
-  Turns(const int, const float turns) : value(turns) {}
-  Turns(const Raw_type& value) : value(value) {}
+  Turns(const int, const float turns) : value_(turns) {}
+  Turns(const Raw_type& raw) : value_(raw) {}
 
-  operator Raw_type() const { return value; }
+  Turns& Increment(const int, const float turns) {
+    value_ += turns;
+    return *this;
+  }
 
-  Turns operator+(const Raw_type& rhs) { return Turns(value + rhs); }
+  operator Raw_type() const { return value_; }
+
+  Turns operator+(const Turns& rhs) const { return Turns(value_ + rhs.value_); }
+
+  Turns& operator=(const Turns& rhs) = default;
+
   Turns& operator+=(const Raw_type& rhs) {
-    value += rhs;
+    value_ += rhs;
     return *this;
   }
 };
@@ -192,6 +210,11 @@ class Feedback {
   Feedback(const Raw_type& value)
       : value_(value.kind == config::Feedback::Kind::kRead ? value.amount
                                                            : -value.amount) {}
+
+  Feedback& Increment(const int, const float turns) {
+    value_ += turns;
+    return *this;
+  }
 
   operator Raw_type() const {
     if (value_ >= 0.0f) {
