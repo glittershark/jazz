@@ -7,7 +7,6 @@ jazz_add_firmware(fridge SOURCES
   config_transform.cpp
   sound.cpp
   ui.cpp
-  # engine.cpp
 )
 
 if(NOT CMAKE_CROSSCOMPILING AND TARGET fridge)
