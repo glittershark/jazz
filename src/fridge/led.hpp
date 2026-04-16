@@ -30,14 +30,14 @@ class Controller {
   class Led {
     friend class Controller;
 
-    Controller& c;
-    Matrix matrix;
-    uint8_t x;
-    uint8_t y;
+    Controller& c_;
+    Matrix matrix_;
+    uint8_t x_;
+    uint8_t y_;
 
     // note: private constructor!
     Led(Controller& c, Matrix matrix, uint8_t x, uint8_t y)
-        : c(c), matrix(matrix), x(x), y(y) {}
+        : c_(c), matrix_(matrix), x_(x), y_(y) {}
 
     Address OnAddress();
     uint8_t OnOffset();
@@ -55,9 +55,9 @@ class Controller {
   Led B(uint8_t x, uint8_t y) { return Led(*this, Matrix::B, x, y); };
 
  private:
-  I2CHandle i2c;
-  uint16_t address;
-  uint32_t timeout;
+  I2CHandle i2c_;
+  uint16_t address_;
+  uint32_t timeout_;
 };
 
 }  // namespace fridge::io::led
