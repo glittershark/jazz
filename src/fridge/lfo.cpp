@@ -81,7 +81,7 @@ size_t LFOEngine::SampleGrainSize() {
   size_t min_grain_size = std::max<size_t>(
       1, std::min(config_.min_grain_size, config_.max_grain_size));
   size_t max_grain_size = std::max(
-      min_grain_size, std::max(config_.min_grain_size, config_.max_grain_size));
+      {min_grain_size, config_.min_grain_size, config_.max_grain_size});
 
   std::uniform_int_distribution<size_t> dist(min_grain_size, max_grain_size);
   return dist(rng_);

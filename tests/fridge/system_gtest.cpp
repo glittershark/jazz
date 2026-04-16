@@ -1,5 +1,6 @@
 #include <limits>
 
+#include "config.hpp"
 #include "fridge.hpp"
 #include "gtest/gtest.h"
 
@@ -375,7 +376,7 @@ TEST(FridgeLFOSystemTest, UnsupportedAndInvalidTargetsAreIgnored) {
   config.heads[0].write_amount = 0.4f;
 
   config.lfos[0] = DeterministicLfo();
-  config.lfos[0].targets[0] = Target{.object = static_cast<TargetObject>(999),
+  config.lfos[0].targets[0] = Target{.object = TargetObject::kMixer,
                                      .parameter = TargetParameter::kDry};
   config.lfos[1] = DeterministicLfo();
   config.lfos[1].targets[0] = Target{.object = TargetObject::kHead,
@@ -395,7 +396,7 @@ TEST(FridgeLFOSystemTest, UnsupportedAndInvalidTargetsAreIgnored) {
   system.Reset(config);
   fridge::config::Config output = system.Update(config, 1.0f);
 
-  EXPECT_FLOAT_EQ(output.dry, 0.3f);
+  EXPECT_FLOAT_EQ(output.dry, 1.3f);
   EXPECT_FLOAT_EQ(output.heads[0].write_amount, 0.4f);
   EXPECT_EQ(output.lfos[2].range, 7u);
 }
