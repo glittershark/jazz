@@ -20,7 +20,14 @@ Controller::Controller(uint16_t address) : address_(address), timeout_(1000) {
 
   assert(i2c_.Init(c) == I2CHandle::Result::OK);
 
-  // TODO(nausicaa): chip-specific register initialization
+  // set command register to point at frame 0
+  uint8_t data = 0x0;
+  i2c_.WriteDataAtAddress(address_, 0xfd, 1, &data, 1, timeout_);
+
+  // clear out every single register in the page
+  for (uint16_t reg = 0x0; reg <= 0xb3; ++reg) {
+    i2c_.WriteDataAtAddress(address_, reg, 1, &data, 1, timeout_);
+  }
 }
 
 Address Controller::Led::OnAddress() {
