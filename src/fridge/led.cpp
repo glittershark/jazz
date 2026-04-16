@@ -2,7 +2,7 @@
 
 #ifndef UNIT_TEST
 
-using namespace fridge::driver::led;
+using namespace fridge::io::led;
 
 #include <cassert>
 

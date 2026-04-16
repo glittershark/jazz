@@ -7,7 +7,7 @@
 
 #include "per/i2c.h"
 
-namespace fridge::driver::led {
+namespace fridge::io::led {
 
 using daisy::I2CHandle;
 
@@ -60,7 +60,7 @@ class Controller {
   uint32_t timeout;
 };
 
-}  // namespace fridge::driver::led
+}  // namespace fridge::io::led
 
 #endif  // UNIT_TEST
 
