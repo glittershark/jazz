@@ -24,6 +24,8 @@ console:
 # Flash via ST-Link
 flash:
 	@test -n "$(DIR)" || (echo "Usage: make flash DIR=fridge"; exit 1)
+	cmake --preset arm
+	cmake --build --preset arm --target $(DIR)
 	st-flash write build/src/$(DIR)/$(DIR).bin 0x08000000
 	st-flash reset
 
@@ -42,7 +44,7 @@ logs:
 debug:
 	@test -n "$(DIR)" || (echo "Usage: make debug DIR=fridge"; exit 1)
 	pgrep st-util || setsid st-util -p 4242 --no-reset --semihosting >/dev/null 2>&1 &
-	gdb -ex "file build/src/$(DIR)/$(DIR).elf" -ex "target remote localhost:4242"
+	gdb -ex "file build/src/$(DIR)/$(DIR)" -ex "target remote localhost:4242"
 
 # Merge compile_commands.json from both builds
 compile-commands:
