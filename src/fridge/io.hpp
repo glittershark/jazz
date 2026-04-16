@@ -6,6 +6,7 @@
 
 #include "callback.hpp"
 #include "color.hpp"
+#include "led.hpp"
 #include "pwm.hpp"
 
 #ifndef UNIT_TEST
