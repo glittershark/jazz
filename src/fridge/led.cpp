@@ -1,5 +1,7 @@
 #include "led.hpp"
 
+#include "per/i2c.h"
+
 #ifndef UNIT_TEST
 
 using namespace fridge::io::led;
@@ -20,11 +22,27 @@ Controller::Controller(uint16_t address) : address_(address), timeout_(1000) {
 
   assert(i2c_.Init(c) == I2CHandle::Result::OK);
 
+  // set command register to point at frame 9 (device control)
+  uint8_t data = 0x0b;
+  i2c_.WriteDataAtAddress(address_, 0xfd, 1, &data, 1, timeout_);
+
+  // switch the device off
+  data = 0b0000'0000;
+  i2c_.WriteDataAtAddress(address_, 0x0a, 1, &data, 1, timeout_);
+
+  // wait for some reason
+  daisy::System::Delay(10000);
+
+  // switch the device on
+  data = 0b0000'0001;
+  i2c_.WriteDataAtAddress(address_, 0x0a, 1, &data, 1, timeout_);
+
   // set command register to point at frame 0
-  uint8_t data = 0x0;
+  data = 0x0;
   i2c_.WriteDataAtAddress(address_, 0xfd, 1, &data, 1, timeout_);
 
   // clear out every single register in the page
+  data = 0x0;
   for (uint16_t reg = 0x0; reg <= 0xb3; ++reg) {
     i2c_.WriteDataAtAddress(address_, reg, 1, &data, 1, timeout_);
   }
