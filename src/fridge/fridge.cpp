@@ -1,4 +1,3 @@
-#include "sound.hpp"
 #ifndef UNIT_TEST
 
 #include <cassert>
@@ -14,8 +13,6 @@ using namespace daisy;
 using namespace daisy::seed;
 
 DaisySeed hw;
-
-fridge::sound::Sound sound;
 
 int main() {
   hw.Init();
