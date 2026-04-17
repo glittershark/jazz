@@ -201,7 +201,7 @@ class QuadratureEncoder {
   QuadratureEncoder& operator=(const QuadratureEncoder&) = delete;
 
   QuadratureEncoder(mux::GpioInMux::Channel a, mux::GpioInMux::Channel b,
-                    uint32_t ticks_per_turn = 1);
+                    uint32_t ticks_per_turn = 96);
 
   void OnChange(Callback<int, float>);
 };
