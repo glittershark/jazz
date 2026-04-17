@@ -8,7 +8,6 @@
 #include <concepts>
 #include <cstddef>
 #include <limits>
-#include <numeric>
 #include <type_traits>
 
 #include "callback.hpp"
@@ -147,7 +146,7 @@ class Ticks {
       value_ = value_ > max - ticks ? max : value_ + ticks;
     } else if (ticks < 0) {
       const auto min = std::numeric_limits<V>::min();
-      value_ = value_ < min - ticks ? min : value_ - ticks;
+      value_ = value_ < min - ticks ? min : value_ + ticks;
     }
 
     // if ticks == 0, whatever
