@@ -26,13 +26,6 @@ Controller::Controller(uint16_t address) : address_(address), timeout_(1000) {
   uint8_t data = 0x0b;
   i2c_.WriteDataAtAddress(address_, 0xfd, 1, &data, 1, timeout_);
 
-  // switch the device off
-  data = 0b0000'0000;
-  i2c_.WriteDataAtAddress(address_, 0x0a, 1, &data, 1, timeout_);
-
-  // wait for some reason
-  daisy::System::Delay(10000);
-
   // switch the device on
   data = 0b0000'0001;
   i2c_.WriteDataAtAddress(address_, 0x0a, 1, &data, 1, timeout_);

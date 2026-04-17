@@ -49,7 +49,7 @@ class Controller {
     void Pwm(uint8_t duty);
   };
 
-  Controller(uint16_t address = 0x75);
+  Controller(uint16_t address = 0x74);
 
   Led A(uint8_t x, uint8_t y) { return Led(*this, Matrix::A, x, y); };
   Led B(uint8_t x, uint8_t y) { return Led(*this, Matrix::B, x, y); };
