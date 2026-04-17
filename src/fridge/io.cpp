@@ -94,28 +94,6 @@ void QuadratureEncoder::OnChange(Callback<int, float> on_change) {
   on_change_ = on_change;
 }
 
-/// RgbLed
-
-RgbLed::RgbLed(TimerHandle::Config::Peripheral timer, Pin red_pin,
-               Pin green_pin, Pin blue_pin, bool invert)
-    : timer_(timer),
-      red_(timer_.InitChannel(1, red_pin)),
-      green_(timer_.InitChannel(2, green_pin)),
-      blue_(timer_.InitChannel(3, blue_pin)),
-      invert_(invert) {}
-
-void RgbLed::Set(color::RGB c) {
-  if (invert_) {
-    red_.Set(255 - c.red);
-    green_.Set(255 - c.green);
-    blue_.Set(255 - c.blue);
-  } else {
-    red_.Set(c.red);
-    green_.Set(c.green);
-    blue_.Set(c.blue);
-  }
-}
-
 }  // namespace fridge::io
 
 #endif  // UNIT_TEST

@@ -2,6 +2,7 @@
 
 #include <cassert>
 
+#include "color.hpp"
 #include "daisy_seed.h"
 #include "io.hpp"
 #include "ui.hpp"
@@ -50,8 +51,20 @@ int main() {
   fridge::io::led::Controller controller;
 
   for (;;) {
-    controller.B(0, 1).On(true).Pwm(knob1.Get());
-    controller.B(4, 5).On(true).Pwm(knob2.Get());
+    {
+      color::RGB color = color::HSV(knob1.Get(), 255, 255);
+      controller.B(0, 1).On(true).Pwm(color.red);
+      controller.B(1, 1).On(true).Pwm(color.blue);
+      controller.B(2, 1).On(true).Pwm(color.green);
+    }
+
+    {
+      color::RGB color = color::HSV(knob2.Get(), 255, 255);
+      controller.B(4, 5).On(true).Pwm(color.red);
+      controller.B(5, 5).On(true).Pwm(color.blue);
+      controller.B(6, 5).On(true).Pwm(color.green);
+    }
+
     System::Delay(10);
   }
 }

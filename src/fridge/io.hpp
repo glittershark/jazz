@@ -206,47 +206,6 @@ class QuadratureEncoder {
   void OnChange(Callback<int, float>);
 };
 
-/**
- * RGB LED with PWM for full 0-255 color control.
- *
- * Uses a hardware timer for PWM generation. Example with TIM4:
- *
- *   RgbLed led(
- *     TimerHandle::Config::Peripheral::TIM_4,
- *     D13,  // Red   - TIM4_CH1 (PB6)
- *     D14,  // Green - TIM4_CH2 (PB7)
- *     D11   // Blue  - TIM4_CH3 (PB8)
- *   );
- *   led.Set(color::RGB(255, 128, 0));  // Orange
- *   led.Set(color::HSV(170, 255, 255)); // Cyan (via implicit conversion)
- */
-class RgbLed {
-  pwm::Timer timer_;
-  pwm::Channel red_;
-  pwm::Channel green_;
-  pwm::Channel blue_;
-  bool invert_;
-
- public:
-  RgbLed(const RgbLed&) = delete;
-  RgbLed& operator=(const RgbLed&) = delete;
-
-  /**
-   * Initialize a PWM RGB LED.
-   *
-   * @param timer Which timer peripheral to use
-   * @param red_pin Pin for red LED (must be channel 1 of timer)
-   * @param green_pin Pin for green LED (must be channel 2 of timer)
-   * @param blue_pin Pin for blue LED (must be channel 3 of timer)
-   * @param invert Set true for common-anode LEDs (inverts PWM output)
-   */
-  RgbLed(TimerHandle::Config::Peripheral timer, Pin red_pin, Pin green_pin,
-         Pin blue_pin, bool invert = false);
-
-  /** Set the LED color */
-  void Set(color::RGB color);
-};
-
 }  // namespace fridge::io
 
 #endif  // UNIT_TEST
