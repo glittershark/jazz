@@ -1,7 +1,5 @@
 #include "led.hpp"
 
-#include "per/i2c.h"
-
 #ifndef UNIT_TEST
 
 using namespace fridge::io::led;
@@ -42,15 +40,24 @@ void Controller::ActivateFrame(uint8_t frame) {
   if (current_frame_ != frame) {
     i2c_.WriteDataAtAddress(i2c_address_, 0xfd, 1, &frame, 1, timeout_);
     current_frame_ = frame;
+
+    // invalidate the cache, as we just switched frames
+    for (auto& reg : frame_cache_) {
+      reg.dirty = true;
+    }
   }
 }
 
 uint8_t Controller::Read(Address addr) {
   ActivateFrame(addr.frame);
 
-  uint8_t value;
-  i2c_.ReadDataAtAddress(i2c_address_, addr.reg, 1, &value, 1, timeout_);
-  return value;
+  auto& cached = frame_cache_[addr.reg];
+  if (cached.dirty) {
+    uint8_t value;
+    i2c_.ReadDataAtAddress(i2c_address_, addr.reg, 1, &value, 1, timeout_);
+    cached = value;
+  }
+  return cached.value;
 }
 
 bool Controller::Read(BitAddress addr) {
@@ -59,7 +66,14 @@ bool Controller::Read(BitAddress addr) {
 
 void Controller::Write(Address addr, uint8_t value) {
   ActivateFrame(addr.frame);
-  i2c_.WriteDataAtAddress(i2c_address_, addr.reg, 1, &value, 1, timeout_);
+
+  auto& cached = frame_cache_[addr.reg];
+
+  // only actually write if it would matter
+  if (cached.dirty || cached.value != value) {
+    i2c_.WriteDataAtAddress(i2c_address_, addr.reg, 1, &value, 1, timeout_);
+    cached = value;
+  }
 }
 
 void Controller::Write(BitAddress addr, bool state) {
@@ -83,7 +97,8 @@ Controller::BitAddress Controller::Led::OnAddress() {
 Controller::Address Controller::Led::PwmAddress() {
   return {
       .frame = 0x0,
-      .reg = 0x24 + x_ + (0x10 * y_) + (matrix_ == Matrix::A ? 0 : 0x08),
+      .reg = static_cast<uint8_t>(0x24 + x_ + (0x10 * y_) +
+                                  (matrix_ == Matrix::A ? 0 : 0x08)),
   };
 }
 

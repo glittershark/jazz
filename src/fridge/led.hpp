@@ -64,8 +64,18 @@ class Controller {
   Led B(uint8_t x, uint8_t y) { return Led(*this, Matrix::B, x, y); };
 
  private:
-  // std::array<std::array<uint8_t, 2>, 9> on_state_;
-  // std::array<std::array<uint8_t, 16>, 9> pwm_state_;
+  struct CachedReg {
+    uint8_t value = 0;
+    bool dirty = true;
+
+    CachedReg& operator=(uint8_t v) {
+      value = v;
+      dirty = false;
+      return *this;
+    }
+  };
+
+  std::array<CachedReg, 0xb3> frame_cache_;
 
   I2CHandle i2c_;
   uint8_t i2c_address_;
