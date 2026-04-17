@@ -3,6 +3,7 @@
 
 #ifndef UNIT_TEST
 
+#include <array>
 #include <cstdint>
 
 #include "per/i2c.h"
@@ -10,8 +11,6 @@
 namespace fridge::io::led {
 
 using daisy::I2CHandle;
-
-using Address = uint16_t;
 
 /**
  * Driver for the IS31FL3731.
@@ -21,9 +20,21 @@ using Address = uint16_t;
  * address pairs.
  */
 class Controller {
-  enum class Matrix {
-    A,
-    B,
+  enum class Matrix { A, B };
+
+  /**
+   * Represents an address on the controller itself. Since the controller uses
+   * paged ("framed", in its words) memory, this is a bit more convenient than
+   * writing everything by hand.
+   */
+  struct Address {
+    uint8_t frame;
+    uint8_t reg;
+  };
+
+  struct BitAddress {
+    Address addr;
+    uint8_t bit;
   };
 
  public:
@@ -39,25 +50,37 @@ class Controller {
     Led(Controller& c, Matrix matrix, uint8_t x, uint8_t y)
         : c_(c), matrix_(matrix), x_(x), y_(y) {}
 
-    Address OnAddress();
-    uint8_t OnOffset();
-
+    BitAddress OnAddress();
     Address PwmAddress();
 
    public:
-    void On(bool on);
-    void Pwm(uint8_t duty);
+    Led& On(bool on);
+    Led& Pwm(uint8_t duty);
   };
 
-  Controller(uint16_t address = 0x74);
+  Controller(uint8_t address = 0x74);
 
   Led A(uint8_t x, uint8_t y) { return Led(*this, Matrix::A, x, y); };
   Led B(uint8_t x, uint8_t y) { return Led(*this, Matrix::B, x, y); };
 
  private:
+  // std::array<std::array<uint8_t, 2>, 9> on_state_;
+  // std::array<std::array<uint8_t, 16>, 9> pwm_state_;
+
   I2CHandle i2c_;
-  uint16_t address_;
+  uint8_t i2c_address_;
   uint32_t timeout_;
+
+  // TODO(nausicaa): error checking?
+
+  uint8_t current_frame_;
+  void ActivateFrame(uint8_t frame);
+
+  uint8_t Read(Address addr);
+  bool Read(BitAddress addr);
+
+  void Write(Address addr, uint8_t value);
+  void Write(BitAddress addr, bool value);
 };
 
 }  // namespace fridge::io::led

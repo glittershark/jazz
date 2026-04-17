@@ -10,7 +10,11 @@ using namespace fridge::io::led;
 
 #include "daisy_seed.h"
 
-Controller::Controller(uint16_t address) : address_(address), timeout_(1000) {
+Controller::Controller(uint8_t address)
+    : i2c_address_(address), timeout_(1000), current_frame_(0xff) {
+  // for our purposes, can't use an address greater than 0x7F
+  assert(address < 0x80);
+
   I2CHandle::Config c;
   c.periph = I2CHandle::Config::Peripheral::I2C_1;
   c.mode = I2CHandle::Config::Mode::I2C_MASTER;
@@ -22,51 +26,75 @@ Controller::Controller(uint16_t address) : address_(address), timeout_(1000) {
 
   assert(i2c_.Init(c) == I2CHandle::Result::OK);
 
-  // set command register to point at frame 9 (device control)
-  uint8_t data = 0x0b;
-  i2c_.WriteDataAtAddress(address_, 0xfd, 1, &data, 1, timeout_);
+  // clear out every register in frame 0
+  for (uint8_t reg = 0x0; reg <= 0xb3; ++reg) {
+    Write({.frame = 0x0, .reg = reg}, 0);
+  }
 
-  // switch the device on
-  data = 0b0000'0001;
-  i2c_.WriteDataAtAddress(address_, 0x0a, 1, &data, 1, timeout_);
+  // write 1 to the shutdown register to switch the device on
+  Write({.frame = 0x0b, .reg = 0x0a}, 0b0000'0001);
+}
 
-  // set command register to point at frame 0
-  data = 0x0;
-  i2c_.WriteDataAtAddress(address_, 0xfd, 1, &data, 1, timeout_);
+void Controller::ActivateFrame(uint8_t frame) {
+  assert(frame <= 0x09 || frame == 0x0b);
 
-  // clear out every single register in the page
-  data = 0x0;
-  for (uint16_t reg = 0x0; reg <= 0xb3; ++reg) {
-    i2c_.WriteDataAtAddress(address_, reg, 1, &data, 1, timeout_);
+  // set command register to point at the given frame
+  if (current_frame_ != frame) {
+    i2c_.WriteDataAtAddress(i2c_address_, 0xfd, 1, &frame, 1, timeout_);
+    current_frame_ = frame;
   }
 }
 
-Address Controller::Led::OnAddress() {
-  return 0x00 + (y_ << 1) + (matrix_ == Matrix::A ? 0 : 1);
+uint8_t Controller::Read(Address addr) {
+  ActivateFrame(addr.frame);
+
+  uint8_t value;
+  i2c_.ReadDataAtAddress(i2c_address_, addr.reg, 1, &value, 1, timeout_);
+  return value;
 }
 
-uint8_t Controller::Led::OnOffset() {
-  return x_;  // lol
+bool Controller::Read(BitAddress addr) {
+  return (Read(addr.addr) >> addr.bit) & 1;
 }
 
-Address Controller::Led::PwmAddress() {
-  return 0x24 + x_ + (0x10 * y_) + (matrix_ == Matrix::A ? 0 : 0x08);
+void Controller::Write(Address addr, uint8_t value) {
+  ActivateFrame(addr.frame);
+  i2c_.WriteDataAtAddress(i2c_address_, addr.reg, 1, &value, 1, timeout_);
 }
 
-void Controller::Led::On(bool on) {
-  uint8_t row;
-
-  c_.i2c_.ReadDataAtAddress(c_.address_, OnAddress(), 1, &row, 1, c_.timeout_);
-
-  uint8_t bit = 1 << OnOffset();
-  row = on ? row | bit : row & ~bit;
-
-  c_.i2c_.WriteDataAtAddress(c_.address_, OnAddress(), 1, &row, 1, c_.timeout_);
+void Controller::Write(BitAddress addr, bool state) {
+  uint8_t value = Read(addr.addr);
+  value = state ? value | (1 << addr.bit) : value & ~(1 << addr.bit);
+  Write(addr.addr, value);
 }
 
-void Controller::Led::Pwm(uint8_t duty) {
-  c_.i2c_.WriteDataAtAddress(c_.address_, PwmAddress(), 1, &duty, 1,
-                             c_.timeout_);
+Controller::BitAddress Controller::Led::OnAddress() {
+  return {
+      .addr =
+          {
+              .frame = 0x0,
+              .reg = static_cast<uint8_t>(0x00 | (y_ << 1) |
+                                          (matrix_ == Matrix::A ? 0 : 1)),
+          },
+      .bit = x_,  // lol
+  };
+}
+
+Controller::Address Controller::Led::PwmAddress() {
+  return {
+      .frame = 0x0,
+      .reg = 0x24 + x_ + (0x10 * y_) + (matrix_ == Matrix::A ? 0 : 0x08),
+  };
+}
+
+Controller::Led& Controller::Led::On(bool on) {
+  c_.Write(OnAddress(), on);
+  return *this;
+}
+
+Controller::Led& Controller::Led::Pwm(uint8_t duty) {
+  c_.Write(PwmAddress(), duty);
+  return *this;
 }
 
 #endif  // UNIT_TEST

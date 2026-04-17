@@ -60,24 +60,13 @@ int main() {
   //
   fridge::io::led::Controller controller;
 
-  for (int i = 0; i <= 7; i++) {
-    for (int j = 0; j <= 7; j++) {
-      controller.B(i, j).Pwm(255);
-    }
-  }
-
   for (;;) {
-    hw.PrintLine("hi!");
-    System::Delay(1000);
-    for (int i = 0; i <= 7; i++) {
-      for (int j = 0; j <= 7; j++) {
-        controller.B(i, j).On(true);
-      }
-    }
-    System::Delay(1000);
-    for (int i = 0; i <= 7; i++) {
-      for (int j = 0; j <= 7; j++) {
-        controller.B(i, j).On(false);
+    for (int y = 0; y <= 2; ++y) {
+      for (int x = 0; x <= 2; ++x) {
+        hw.PrintLine("turning on (%d, %d)", x, y);
+        controller.B(x, y).On(true).Pwm(255);
+        System::Delay(1000);
+        controller.B(x, y).On(false);
       }
     }
   }
