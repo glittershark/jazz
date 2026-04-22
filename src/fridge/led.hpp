@@ -54,10 +54,23 @@ class Controller {
     Address PwmAddress();
 
    public:
+    /**
+     * Sets whether this LED is on and should be PWMed.
+     */
     Led& SetOn(bool on);
+
+    /**
+     * Sets the PWM duty cycle for this LED. This only takes effect if the LED
+     * is on, and will not change if the LED is switched off.
+     */
     Led& SetPwm(uint8_t duty);
   };
 
+  /**
+   * Creates a new Controller (duh). `address` is set in hardware (there are a
+   * few bridgeable pads on the demo board, which correspond to address setting
+   * pins on the chip), so if in doubt, leave it as its default.
+   */
   Controller(uint8_t address = 0x74);
 
   Led A(uint8_t x, uint8_t y) { return Led(*this, Matrix::A, x, y); };
