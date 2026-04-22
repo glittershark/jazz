@@ -7,6 +7,12 @@ you are less of a nix weenie than i am
 
 * building and testing
 
+be sure to check out all the submodules:
+#+begin_src shell-session
+$ git submodule update --init --recursive
+#+end_src
+
+
 to build firmware blobs for all effects:
 
 #+begin_src shell-session
