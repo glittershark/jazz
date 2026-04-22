@@ -54,8 +54,8 @@ class Controller {
     Address PwmAddress();
 
    public:
-    Led& On(bool on);
-    Led& Pwm(uint8_t duty);
+    Led& SetOn(bool on);
+    Led& SetPwm(uint8_t duty);
   };
 
   Controller(uint8_t address = 0x74);

@@ -102,12 +102,12 @@ Controller::Address Controller::Led::PwmAddress() {
   };
 }
 
-Controller::Led& Controller::Led::On(bool on) {
+Controller::Led& Controller::Led::SetOn(bool on) {
   c_.Write(OnAddress(), on);
   return *this;
 }
 
-Controller::Led& Controller::Led::Pwm(uint8_t duty) {
+Controller::Led& Controller::Led::SetPwm(uint8_t duty) {
   c_.Write(PwmAddress(), duty);
   return *this;
 }
