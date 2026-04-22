@@ -24,19 +24,29 @@ Controller::Controller(uint8_t address)
 
   assert(i2c_.Init(c) == I2CHandle::Result::OK);
 
-  // clear out every register in frame 0
+  // clear out every register in frame 0; most frames have extent 0xb3 (see page
+  // 9, table 3) and we're only using frame 0.
   for (uint8_t reg = 0x0; reg <= 0xb3; ++reg) {
     Write({.frame = 0x0, .reg = reg}, 0);
   }
 
-  // write 1 to the shutdown register to switch the device on
+  // set the low-order bit of the shutdown register (0x0a) to 1, to switch the
+  // device on (see page 14, table 17)
   Write({.frame = 0x0b, .reg = 0x0a}, 0b0000'0001);
 }
 
 void Controller::ActivateFrame(uint8_t frame) {
+  /*
+   * this device has paged ("framed") memory: to write to it, you first write to
+   * the command register to select which frame you're using, then actually
+   * read/write registers in that frame. frames 0x00 through 0x09 are LED
+   * control frames, and frame 0x0b is the function frame. the rest are
+   * "reserved" according to the datasheet.
+   */
   assert(frame <= 0x09 || frame == 0x0b);
 
-  // set command register to point at the given frame
+  // set the command register (0xfd) to point at the given frame (see page 9,
+  // table 2 and page 10 of the datasheet)
   if (current_frame_ != frame) {
     i2c_.WriteDataAtAddress(i2c_address_, 0xfd, 1, &frame, 1, timeout_);
     current_frame_ = frame;
@@ -87,6 +97,8 @@ Controller::BitAddress Controller::Led::OnAddress() {
       .addr =
           {
               .frame = 0x0,
+              // see page 11, table 7 of the datasheet for how individual LED
+              // bit addresses are calculated
               .reg = static_cast<uint8_t>(0x00 | (y_ << 1) |
                                           (matrix_ == Matrix::A ? 0 : 1)),
           },
@@ -97,6 +109,10 @@ Controller::BitAddress Controller::Led::OnAddress() {
 Controller::Address Controller::Led::PwmAddress() {
   return {
       .frame = 0x0,
+      // see page 11, table 7 of the datasheet for the layout of the PWM
+      // registers in memory; basically, the matrix rows are interleaved, eight
+      // at a time, starting at register 0x24, resulting in rows sixteen (0x10)
+      // registers long.
       .reg = static_cast<uint8_t>(0x24 + x_ + (0x10 * y_) +
                                   (matrix_ == Matrix::A ? 0 : 0x08)),
   };
