@@ -22,7 +22,7 @@ struct TypedCallback {
 
   operator Callback<Args...>() {
     return Callback<Args...>{
-        .callback = static_cast<void (*)(void*, Args...)>(callback),
+        .callback = reinterpret_cast<void (*)(void*, Args...)>(callback),
         .data = static_cast<void*>(data),
     };
   }

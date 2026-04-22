@@ -8,7 +8,6 @@
 #include <concepts>
 #include <cstddef>
 #include <limits>
-#include <numeric>
 #include <type_traits>
 
 #include "callback.hpp"
@@ -55,12 +54,8 @@ class Knob {
     };
   }
 
-  operator typename V::Raw_type() const { return value_; };
-
-  Knob& operator=(const V& rhs) {
-    value_ = rhs;
-    return *this;
-  }
+  V::Raw_type Get() const { return value_; };
+  void Set(const V& rhs) { value_ = rhs; }
 
   V& Increment(int ticks, float turns) {
     return value_.Increment(ticks, turns);
@@ -151,7 +146,7 @@ class Ticks {
       value_ = value_ > max - ticks ? max : value_ + ticks;
     } else if (ticks < 0) {
       const auto min = std::numeric_limits<V>::min();
-      value_ = value_ < min - ticks ? min : value_ - ticks;
+      value_ = value_ < min - ticks ? min : value_ + ticks;
     }
 
     // if ticks == 0, whatever
