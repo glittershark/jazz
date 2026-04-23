@@ -78,7 +78,8 @@ HSV::HSV(const RGB& rgb) {
 }
 
 uint8_t gamma_scale(uint8_t value, float gamma) {
-  return (uint8_t)(255. * powf((((float)value) / 255.), gamma));
+  float res = 255. * powf(static_cast<float>(value) / 255., gamma);
+  return static_cast<uint8_t>(res);
 }
 
 }  // namespace color

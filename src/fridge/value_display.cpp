@@ -8,7 +8,9 @@ namespace fridge::ui::value_display {
 
 color::RGB HueWheel::operator()(uint8_t v) const {
   /* 1. scale the value to the interval [start, end] */
-  v = (uint8_t)(((((float)v) * ((float)(end - start))) / 255.) + start);
+  v = static_cast<uint8_t>(
+      ((static_cast<float>(v) * (static_cast<float>(end - start))) / 255.) +
+      start);
 
   /* 2. Convert to RGB */
   color::RGB rgb = color::HSV(v, saturation, this->value);
