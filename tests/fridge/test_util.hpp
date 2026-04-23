@@ -3,7 +3,10 @@
 
 #include <limits>
 
-/* Unsigned absolute difference */
+/* Unsigned absolute difference
+ *
+ * note: may overflow on pathological inputs
+ */
 template <typename T>
 T udiff(T x, T y) {
   return (x > y) ? (x - y) : (y - x);
