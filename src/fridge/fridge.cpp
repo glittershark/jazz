@@ -3,7 +3,6 @@
 
 #include <cassert>
 
-#include "color.hpp"
 #include "daisy_seed.h"
 #include "io.hpp"
 #include "ui.hpp"
@@ -51,19 +50,24 @@ int main() {
 
   fridge::io::led::Controller controller;
 
-  ui::RgbLed led1(controller.B(0, 1), controller.B(1, 1), controller.B(2, 1));
-  ui::RgbLed led2(controller.B(4, 5), controller.B(5, 5), controller.B(6, 5));
+  ui::RgbLedValueDisplay<ui::value_display::HueWheel> led1(
+      {.end = 128},
+      ui::RgbLed(controller.B(0, 1), controller.B(1, 1), controller.B(2, 1)));
+
+  ui::RgbLedValueDisplay<ui::value_display::HueWheel> led2(
+      {.end = 128},
+      ui::RgbLed(controller.B(4, 5), controller.B(5, 5), controller.B(6, 5)));
 
   led1.SetOn(true);
   led2.SetOn(true);
 
   for (;;) {
     {
-      led1.SetColor(color::HSV(knob1.Get(), 255, 255));
+      led1.SetValue(knob1.Get());
     }
 
     {
-      led2.SetColor(color::HSV(knob2.Get(), 255, 255));
+      led2.SetValue(knob2.Get());
     }
 
     System::Delay(10);
