@@ -112,4 +112,9 @@ Engine::Engine()
       // this kills the clang-format
       knobs_(muxes_, ui_) {}
 
+void Engine::operator()(config::Config& config, float dt) {
+  config |= ui_;  // lmao
+  transform_.Update(config, dt);
+}
+
 #endif  // UNIT_TEST

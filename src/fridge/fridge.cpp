@@ -1,17 +1,28 @@
 #ifndef UNIT_TEST
 
 #include <cassert>
+#include <cstddef>
 
 #include "config.hpp"
 #include "daisy_seed.h"
 #include "engine.hpp"
+#include "sound.hpp"
 
 using namespace fridge;
+using namespace daisy;
 
-daisy::DaisySeed hw;
+DaisySeed hw;
 config::Config config;
+sound::Sound sound;
 
-[[noreturn]] void breadboard() {
+void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
+                   size_t size) {
+  for (size_t i = 0; i < size; ++i) {
+    out[0][i] = ::sound.ProcessSample(::config, in[0][i]);
+  }
+}
+
+[[noreturn]] void Breadboard() {
   engine::BreadboardEngine engine;
 
   hw.PrintLine("Now cycling hue with encoder...");
@@ -20,18 +31,28 @@ config::Config config;
 
   for (;;) {
     engine();
-    daisy::System::Delay(10);
+    System::Delay(10);
   }
 }
 
-[[noreturn]] void actual_fridge() {
+[[noreturn]] void ActualFridge() {
+  AdcChannelConfig adcConfig;
+  adcConfig.InitSingle(hw.GetPin(21));
+  hw.adc.Init(&adcConfig, 1);
+  hw.adc.Start();
+
+  hw.StartAudio(AudioCallback);
+
   engine::Engine engine;
 
   hw.PrintLine("Now refrigerating your heads...");
 
   for (;;) {
-    engine(::config);
-    daisy::System::Delay(10);
+    const uint32_t delay_ms = 10;
+    const float dt = delay_ms / 1000.f;
+
+    engine(::config, dt);
+    System::Delay(delay_ms);
   }
 }
 
@@ -40,7 +61,7 @@ config::Config config;
   hw.SetAudioBlockSize(8);
   hw.StartLog(false);
 
-  actual_fridge();
+  ActualFridge();
 }
 
 #endif
