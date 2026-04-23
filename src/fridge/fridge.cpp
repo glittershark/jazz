@@ -1,3 +1,6 @@
+#include "rgb_led.hpp"
+#include "value_display.hpp"
+
 #ifndef UNIT_TEST
 
 #include <cassert>
@@ -30,6 +33,23 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
   hw.PrintLine("Now cycling hue with encoder...");
 
   fridge::io::led::Controller controller;
+
+  /* This particular choice is quite pretty, but maybe not so legible. */
+  ui::value_display::CieInterp blue_to_green{
+      .start = color::XYZ(18, 7, 95),
+      .end = color::XYZ(35, 71, 12),
+  };
+
+  ui::RgbLedValueDisplay<ui::value_display::CieInterp> led1(
+      blue_to_green,
+      ui::RgbLed(controller.B(0, 1), controller.B(1, 1), controller.B(2, 1)));
+
+  ui::RgbLedValueDisplay<ui::value_display::CieInterp> led2(
+      blue_to_green,
+      ui::RgbLed(controller.B(4, 5), controller.B(5, 5), controller.B(6, 5)));
+
+  led1.SetOn(true);
+  led2.SetOn(true);
 
   for (;;) {
     engine();

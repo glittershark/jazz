@@ -25,6 +25,10 @@ concept ValueDisplay =
     std::convertible_to<std::invoke_result_t<Fn, uint8_t>, color::RGB>;
 
 namespace value_display {
+
+/* Display a value by rotating around the hue wheel, with per-color gamma
+ * correction
+ */
 struct HueWheel {
   float red_gamma = 1.;
   float green_gamma = 1.;
@@ -40,6 +44,16 @@ struct HueWheel {
 };
 static_assert(ValueDisplay<HueWheel>);
 static_assert(std::semiregular<HueWheel>);
+
+/* Display a value as a linear interpolation between two points in XYZ color
+ * space */
+struct CieInterp {
+  color::XYZ start;
+  color::XYZ end;
+
+  color::XYZ operator()(uint8_t value) const;
+};
+static_assert(ValueDisplay<CieInterp>);
 
 }  // namespace value_display
 

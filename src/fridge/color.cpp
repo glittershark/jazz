@@ -123,7 +123,8 @@ XYZ::operator RGB() const {
   // Apply sRGB gamma and clamp
   auto gamma_correct = [](float c) -> uint8_t {
     c = fmaxf(0.0f, fminf(1.0f, c));
-    float v = (c <= 0.0031308f) ? 12.92f * c : 1.055f * powf(c, 1.0f / 2.4f) - 0.055f;
+    float v =
+        (c <= 0.0031308f) ? 12.92f * c : 1.055f * powf(c, 1.0f / 2.4f) - 0.055f;
     return static_cast<uint8_t>(v * 255.0f);
   };
 
