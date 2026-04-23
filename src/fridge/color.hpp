@@ -29,6 +29,18 @@ struct HSV {
   HSV(const HSV&) = default;
 };
 
+/* CIE 1931 colorspace */
+struct XYZ {
+  uint8_t x;
+  uint8_t y;
+  uint8_t z;
+
+  XYZ(uint8_t x, uint8_t y, uint8_t z) : x(x), y(y), z(z) {}
+  XYZ(const RGB& rgb);
+  operator RGB() const;
+  XYZ(const XYZ&) = default;
+};
+
 uint8_t gamma_scale(uint8_t value, float gamma);
 
 }  // namespace color
