@@ -1,3 +1,4 @@
+#include "rgb_led.hpp"
 #ifndef UNIT_TEST
 
 #include <cassert>
@@ -50,19 +51,19 @@ int main() {
 
   fridge::io::led::Controller controller;
 
+  ui::RgbLed led1(controller.B(0, 1), controller.B(1, 1), controller.B(2, 1));
+  ui::RgbLed led2(controller.B(4, 5), controller.B(5, 5), controller.B(6, 5));
+
+  led1.SetOn(true);
+  led2.SetOn(true);
+
   for (;;) {
     {
-      color::RGB color = color::HSV(knob1.Get(), 255, 255);
-      controller.B(0, 1).SetOn(true).SetPwm(color.red);
-      controller.B(1, 1).SetOn(true).SetPwm(color.blue);
-      controller.B(2, 1).SetOn(true).SetPwm(color.green);
+      led1.SetColor(color::HSV(knob1.Get(), 255, 255));
     }
 
     {
-      color::RGB color = color::HSV(knob2.Get(), 255, 255);
-      controller.B(4, 5).SetOn(true).SetPwm(color.red);
-      controller.B(5, 5).SetOn(true).SetPwm(color.blue);
-      controller.B(6, 5).SetOn(true).SetPwm(color.green);
+      led2.SetColor(color::HSV(knob2.Get(), 255, 255));
     }
 
     System::Delay(10);
