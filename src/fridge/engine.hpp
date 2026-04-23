@@ -75,13 +75,11 @@ class Engine {
 
   ui::UI ui_;
   io::led::Controller leds_;
-  config::Config config_;
 
  public:
   Engine();
 
-  void Tick();
-  void operator()() { return Tick(); }
+  void operator()(config::Config& config) { config |= ui_; }  // lmao
 };
 
 }  // namespace fridge::engine

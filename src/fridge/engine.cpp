@@ -112,8 +112,4 @@ Engine::Engine()
       // this kills the clang-format
       knobs_(muxes_, ui_) {}
 
-void Engine::Tick() {
-  config_ |= ui_;  // lmao
-}
-
 #endif  // UNIT_TEST
