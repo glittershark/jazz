@@ -7,6 +7,7 @@
 
 #include "config.hpp"
 #include "constants.hpp"
+#include "head_transition.hpp"
 #include "libjazz/slab.hpp"
 
 namespace fridge::sound {
@@ -262,12 +263,15 @@ class Sound {
    * (which should be between 0 and 1)
    * */
   void Erase(size_t position, float amount);
+  void ApplyHead(const fridge::config::Head& head, float sample,
+                 float& wet_signal);
 
  public:
   /**
    * Process an audio sample. Moves the internal clock forwards by 1
    */
   float ProcessSample(const fridge::config::Config& config, float sample);
+  float ProcessSample(const fridge::transition::Frame& frame, float sample);
 };
 
 }  // namespace fridge::sound

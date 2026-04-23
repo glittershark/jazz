@@ -2,6 +2,7 @@
 #define FRIDGE_LFO_ENGINE_H_
 
 #include <cstdint>
+#include <optional>
 #include <random>
 
 #include "config.hpp"
@@ -9,6 +10,22 @@
 namespace fridge::state {
 
 enum class Direction { kForwards = 1, kBackwards = -1 };
+
+struct LFOTransition {
+  float old_value = 0.0f;
+  Direction old_direction = Direction::kForwards;
+  float old_speed = 1.0f;
+  float new_value = 0.0f;
+  Direction new_direction = Direction::kForwards;
+  float new_speed = 1.0f;
+  bool reversed = false;
+  bool teleported = false;
+};
+
+struct LFOTickResult {
+  float value = 0.0f;
+  std::optional<LFOTransition> transition = std::nullopt;
+};
 
 class LFOEngine {
   config::LFO config_{};
@@ -19,7 +36,7 @@ class LFOEngine {
   size_t grain_size_ = 0;
   Direction direction_ = Direction::kForwards;
 
-  void StartNewGrain(bool initial_grain);
+  std::optional<LFOTransition> StartNewGrain(bool initial_grain);
   size_t SampleGrainSize();
   float SampleSpeed();
   bool RollChance(float chance);
@@ -34,6 +51,7 @@ class LFOEngine {
   void Reset(float initial_value = 0.0f,
              Direction direction = Direction::kForwards);
   float Tick(float dt);
+  LFOTickResult TickWithEvents(float dt);
 
   const config::LFO& config() const { return config_; }
   float value() const { return value_; }

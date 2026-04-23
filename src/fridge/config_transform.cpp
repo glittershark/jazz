@@ -230,6 +230,7 @@ void state::ApplyLfoDelta(config::Config& config, size_t lfo_idx, float delta) {
 void state::Initialize(const config::Config& root_config) {
   time_ = 0.0f;
   initialized_ = true;
+  head_transitions_ = {};
   root_config_ = SanitizeConfig(root_config);
   output_config_ = root_config_;
 
@@ -245,6 +246,42 @@ void state::Initialize(const config::Config& root_config) {
 void state::ApplyCurrentDeltas(config::Config& config) const {
   for (size_t i = 0; i < NUM_LFOS; ++i) {
     ApplyLfoDelta(config, i, CurrentDelta(i));
+  }
+}
+
+void state::RecordHeadTransitions(
+    size_t lfo_idx, const fridge::state::LFOTransition& transition,
+    const config::Config& previous_output) {
+  if (lfo_idx >= NUM_LFOS) {
+    return;
+  }
+
+  for (size_t target_idx = 0; target_idx < MAX_TARGET_PARAMS; ++target_idx) {
+    const std::optional<config::Target>& target =
+        output_config_.lfos[lfo_idx].targets[target_idx];
+    if (!target.has_value() || target->object != config::TargetObject::kHead ||
+        target->parameter != config::TargetParameter::kPosition ||
+        target->object_idx >= NUM_HEADS) {
+      continue;
+    }
+
+    size_t head_idx = target->object_idx;
+    head_transitions_[head_idx] = fridge::transition::HeadMotionTransition{
+        .old_motion =
+            fridge::transition::HeadMotion{
+                .position = previous_output.heads[head_idx].position,
+                .direction = transition.old_direction,
+                .speed = transition.old_speed,
+            },
+        .new_motion =
+            fridge::transition::HeadMotion{
+                .position = output_config_.heads[head_idx].position,
+                .direction = transition.new_direction,
+                .speed = transition.new_speed,
+            },
+        .reversed = transition.reversed,
+        .teleported = transition.teleported,
+    };
   }
 }
 
@@ -265,6 +302,8 @@ const config::Config& state::Reset(const config::Config& root_config) {
 
 const config::Config& state::Update(const config::Config& root_config,
                                     float dt) {
+  head_transitions_ = {};
+
   if (!initialized_) {
     Initialize(root_config);
   } else if (!MatchesSanitizedConfig(root_config, root_config_)) {
@@ -280,13 +319,18 @@ const config::Config& state::Update(const config::Config& root_config,
   for (size_t i = 0; i < NUM_LFOS; ++i) {
     previous_deltas[i] = CurrentDelta(i);
   }
+  config::Config previous_output = output_config_;
 
   for (size_t i = 0; i < NUM_LFOS; ++i) {
     lfo_engines_[i].SetConfig(output_config_.lfos[i]);
   }
 
-  for (fridge::state::LFOEngine& engine : lfo_engines_) {
-    engine.Tick(step);
+  std::array<std::optional<fridge::state::LFOTransition>, NUM_LFOS>
+      lfo_transitions{};
+  for (size_t i = 0; i < NUM_LFOS; ++i) {
+    fridge::state::LFOTickResult tick_result =
+        lfo_engines_[i].TickWithEvents(step);
+    lfo_transitions[i] = tick_result.transition;
   }
 
   time_ += step;
@@ -294,6 +338,12 @@ const config::Config& state::Update(const config::Config& root_config,
   for (size_t i = 0; i < NUM_LFOS; ++i) {
     float delta_change = CurrentDelta(i) - previous_deltas[i];
     ApplyLfoDelta(output_config_, i, delta_change);
+  }
+
+  for (size_t i = 0; i < NUM_LFOS; ++i) {
+    if (lfo_transitions[i].has_value()) {
+      RecordHeadTransitions(i, lfo_transitions[i].value(), previous_output);
+    }
   }
 
   return output_config_;

@@ -164,3 +164,34 @@ TEST(FridgeLFOTest, PitchShiftFallsBackToUnityWhenOctaveWeightsAreZero) {
 
   EXPECT_FLOAT_EQ(engine.speed(), 1.0f);
 }
+
+TEST(FridgeLFOTest, TickWithEventsReportsReverseTransition) {
+  LFO config{.range = 10,
+             .max_grain_size = 1,
+             .min_grain_size = 1,
+             .reverse_chance = 1.0f};
+  LFOEngine engine(config, 1234);
+
+  fridge::state::LFOTickResult result = engine.TickWithEvents(1.0f);
+
+  ASSERT_TRUE(result.transition.has_value());
+  EXPECT_TRUE(result.transition->reversed);
+  EXPECT_FALSE(result.transition->teleported);
+  EXPECT_EQ(result.transition->old_direction, Direction::kForwards);
+  EXPECT_EQ(result.transition->new_direction, Direction::kBackwards);
+}
+
+TEST(FridgeLFOTest, TickWithEventsReportsTeleportTransition) {
+  LFO config{.range = 10,
+             .max_grain_size = 1,
+             .min_grain_size = 1,
+             .teleport_chance = 1.0f};
+  LFOEngine engine(config, 1234);
+
+  fridge::state::LFOTickResult result = engine.TickWithEvents(1.0f);
+
+  ASSERT_TRUE(result.transition.has_value());
+  EXPECT_FALSE(result.transition->reversed);
+  EXPECT_TRUE(result.transition->teleported);
+  EXPECT_NE(result.transition->old_value, result.transition->new_value);
+}
