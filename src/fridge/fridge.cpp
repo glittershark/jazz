@@ -1,77 +1,67 @@
-#include "rgb_led.hpp"
 #ifndef UNIT_TEST
 
 #include <cassert>
+#include <cstddef>
 
+#include "config.hpp"
 #include "daisy_seed.h"
-#include "io.hpp"
-#include "ui.hpp"
+#include "engine.hpp"
+#include "sound.hpp"
 
-using namespace daisy;
-using namespace daisy::seed;
 using namespace fridge;
+using namespace daisy;
 
 DaisySeed hw;
+config::Config config;
+sound::Sound sound;
 
-int main() {
-  hw.Init();
-  hw.SetAudioBlockSize(8);
-  hw.StartLog(false);
+void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
+                   size_t size) {
+  for (size_t i = 0; i < size; ++i) {
+    out[0][i] = ::sound.ProcessSample(::config, in[0][i]);
+  }
+}
 
-  io::mux::MultiGpioInMux<2> encoders({
-      fridge::io::mux::GpioInMux(D4),
-      fridge::io::mux::GpioInMux(D3),
-  });
-
-  auto scan = io::mux::channel_scan::make<8>(
-      io::mux::Address(
-          /* a = */ D15,
-          /* b = */ D16,
-          /* c = */ D17),
-      TimerHandle::Config::Peripheral::TIM_3, encoders);
-
-  auto enc1 =
-      io::QuadratureEncoder(encoders.channel(0, 2), encoders.channel(1, 2));
-  auto enc2 =
-      io::QuadratureEncoder(encoders.channel(0, 0), encoders.channel(1, 0));
-
-  scan.Start();
-
-  ui::Knob<ui::Size> knob1;
-  ui::Knob<ui::Size> knob2;
-
-  enc1.OnChange(knob1.GetCallback());
-  enc2.OnChange(knob2.GetCallback());
-
-  knob1.Set(0);
-  knob2.Set(0);
+[[noreturn]] void Breadboard() {
+  engine::BreadboardEngine engine;
 
   hw.PrintLine("Now cycling hue with encoder...");
 
   fridge::io::led::Controller controller;
 
-  ui::RgbLedValueDisplay<ui::value_display::HueWheel> led1(
-      {.end = 128},
-      ui::RgbLed(controller.B(0, 1), controller.B(1, 1), controller.B(2, 1)));
-
-  ui::RgbLedValueDisplay<ui::value_display::HueWheel> led2(
-      {.end = 128},
-      ui::RgbLed(controller.B(4, 5), controller.B(5, 5), controller.B(6, 5)));
-
-  led1.SetOn(true);
-  led2.SetOn(true);
-
   for (;;) {
-    {
-      led1.SetValue(knob1.Get());
-    }
-
-    {
-      led2.SetValue(knob2.Get());
-    }
-
+    engine();
     System::Delay(10);
   }
+}
+
+[[noreturn]] void ActualFridge() {
+  AdcChannelConfig adcConfig;
+  adcConfig.InitSingle(hw.GetPin(21));
+  hw.adc.Init(&adcConfig, 1);
+  hw.adc.Start();
+
+  hw.StartAudio(AudioCallback);
+
+  engine::Engine engine;
+
+  hw.PrintLine("Now refrigerating your heads...");
+
+  for (;;) {
+    const uint32_t delay_ms = 10;
+    const float dt = delay_ms / 1000.f;
+
+    engine.Tick(::config, dt);
+    System::Delay(delay_ms);
+  }
+}
+
+[[noreturn]] int main() {
+  hw.Init();
+  hw.SetAudioBlockSize(8);
+  hw.StartLog(false);
+
+  ActualFridge();
 }
 
 #endif
