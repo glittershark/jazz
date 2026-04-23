@@ -21,6 +21,8 @@ using namespace daisysp;
 DaisySeed hw;
 #endif
 
+namespace granular {
+
 Slab<BufferValue::SampleWithUpdates, UPDATE_CAP> BufferValue::SAMPLES;
 Slab<IndicesToUpdate, UPDATE_CAP> IndicesToUpdate::SLAB;
 
@@ -279,13 +281,15 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 }
 #endif
 
+}  // namespace granular
+
 #ifndef UNIT_TEST
 int main() {
-  hw.Configure();
-  hw.Init();
-  hw.SetAudioBlockSize(16);
+  granular::hw.Configure();
+  granular::hw.Init();
+  granular::hw.SetAudioBlockSize(16);
 
-  hw.StartAudio(AudioCallback);
+  granular::hw.StartAudio(granular::AudioCallback);
   for (;;) {
   }
 }

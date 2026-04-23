@@ -72,6 +72,24 @@ select one effect:
 $ ./build-test/src/console/jazz-console input.mp3 --effect clip
 #+end_src
 
+try the fridge terminal preset:
+
+#+begin_src shell-session
+$ ./build-test/src/console/jazz-console input.mp3 --preset presets/host/fridge_demo.toml --output fridge_demo.mp3
+#+end_src
+
+inspect the fridge preset's LFO motion without rendering audio:
+
+#+begin_src shell-session
+$ ./build-test/src/console/jazz-console --preset presets/host/fridge_demo.toml --fridge-lfo-chart
+#+end_src
+
+render that LFO motion as a matplotlib image:
+
+#+begin_src shell-session
+$ python scripts/plot_fridge_lfo.py --preset presets/host/fridge_demo.toml --output fridge_lfo.png
+#+end_src
+
 chain multiple effects in order:
 
 #+begin_src shell-session
@@ -92,6 +110,9 @@ supported parameter flags:
 - ~--lowpass-alpha~, ~--highpass-alpha~
 - ~--cursed-lowpass-alpha~, ~--cursed-highpass-alpha~
 - ~--la-sort-weight-center~, ~--la-sort-weight-sharpness~
+
+the fridge effect is configured through preset keys with the prefixes
+~fridge_head_N_~ and ~fridge_lfo_N_~; see ~presets/host/fridge_demo.toml~.
 
 ** presets (toml/json)
 

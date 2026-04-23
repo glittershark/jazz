@@ -238,7 +238,7 @@ class Sound {
   static constexpr const size_t global_clock_max_ = SIZE_MAX - 1;
   size_t global_clock_ = 0;
 
-  std::array<IndicesToUpdate*, FADE_TIME> indices_to_update_;
+  std::array<IndicesToUpdate*, FADE_TIME> indices_to_update_{};
   std::array<BufferValue, BUFFER_LEN> buffer_;
 
   /** Perform pre-tick housekeeping */

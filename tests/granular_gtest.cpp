@@ -4,6 +4,8 @@
 #include "granular.hpp"
 #include "gtest/gtest.h"
 
+namespace granular {
+
 TEST(IndicesToUpdateTest, Prepend) {
   IndicesToUpdate* itu = nullptr;
   IndicesToUpdate::Prepend(&itu, 1);
@@ -110,3 +112,5 @@ TEST_F(GranularTest, WriteVeryMany) {
     granular->Write(index, clock_time, 0.5, samples);
   };
 }
+
+}  // namespace granular

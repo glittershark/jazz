@@ -15,6 +15,8 @@ pkgs.mkShell {
       pkgs.gtest
       pkgs.clang-tools
       pkgs.git
+      pkgs.jq
+      pkgs.ffmpeg
       # Workaround https://github.com/NixOS/nixpkgs/issues/296348
       (pkgs.rapidcheck.overrideDerivation (oldAttrs: {
         postFixup = ''

@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <memory>
@@ -19,13 +20,52 @@
 #include <string>
 #include <vector>
 
+#include "config.hpp"
+#include "config_transform.hpp"
 #include "granular.hpp"
+#include "lfo_engine.hpp"
+#include "sound.hpp"
 
 namespace {
 
 constexpr int kDefaultSampleRate = 48000;
 constexpr int kDefaultChannels = 2;
 constexpr size_t kFramesPerChunk = 1024;
+
+fridge::config::Config DefaultFridgeConfig() {
+  fridge::config::Config config;
+
+  config.dry = 0.7f;
+  config.wet = 0.8f;
+
+  for (fridge::config::Head& head : config.heads) {
+    head.write_amount = 0.0f;
+    head.read_amount = 0.0f;
+    head.erase_amount = 1.0f;
+    head.feedback.amount = 0.0f;
+  }
+
+  config.heads[0] = {
+      .position = 0,
+      .write_amount = 1.0f,
+      .read_amount = 0.75f,
+      .erase_amount = 0.999f,
+  };
+
+  config.lfos[0] = {
+      .range = 24000,
+      .max_grain_size = 24000,
+      .min_grain_size = 24000,
+      .reverse_chance = 1.0f,
+  };
+  config.lfos[0].targets[0] = fridge::config::Target{
+      .object = fridge::config::TargetObject::kHead,
+      .parameter = fridge::config::TargetParameter::kPosition,
+      .object_idx = 0,
+  };
+
+  return config;
+}
 
 struct EffectParams {
   float clip_threshold = 0.5f;
@@ -38,6 +78,7 @@ struct EffectParams {
   float cursed_highpass_alpha = 0.1f;
   float la_sort_weight_center = 0.5f;
   float la_sort_weight_sharpness = 2.0f;
+  fridge::config::Config fridge_config = DefaultFridgeConfig();
 };
 
 struct Options {
@@ -48,6 +89,13 @@ struct Options {
   int channels = kDefaultChannels;
   std::vector<std::string> effect_chain = {"granular"};
   EffectParams params;
+  bool fridge_lfo_chart = false;
+  bool fridge_lfo_chart_csv = false;
+  size_t fridge_lfo_chart_index = 0;
+  float fridge_lfo_chart_duration = 48000.0f;
+  size_t fridge_lfo_chart_points = 1000;
+  size_t fridge_lfo_chart_width = 72;
+  size_t fridge_lfo_chart_height = 18;
 };
 
 enum class EffectKind {
@@ -60,6 +108,7 @@ enum class EffectKind {
   kCursedLowPass,
   kCursedHighPass,
   kLaSort,
+  kFridge,
 };
 
 enum class ParseKind { kOk, kHelp, kError };
@@ -71,7 +120,7 @@ struct ParseResult {
 
 const char* EffectListText() {
   return "bypass, granular, clip, anticlip, lowpass, highpass, "
-         "cursed_lowpass, cursed_highpass, la_sort";
+         "cursed_lowpass, cursed_highpass, la_sort, fridge";
 }
 
 std::string ToLower(std::string value) {
@@ -144,6 +193,24 @@ bool ParseFloat(const std::string& value, float* out) {
   return true;
 }
 
+bool ParseSize(const std::string& value, size_t* out) {
+  if (value.empty() || value[0] == '-') {
+    return false;
+  }
+
+  char* end = nullptr;
+  const unsigned long long parsed = std::strtoull(value.c_str(), &end, 10);
+  if (*value.c_str() == '\0' || *end != '\0') {
+    return false;
+  }
+  if (parsed > std::numeric_limits<size_t>::max()) {
+    return false;
+  }
+
+  *out = static_cast<size_t>(parsed);
+  return true;
+}
+
 std::optional<EffectKind> ParseEffect(const std::string& name) {
   const std::string effect = CanonicalKey(name);
   if (effect == "bypass") {
@@ -172,6 +239,9 @@ std::optional<EffectKind> ParseEffect(const std::string& name) {
   }
   if (effect == "la_sort") {
     return EffectKind::kLaSort;
+  }
+  if (effect == "fridge") {
+    return EffectKind::kFridge;
   }
   return std::nullopt;
 }
@@ -297,9 +367,312 @@ bool ApplyParamValue(const std::string& key, float value, EffectParams* params,
   return false;
 }
 
+bool ParseIndexedField(const std::string& value, size_t* index,
+                       std::string* field) {
+  const size_t separator = value.find('_');
+  if (separator == std::string::npos) {
+    return false;
+  }
+
+  if (!ParseSize(value.substr(0, separator), index)) {
+    return false;
+  }
+
+  *field = value.substr(separator + 1);
+  return !field->empty();
+}
+
+bool ParseFloatInRange(const std::string& value, float lo, float hi,
+                       const std::string& label, float* out,
+                       std::string* error) {
+  float parsed = 0.0f;
+  if (!ParseFloat(value, &parsed) || parsed < lo || parsed > hi) {
+    *error = label + " must be in [" + std::to_string(lo) + ", " +
+             std::to_string(hi) + "]";
+    return false;
+  }
+
+  *out = parsed;
+  return true;
+}
+
+bool ParseFridgeSize(const std::string& value, size_t minimum, size_t maximum,
+                     const std::string& label, size_t* out,
+                     std::string* error) {
+  size_t parsed = 0;
+  if (!ParseSize(value, &parsed) || parsed < minimum || parsed > maximum) {
+    *error = label + " must be in [" + std::to_string(minimum) + ", " +
+             std::to_string(maximum) + "]";
+    return false;
+  }
+
+  *out = parsed;
+  return true;
+}
+
+bool ApplyFridgeFeedbackKind(const std::string& value,
+                             fridge::config::Feedback* feedback,
+                             std::string* error) {
+  const std::string kind = CanonicalKey(value);
+  if (kind == "read") {
+    feedback->kind = fridge::config::Feedback::Kind::kRead;
+    return true;
+  }
+  if (kind == "erase") {
+    feedback->kind = fridge::config::Feedback::Kind::kErase;
+    return true;
+  }
+
+  *error = "fridge feedback kind must be read or erase";
+  return false;
+}
+
+bool ApplyFridgeTargetObject(const std::string& value,
+                             fridge::config::Target* target,
+                             std::string* error) {
+  const std::string object = CanonicalKey(value);
+  if (object == "head") {
+    target->object = fridge::config::TargetObject::kHead;
+    return true;
+  }
+  if (object == "lfo") {
+    target->object = fridge::config::TargetObject::kLFO;
+    return true;
+  }
+  if (object == "mixer") {
+    target->object = fridge::config::TargetObject::kMixer;
+    return true;
+  }
+
+  *error = "fridge target object must be head, lfo, or mixer";
+  return false;
+}
+
+std::optional<fridge::config::TargetParameter> ParseFridgeTargetParameter(
+    const std::string& value) {
+  const std::string parameter = CanonicalKey(value);
+
+  if (parameter == "position") {
+    return fridge::config::TargetParameter::kPosition;
+  }
+  if (parameter == "write_amount") {
+    return fridge::config::TargetParameter::kWriteAmount;
+  }
+  if (parameter == "read_amount") {
+    return fridge::config::TargetParameter::kReadAmount;
+  }
+  if (parameter == "erase_amount") {
+    return fridge::config::TargetParameter::kEraseAmount;
+  }
+  if (parameter == "feedback_amount") {
+    return fridge::config::TargetParameter::kFeedbackAmount;
+  }
+  if (parameter == "range") {
+    return fridge::config::TargetParameter::kRange;
+  }
+  if (parameter == "max_grain_size") {
+    return fridge::config::TargetParameter::kMaxGrainSize;
+  }
+  if (parameter == "min_grain_size") {
+    return fridge::config::TargetParameter::kMinGrainSize;
+  }
+  if (parameter == "reverse_chance") {
+    return fridge::config::TargetParameter::kReverseChance;
+  }
+  if (parameter == "teleport_chance") {
+    return fridge::config::TargetParameter::kTeleportChance;
+  }
+  if (parameter == "pitch_shift_chance") {
+    return fridge::config::TargetParameter::kPitchShiftChance;
+  }
+  if (parameter == "low_octave_chance") {
+    return fridge::config::TargetParameter::kLowOctaveChance;
+  }
+  if (parameter == "high_octave_chance") {
+    return fridge::config::TargetParameter::kHighOctaveChance;
+  }
+  if (parameter == "dry") {
+    return fridge::config::TargetParameter::kDry;
+  }
+  if (parameter == "wet") {
+    return fridge::config::TargetParameter::kWet;
+  }
+
+  return std::nullopt;
+}
+
+bool ApplyFridgeTargetParameter(const std::string& value,
+                                fridge::config::Target* target,
+                                std::string* error) {
+  const auto parameter = ParseFridgeTargetParameter(value);
+  if (!parameter.has_value()) {
+    *error = "unknown fridge target parameter: " + value;
+    return false;
+  }
+
+  target->parameter = *parameter;
+  return true;
+}
+
+bool ApplyFridgeHeadValue(const std::string& field, const std::string& value,
+                          fridge::config::Head* head, std::string* error) {
+  if (field == "position") {
+    return ParseFridgeSize(value, 0, fridge::BUFFER_LEN - 1,
+                           "fridge head position", &head->position, error);
+  }
+  if (field == "write_amount") {
+    return ParseFloatInRange(value, 0.0f, 1.0f, "fridge head write_amount",
+                             &head->write_amount, error);
+  }
+  if (field == "read_amount") {
+    return ParseFloatInRange(value, 0.0f, 1.0f, "fridge head read_amount",
+                             &head->read_amount, error);
+  }
+  if (field == "erase_amount") {
+    return ParseFloatInRange(value, 0.0f, 1.0f, "fridge head erase_amount",
+                             &head->erase_amount, error);
+  }
+  if (field == "feedback_amount") {
+    return ParseFloatInRange(value, 0.0f, 1.0f, "fridge head feedback_amount",
+                             &head->feedback.amount, error);
+  }
+  if (field == "feedback_kind") {
+    return ApplyFridgeFeedbackKind(value, &head->feedback, error);
+  }
+
+  *error = "unknown fridge head key: " + field;
+  return false;
+}
+
+bool ApplyFridgeTargetValue(const std::string& field, const std::string& value,
+                            fridge::config::Target* target,
+                            std::string* error) {
+  if (field == "object") {
+    return ApplyFridgeTargetObject(value, target, error);
+  }
+  if (field == "parameter") {
+    return ApplyFridgeTargetParameter(value, target, error);
+  }
+  if (field == "index" || field == "object_idx") {
+    return ParseFridgeSize(value, 0, fridge::NUM_HEADS - 1,
+                           "fridge target index", &target->object_idx, error);
+  }
+
+  *error = "unknown fridge target key: " + field;
+  return false;
+}
+
+bool ApplyFridgeLfoValue(const std::string& field, const std::string& value,
+                         fridge::config::LFO* lfo, std::string* error) {
+  if (field == "range") {
+    return ParseFridgeSize(value, 0, fridge::BUFFER_LEN - 1, "fridge lfo range",
+                           &lfo->range, error);
+  }
+  if (field == "max_grain_size") {
+    return ParseFridgeSize(value, 1, fridge::BUFFER_LEN,
+                           "fridge lfo max_grain_size", &lfo->max_grain_size,
+                           error);
+  }
+  if (field == "min_grain_size") {
+    return ParseFridgeSize(value, 1, fridge::BUFFER_LEN,
+                           "fridge lfo min_grain_size", &lfo->min_grain_size,
+                           error);
+  }
+  if (field == "reverse_chance") {
+    return ParseFloatInRange(value, 0.0f, 1.0f, "fridge lfo reverse_chance",
+                             &lfo->reverse_chance, error);
+  }
+  if (field == "teleport_chance") {
+    return ParseFloatInRange(value, 0.0f, 1.0f, "fridge lfo teleport_chance",
+                             &lfo->teleport_chance, error);
+  }
+  if (field == "pitch_shift_chance") {
+    return ParseFloatInRange(value, 0.0f, 1.0f, "fridge lfo pitch_shift_chance",
+                             &lfo->pitch_shift_chance, error);
+  }
+  if (field == "low_octave_chance") {
+    return ParseFloatInRange(value, 0.0f, 1.0f, "fridge lfo low_octave_chance",
+                             &lfo->low_octave_chance, error);
+  }
+  if (field == "high_octave_chance") {
+    return ParseFloatInRange(value, 0.0f, 1.0f, "fridge lfo high_octave_chance",
+                             &lfo->high_octave_chance, error);
+  }
+
+  constexpr const char* target_prefix = "target_";
+  if (field.starts_with(target_prefix)) {
+    size_t target_idx = 0;
+    std::string target_field;
+    if (!ParseIndexedField(field.substr(std::strlen(target_prefix)),
+                           &target_idx, &target_field) ||
+        target_idx >= fridge::MAX_TARGET_PARAMS) {
+      *error = "invalid fridge lfo target index";
+      return false;
+    }
+
+    if (!lfo->targets[target_idx].has_value()) {
+      lfo->targets[target_idx] = fridge::config::Target{};
+    }
+    return ApplyFridgeTargetValue(target_field, value,
+                                  &lfo->targets[target_idx].value(), error);
+  }
+
+  *error = "unknown fridge lfo key: " + field;
+  return false;
+}
+
+bool ApplyFridgeConfigKV(const std::string& key, const std::string& value,
+                         fridge::config::Config* config, std::string* error) {
+  const std::string k = CanonicalKey(key);
+
+  if (k == "fridge_dry") {
+    return ParseFloatInRange(value, 0.0f, 4.0f, "fridge dry", &config->dry,
+                             error);
+  }
+  if (k == "fridge_wet") {
+    return ParseFloatInRange(value, 0.0f, 4.0f, "fridge wet", &config->wet,
+                             error);
+  }
+
+  constexpr const char* head_prefix = "fridge_head_";
+  if (k.starts_with(head_prefix)) {
+    size_t head_idx = 0;
+    std::string field;
+    if (!ParseIndexedField(k.substr(std::strlen(head_prefix)), &head_idx,
+                           &field) ||
+        head_idx >= fridge::NUM_HEADS) {
+      *error = "invalid fridge head index";
+      return false;
+    }
+
+    return ApplyFridgeHeadValue(field, value, &config->heads[head_idx], error);
+  }
+
+  constexpr const char* lfo_prefix = "fridge_lfo_";
+  if (k.starts_with(lfo_prefix)) {
+    size_t lfo_idx = 0;
+    std::string field;
+    if (!ParseIndexedField(k.substr(std::strlen(lfo_prefix)), &lfo_idx,
+                           &field) ||
+        lfo_idx >= fridge::NUM_LFOS) {
+      *error = "invalid fridge lfo index";
+      return false;
+    }
+
+    return ApplyFridgeLfoValue(field, value, &config->lfos[lfo_idx], error);
+  }
+
+  *error = "unknown fridge preset key: " + key;
+  return false;
+}
+
 bool ApplyConfigKV(const std::string& key, const std::string& value,
                    Options* options, std::string* error) {
   const std::string k = CanonicalKey(key);
+
+  if (k.starts_with("fridge_")) {
+    return ApplyFridgeConfigKV(k, value, &options->params.fridge_config, error);
+  }
 
   if (k == "effect" || k == "effects" || k == "effect_chain") {
     std::vector<std::string> chain;
@@ -336,6 +709,203 @@ bool ApplyConfigKV(const std::string& key, const std::string& value,
     return false;
   }
   return ApplyParamValue(k, v, &options->params, error);
+}
+
+void PlotLine(std::vector<std::string>& grid, int x0, int y0, int x1, int y1) {
+  const int dx = std::abs(x1 - x0);
+  const int sx = x0 < x1 ? 1 : -1;
+  const int dy = -std::abs(y1 - y0);
+  const int sy = y0 < y1 ? 1 : -1;
+  int err = dx + dy;
+
+  while (true) {
+    if (y0 >= 0 && y0 < static_cast<int>(grid.size()) && x0 >= 0 &&
+        x0 < static_cast<int>(grid.front().size())) {
+      grid[y0][x0] = '*';
+    }
+
+    if (x0 == x1 && y0 == y1) {
+      break;
+    }
+
+    const int e2 = 2 * err;
+    if (e2 >= dy) {
+      err += dy;
+      x0 += sx;
+    }
+    if (e2 <= dx) {
+      err += dx;
+      y0 += sy;
+    }
+  }
+}
+
+const char* FridgeTargetObjectName(fridge::config::TargetObject object) {
+  switch (object) {
+  case fridge::config::TargetObject::kHead:
+    return "head";
+  case fridge::config::TargetObject::kLFO:
+    return "lfo";
+  case fridge::config::TargetObject::kMixer:
+    return "mixer";
+  }
+
+  return "unknown";
+}
+
+const char* FridgeTargetParameterName(fridge::config::TargetParameter param) {
+  using Parameter = fridge::config::TargetParameter;
+
+  switch (param) {
+  case Parameter::kPosition:
+    return "position";
+  case Parameter::kWriteAmount:
+    return "write_amount";
+  case Parameter::kReadAmount:
+    return "read_amount";
+  case Parameter::kEraseAmount:
+    return "erase_amount";
+  case Parameter::kFeedbackAmount:
+    return "feedback_amount";
+  case Parameter::kRange:
+    return "range";
+  case Parameter::kMaxGrainSize:
+    return "max_grain_size";
+  case Parameter::kMinGrainSize:
+    return "min_grain_size";
+  case Parameter::kReverseChance:
+    return "reverse_chance";
+  case Parameter::kTeleportChance:
+    return "teleport_chance";
+  case Parameter::kPitchShiftChance:
+    return "pitch_shift_chance";
+  case Parameter::kLowOctaveChance:
+    return "low_octave_chance";
+  case Parameter::kHighOctaveChance:
+    return "high_octave_chance";
+  case Parameter::kDry:
+    return "dry";
+  case Parameter::kWet:
+    return "wet";
+  }
+
+  return "unknown";
+}
+
+struct FridgeLfoTracePoint {
+  float time;
+  float value;
+};
+
+std::vector<FridgeLfoTracePoint> CollectFridgeLfoTrace(
+    const fridge::config::LFO& lfo, float duration, size_t point_count) {
+  point_count = std::max<size_t>(2, point_count);
+  const float dt =
+      point_count > 1 ? duration / static_cast<float>(point_count - 1) : 0.0f;
+
+  fridge::state::LFOEngine engine(lfo, 1234);
+  engine.Reset(0.0f, fridge::state::Direction::kForwards);
+
+  std::vector<FridgeLfoTracePoint> points;
+  points.reserve(point_count);
+  points.push_back({.time = 0.0f, .value = engine.value()});
+
+  for (size_t i = 1; i < point_count; ++i) {
+    points.push_back({
+        .time = dt * static_cast<float>(i),
+        .value = engine.Tick(dt),
+    });
+  }
+
+  return points;
+}
+
+bool GetFridgeLfoForChart(const Options& options,
+                          const fridge::config::LFO** lfo) {
+  const size_t lfo_idx = options.fridge_lfo_chart_index;
+  if (lfo_idx >= fridge::NUM_LFOS) {
+    std::cerr << "invalid --fridge-lfo-index: " << lfo_idx << "\n";
+    return false;
+  }
+
+  *lfo = &options.params.fridge_config.lfos[lfo_idx];
+  return true;
+}
+
+bool PrintFridgeLfoCsv(const Options& options) {
+  const fridge::config::LFO* lfo = nullptr;
+  if (!GetFridgeLfoForChart(options, &lfo)) {
+    return false;
+  }
+
+  const float duration = std::max(0.0f, options.fridge_lfo_chart_duration);
+  const std::vector<FridgeLfoTracePoint> points =
+      CollectFridgeLfoTrace(*lfo, duration, options.fridge_lfo_chart_points);
+
+  std::cout << "time,value\n";
+  for (const FridgeLfoTracePoint& point : points) {
+    std::cout << std::fixed << std::setprecision(6) << point.time << ","
+              << point.value << "\n";
+  }
+
+  return true;
+}
+
+bool PrintFridgeLfoChart(const Options& options) {
+  const fridge::config::LFO* lfo = nullptr;
+  if (!GetFridgeLfoForChart(options, &lfo)) {
+    return false;
+  }
+
+  const size_t width = std::max<size_t>(2, options.fridge_lfo_chart_width);
+  const size_t height = std::max<size_t>(2, options.fridge_lfo_chart_height);
+  const float duration = std::max(0.0f, options.fridge_lfo_chart_duration);
+  const float max_value = std::max(1.0f, static_cast<float>(lfo->range));
+  const std::vector<FridgeLfoTracePoint> points =
+      CollectFridgeLfoTrace(*lfo, duration, width);
+
+  std::vector<std::string> grid(height, std::string(width, ' '));
+
+  auto y_for = [&](float value) {
+    const float clamped = std::max(0.0f, std::min(value, max_value));
+    const float normalized = clamped / max_value;
+    return static_cast<int>((1.0f - normalized) * (height - 1));
+  };
+
+  for (size_t i = 1; i < points.size(); ++i) {
+    PlotLine(grid, static_cast<int>(i - 1), y_for(points[i - 1].value),
+             static_cast<int>(i), y_for(points[i].value));
+  }
+
+  std::cout << "fridge LFO " << options.fridge_lfo_chart_index
+            << " range=" << lfo->range << " duration=" << duration << " samples"
+            << " width=" << width << " seed=1234\n";
+  std::cout << "targets:";
+  bool has_target = false;
+  for (const auto& target : lfo->targets) {
+    if (target.has_value()) {
+      std::cout << " " << FridgeTargetObjectName(target->object) << "."
+                << target->object_idx << "."
+                << FridgeTargetParameterName(target->parameter);
+      has_target = true;
+    }
+  }
+  if (!has_target) {
+    std::cout << " none";
+  }
+  std::cout << "\n";
+
+  for (size_t row = 0; row < height; ++row) {
+    const float label =
+        max_value * static_cast<float>(height - 1 - row) / (height - 1);
+    std::cout << std::setw(8) << std::fixed << std::setprecision(1) << label
+              << " |" << grid[row] << "\n";
+  }
+  std::cout << std::string(9, ' ') << "+" << std::string(width, '-') << "\n";
+  std::cout << std::string(10, ' ') << "0"
+            << std::string(width > 10 ? width - 10 : 1, ' ') << duration
+            << "\n";
+  return true;
 }
 
 bool ParseTomlPreset(const std::string& text, Options* options,
@@ -517,7 +1087,7 @@ void PrintUsage(const char* argv0) {
             << " <input.mp3> [--output output.mp3] [--no-play]"
                " [--sample-rate hz] [--channels n]"
                " [--effect e1,e2,...] [--preset preset.{json|toml}]"
-               " [--list-effects]\n";
+               " [--fridge-lfo-chart] [--list-effects]\n";
   std::cerr << "Effects: " << EffectListText() << "\n";
   std::cerr
       << "Params:\n"
@@ -526,7 +1096,16 @@ void PrintUsage(const char* argv0) {
       << "  --lowpass-alpha [0..1] --highpass-alpha [0..1]\n"
       << "  --cursed-lowpass-alpha [0..1] --cursed-highpass-alpha [0..1]\n"
       << "  --la-sort-weight-center [0..1]"
-      << " --la-sort-weight-sharpness [0..32]\n";
+      << " --la-sort-weight-sharpness [0..32]\n"
+      << "  --fridge-lfo-chart"
+      << " --fridge-lfo-chart-csv"
+      << " --fridge-lfo-index N"
+      << " --fridge-lfo-chart-duration samples"
+      << " --fridge-lfo-chart-points N"
+      << " --fridge-lfo-chart-width N"
+      << " --fridge-lfo-chart-height N\n"
+      << "  fridge preset keys: fridge_dry, fridge_wet,"
+      << " fridge_head_N_*, fridge_lfo_N_*\n";
 }
 
 ParseResult ParseArgs(int argc, char** argv) {
@@ -555,6 +1134,14 @@ ParseResult ParseArgs(int argc, char** argv) {
 
   auto parse_next_float = [&](int* idx, float* out, const char* name) {
     if (*idx + 1 >= argc || !ParseFloat(argv[++*idx], out)) {
+      std::cerr << "invalid " << name << "\n";
+      return false;
+    }
+    return true;
+  };
+
+  auto parse_next_size = [&](int* idx, size_t* out, const char* name) {
+    if (*idx + 1 >= argc || !ParseSize(argv[++*idx], out)) {
       std::cerr << "invalid " << name << "\n";
       return false;
     }
@@ -626,6 +1213,50 @@ ParseResult ParseArgs(int argc, char** argv) {
       if (!SetEffectChainFromSpec(argv[++i], &options.effect_chain, &error)) {
         std::cerr << error << "\n";
         std::cerr << "available effects: " << EffectListText() << "\n";
+        return result;
+      }
+      continue;
+    }
+    if (arg == "--fridge-lfo-chart") {
+      options.fridge_lfo_chart = true;
+      continue;
+    }
+    if (arg == "--fridge-lfo-chart-csv") {
+      options.fridge_lfo_chart = true;
+      options.fridge_lfo_chart_csv = true;
+      continue;
+    }
+    if (arg == "--fridge-lfo-index") {
+      if (!parse_next_size(&i, &options.fridge_lfo_chart_index,
+                           "--fridge-lfo-index")) {
+        return result;
+      }
+      continue;
+    }
+    if (arg == "--fridge-lfo-chart-duration") {
+      if (!parse_next_float(&i, &options.fridge_lfo_chart_duration,
+                            "--fridge-lfo-chart-duration")) {
+        return result;
+      }
+      continue;
+    }
+    if (arg == "--fridge-lfo-chart-points") {
+      if (!parse_next_size(&i, &options.fridge_lfo_chart_points,
+                           "--fridge-lfo-chart-points")) {
+        return result;
+      }
+      continue;
+    }
+    if (arg == "--fridge-lfo-chart-width") {
+      if (!parse_next_size(&i, &options.fridge_lfo_chart_width,
+                           "--fridge-lfo-chart-width")) {
+        return result;
+      }
+      continue;
+    }
+    if (arg == "--fridge-lfo-chart-height") {
+      if (!parse_next_size(&i, &options.fridge_lfo_chart_height,
+                           "--fridge-lfo-chart-height")) {
         return result;
       }
       continue;
@@ -724,11 +1355,12 @@ ParseResult ParseArgs(int argc, char** argv) {
     options.input_path = arg;
   }
 
-  if (options.input_path.empty()) {
+  if (options.input_path.empty() && !options.fridge_lfo_chart) {
     PrintUsage(argv[0]);
     return result;
   }
-  if (!options.play && !options.output_path.has_value()) {
+  if (!options.play && !options.output_path.has_value() &&
+      !options.fridge_lfo_chart) {
     std::cerr << "nothing to do: enable playback or provide --output\n";
     return result;
   }
@@ -779,35 +1411,35 @@ std::optional<std::string> ChannelLayoutForCount(int channels) {
   }
 }
 
-std::array<Head, NUM_HEADS> MakeDefaultHeads() {
+std::array<granular::Head, granular::NUM_HEADS> MakeDefaultHeads() {
   return {{
       {
-          .kind = Head::Kind::kWrite,
-          .direction = Head::Direction::kBackwards,
+          .kind = granular::Head::Kind::kWrite,
+          .direction = granular::Head::Direction::kBackwards,
           .index = 0,
           .value = 1.0f,
           .step = 1,
       },
       {
-          .kind = Head::Kind::kRead,
-          .direction = Head::Direction::kForwards,
+          .kind = granular::Head::Kind::kRead,
+          .direction = granular::Head::Direction::kForwards,
           .index = 10000,
           .value = 0.7f,
           .step = 1,
           .random = {{.grain_size = 10000}},
       },
       {
-          .kind = Head::Kind::kRead,
-          .direction = Head::Direction::kBackwards,
+          .kind = granular::Head::Kind::kRead,
+          .direction = granular::Head::Direction::kBackwards,
           .index = 20000,
           .value = 0.7f,
           .step = 2,
           .random = {{.grain_size = 20000}},
       },
       {
-          .kind = Head::Kind::kErase,
-          .direction = Head::Direction::kBackwards,
-          .index = BUFFER_LEN / 2,
+          .kind = granular::Head::Kind::kErase,
+          .direction = granular::Head::Direction::kBackwards,
+          .index = granular::BUFFER_LEN / 2,
           .value = 0.5f,
       },
   }};
@@ -837,8 +1469,27 @@ class GranularProcessor final : public SampleProcessor {
   }
 
  private:
-  Granular granular_;
-  std::array<Head, NUM_HEADS> heads_;
+  granular::Granular granular_;
+  std::array<granular::Head, granular::NUM_HEADS> heads_;
+};
+
+class FridgeProcessor final : public SampleProcessor {
+ public:
+  explicit FridgeProcessor(const fridge::config::Config& config)
+      : root_config_(config) {
+    transform_.Reset(root_config_);
+  }
+
+  float Process(float sample) override {
+    const fridge::config::Config& config =
+        transform_.Update(root_config_, 1.0f);
+    return sound_.ProcessSample(config, sample);
+  }
+
+ private:
+  fridge::config::Config root_config_;
+  fridge::transform::state transform_;
+  fridge::sound::Sound sound_;
 };
 
 class ClipProcessor final : public SampleProcessor {
@@ -1081,6 +1732,8 @@ std::unique_ptr<SampleProcessor> MakeProcessor(EffectKind effect,
   case EffectKind::kLaSort:
     return std::make_unique<LaSortProcessor>(params.la_sort_weight_center,
                                              params.la_sort_weight_sharpness);
+  case EffectKind::kFridge:
+    return std::make_unique<FridgeProcessor>(params.fridge_config);
   }
 
   return std::make_unique<BypassProcessor>();
@@ -1130,6 +1783,17 @@ int main(int argc, char** argv) {
 
   const Options options = parsed.options;
   std::signal(SIGPIPE, SIG_IGN);
+
+  if (options.fridge_lfo_chart) {
+    bool chart_ok = options.fridge_lfo_chart_csv ? PrintFridgeLfoCsv(options)
+                                                 : PrintFridgeLfoChart(options);
+    if (!chart_ok) {
+      return 2;
+    }
+    if (options.input_path.empty()) {
+      return 0;
+    }
+  }
 
   std::vector<EffectKind> effect_chain;
   effect_chain.reserve(options.effect_chain.size());
