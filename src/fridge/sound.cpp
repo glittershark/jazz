@@ -171,29 +171,49 @@ void Sound::Erase(size_t position, float amount) {
       &indices_to_update_[(global_clock_ + FADE_TIME) % FADE_TIME], position);
 }
 
+void Sound::ApplyHead(const fridge::config::Head& head, float sample,
+                      float& wet_signal) {
+  if (head.read_amount > 0.f) {
+    auto value = Read(head.position);
+    wet_signal += value * head.read_amount;
+  }
+
+  if (head.write_amount > 0.f) {
+    Write(head.position, sample * head.write_amount);
+  }
+
+  if (head.erase_amount < 1.f) {
+    Erase(head.position, head.erase_amount);
+  }
+}
+
 float Sound::ProcessSample(const fridge::config::Config& config, float sample) {
   PreHousekeeping(global_clock_);
 
   float wet_signal = 0.f;
 
   for (auto&& head : config.heads) {
-    if (head.read_amount > 0.f) {
-      auto value = Read(head.position);
-      wet_signal += value * head.read_amount;
-    }
-
-    if (head.write_amount > 0.f) {
-      Write(head.position, sample * head.write_amount);
-    }
-
-    if (head.erase_amount < 1.f) {
-      Erase(head.position, head.erase_amount);
-    }
+    ApplyHead(head, sample, wet_signal);
   }
 
   global_clock_ = (global_clock_ + 1) % global_clock_max_;
 
   return sample * config.dry + wet_signal * config.wet;
+}
+
+float Sound::ProcessSample(const fridge::transition::Frame& frame,
+                           float sample) {
+  PreHousekeeping(global_clock_);
+
+  float wet_signal = 0.f;
+
+  for (size_t i = 0; i < frame.head_count; ++i) {
+    ApplyHead(frame.heads[i].head, sample, wet_signal);
+  }
+
+  global_clock_ = (global_clock_ + 1) % global_clock_max_;
+
+  return sample * frame.dry + wet_signal * frame.wet;
 }
 
 }  // namespace fridge::sound

@@ -23,6 +23,7 @@
 #include "config.hpp"
 #include "config_transform.hpp"
 #include "granular.hpp"
+#include "head_transition.hpp"
 #include "lfo_engine.hpp"
 #include "sound.hpp"
 
@@ -1483,12 +1484,15 @@ class FridgeProcessor final : public SampleProcessor {
   float Process(float sample) override {
     const fridge::config::Config& config =
         transform_.Update(root_config_, 1.0f);
-    return sound_.ProcessSample(config, sample);
+    const fridge::transition::Frame& frame =
+        head_transitions_.Update(config, transform_.head_transitions());
+    return sound_.ProcessSample(frame, sample);
   }
 
  private:
   fridge::config::Config root_config_;
   fridge::transform::state transform_;
+  fridge::transition::HeadTransitionMixer head_transitions_;
   fridge::sound::Sound sound_;
 };
 

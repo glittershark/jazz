@@ -3,9 +3,11 @@
 
 #include <array>
 #include <cstdint>
+#include <optional>
 #include <random>
 
 #include "config.hpp"
+#include "head_transition.hpp"
 #include "lfo_engine.hpp"
 
 namespace fridge::transform {
@@ -18,11 +20,16 @@ class state {
   config::Config output_config_{};
   std::array<float, NUM_LFOS> lfo_initial_values_{};
   std::array<fridge::state::LFOEngine, NUM_LFOS> lfo_engines_{};
+  std::array<std::optional<fridge::transition::HeadMotionTransition>, NUM_HEADS>
+      head_transitions_{};
 
   void Initialize(const config::Config& root_config);
   void RebaseRootConfig(const config::Config& root_config);
   float CurrentDelta(size_t lfo_idx) const;
   void ApplyCurrentDeltas(config::Config& config) const;
+  void RecordHeadTransitions(size_t lfo_idx,
+                             const fridge::state::LFOTransition& transition,
+                             const config::Config& previous_output);
 
   // ----- Validation
 
@@ -49,6 +56,11 @@ class state {
   const config::Config& Reset(const config::Config& root_config);
   const config::Config& Update(const config::Config& root_config, float dt);
   float time() const { return time_; }
+  const std::array<std::optional<fridge::transition::HeadMotionTransition>,
+                   NUM_HEADS>&
+  head_transitions() const {
+    return head_transitions_;
+  }
 };
 
 }  // namespace fridge::transform

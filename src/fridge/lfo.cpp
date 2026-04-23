@@ -52,42 +52,82 @@ void LFOEngine::Reset(float initial_value, Direction direction) {
 }
 
 float LFOEngine::Tick(float dt) {
+  LFOTickResult result = TickWithEvents(dt);
+  return result.value;
+}
+
+LFOTickResult LFOEngine::TickWithEvents(float dt) {
+  LFOTickResult result{.value = value_};
   float remaining = std::max(0.0f, dt);
 
   while (remaining > 0.0f) {
     if (grain_time_remaining_ <= 0.0f) {
-      StartNewGrain(false);
+      std::optional<LFOTransition> transition = StartNewGrain(false);
+      if (transition.has_value()) {
+        result.transition = transition;
+      }
     }
 
     float slice = std::min(remaining, grain_time_remaining_);
-    value_ = WrapToRange(
-        value_ + (speed_ * DirectionMultiplier(direction_) * slice),
-        config_.range);
+    value_ =
+        WrapToRange(value_ + (speed_ * DirectionMultiplier(direction_) * slice),
+                    config_.range);
     grain_time_remaining_ -= slice;
     remaining -= slice;
 
     if (grain_time_remaining_ <= 0.0f) {
-      StartNewGrain(false);
+      std::optional<LFOTransition> transition = StartNewGrain(false);
+      if (transition.has_value()) {
+        if (result.transition.has_value()) {
+          result.transition->new_value = transition->new_value;
+          result.transition->new_direction = transition->new_direction;
+          result.transition->new_speed = transition->new_speed;
+          result.transition->reversed =
+              result.transition->reversed || transition->reversed;
+          result.transition->teleported =
+              result.transition->teleported || transition->teleported;
+        } else {
+          result.transition = transition;
+        }
+      }
     }
   }
 
-  return value_;
+  result.value = value_;
+  return result;
 }
 
-void LFOEngine::StartNewGrain(bool initial_grain) {
+std::optional<LFOTransition> LFOEngine::StartNewGrain(bool initial_grain) {
+  LFOTransition transition{
+      .old_value = value_,
+      .old_direction = direction_,
+      .old_speed = speed_,
+  };
+
   if (!initial_grain) {
     if (RollChance(config_.reverse_chance)) {
       direction_ = ReverseDirection(direction_);
+      transition.reversed = true;
     }
 
     if (RollChance(config_.teleport_chance)) {
       value_ = SampleTeleportValue();
+      transition.teleported = true;
     }
   }
 
   grain_size_ = SampleGrainSize();
   speed_ = SampleSpeed();
   grain_time_remaining_ = static_cast<float>(grain_size_);
+
+  if (!transition.reversed && !transition.teleported) {
+    return std::nullopt;
+  }
+
+  transition.new_value = value_;
+  transition.new_direction = direction_;
+  transition.new_speed = speed_;
+  return transition;
 }
 
 size_t LFOEngine::SampleGrainSize() {

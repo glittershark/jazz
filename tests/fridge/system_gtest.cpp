@@ -400,3 +400,44 @@ TEST(FridgeLFOSystemTest, UnsupportedAndInvalidTargetsAreIgnored) {
   EXPECT_FLOAT_EQ(output.heads[0].write_amount, 0.4f);
   EXPECT_EQ(output.lfos[2].range, 7u);
 }
+
+TEST(FridgeLFOSystemTest, HeadPositionReverseCreatesTransitionEvent) {
+  fridge::config::Config config;
+  config.heads[0].position = 10;
+  config.lfos[0] = LFO{.range = 20,
+                       .max_grain_size = 1,
+                       .min_grain_size = 1,
+                       .reverse_chance = 1.0f};
+  config.lfos[0].targets[0] = Target{.object = TargetObject::kHead,
+                                     .parameter = TargetParameter::kPosition,
+                                     .object_idx = 0};
+
+  state system(1234);
+  system.Reset(config);
+  fridge::config::Config output = system.Update(config, 1.0f);
+  const auto& transitions = system.head_transitions();
+
+  ASSERT_TRUE(transitions[0].has_value());
+  EXPECT_TRUE(transitions[0]->reversed);
+  EXPECT_FALSE(transitions[0]->teleported);
+  EXPECT_EQ(transitions[0]->old_motion.position, 10u);
+  EXPECT_EQ(transitions[0]->new_motion.position, output.heads[0].position);
+}
+
+TEST(FridgeLFOSystemTest, NonHeadPositionLfoTransitionIsNotRecorded) {
+  fridge::config::Config config;
+  config.lfos[0] = LFO{.range = 20,
+                       .max_grain_size = 1,
+                       .min_grain_size = 1,
+                       .reverse_chance = 1.0f};
+  config.lfos[0].targets[0] = Target{.object = TargetObject::kMixer,
+                                     .parameter = TargetParameter::kDry};
+
+  state system(1234);
+  system.Reset(config);
+  system.Update(config, 1.0f);
+
+  for (const auto& transition : system.head_transitions()) {
+    EXPECT_FALSE(transition.has_value());
+  }
+}

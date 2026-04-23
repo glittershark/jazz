@@ -3,6 +3,7 @@
 
 #include "config.hpp"
 #include "config_transform.hpp"
+#include "head_transition.hpp"
 #include "lfo_engine.hpp"
 #include "ui.hpp"
 
