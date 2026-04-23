@@ -146,5 +146,6 @@ compile_commands.lint.json
 
 # Local audio assets
 mp3s/
+pngs/
 *.mp3
 *.MP3
