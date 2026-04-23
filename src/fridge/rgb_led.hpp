@@ -1,6 +1,7 @@
 #ifndef RGB_LED_H_
 #define RGB_LED_H_
 
+#include "value_display.hpp"
 #ifndef UNIT_TEST
 
 #include "color.hpp"
@@ -22,6 +23,20 @@ class RgbLed {
 
   RgbLed& SetOn(bool on);
   RgbLed& SetColor(fridge::color::RGB color);
+};
+
+template <ValueDisplay VD>
+class RgbLedValueDisplay : public RgbLed {
+  VD value_display_;
+
+ public:
+  RgbLedValueDisplay(VD value_display, RgbLed rgb_led)
+      : RgbLed(rgb_led), value_display_(value_display) {};
+
+  RgbLedValueDisplay<VD>& SetValue(uint8_t value) {
+    SetColor(value_display_(value));
+    return *this;
+  }
 };
 
 }  // namespace fridge::ui
