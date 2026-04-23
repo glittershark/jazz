@@ -54,9 +54,3 @@ void fridge::ui::UI::UpdateConfig(config::Config& config) const {
 }
 
 }  // namespace fridge::ui
-
-fridge::config::Config& operator|=(fridge::config::Config& config,
-                                   const fridge::ui::UI& ui) {
-  ui.UpdateConfig(config);
-  return config;
-};

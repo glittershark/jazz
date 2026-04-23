@@ -88,7 +88,6 @@ Engine::Engine()
     // TODO: assign the right pins in here
     : muxes_{
           .bank_a{
-              // NOTE: i'm relatively sure this is /not/ UB
               .mux = io::mux::MultiGpioInMux<2>({
                   io::mux::GpioInMux(D1),
                   io::mux::GpioInMux(D2),
@@ -112,8 +111,8 @@ Engine::Engine()
       // this kills the clang-format
       knobs_(muxes_, ui_) {}
 
-void Engine::operator()(config::Config& config, float dt) {
-  config |= ui_;  // lmao
+void Engine::Tick(config::Config& config, float dt) {
+  ui_.UpdateConfig(config);
   transform_.Update(config, dt);
 }
 

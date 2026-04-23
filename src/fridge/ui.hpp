@@ -289,7 +289,4 @@ struct UI {
 
 }  // namespace fridge::ui
 
-fridge::config::Config& operator|=(fridge::config::Config& config,
-                                   const fridge::ui::UI& ui);
-
 #endif  // UI_H_

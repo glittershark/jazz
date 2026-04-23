@@ -51,7 +51,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
     const uint32_t delay_ms = 10;
     const float dt = delay_ms / 1000.f;
 
-    engine(::config, dt);
+    engine.Tick(::config, dt);
     System::Delay(delay_ms);
   }
 }

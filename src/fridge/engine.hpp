@@ -35,6 +35,9 @@ class Engine {
   // in total to account for all of the knobs.
   struct Muxes {
     struct MuxBank {
+      // NOTE: the corresponding initialization is not UB because these struct
+      // fields are declared in THIS order, as scan depends on mux being
+      // initialized.
       io::mux::MultiGpioInMux<2> mux;
       io::mux::ChannelScan<8U, decltype(mux)> scan;
     };
@@ -81,7 +84,7 @@ class Engine {
  public:
   Engine();
 
-  void operator()(config::Config& config, float dt);
+  void Tick(config::Config& config, float dt);
 };
 
 }  // namespace fridge::engine
