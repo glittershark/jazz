@@ -13,12 +13,14 @@ using namespace daisy;
 
 DaisySeed hw;
 config::Config config;
-sound::Sound sound;
+sound::Sound* sound;
+
+char DSY_SDRAM_BSS sound_memory[sizeof(sound::Sound)];
 
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
   for (size_t i = 0; i < size; ++i) {
-    out[0][i] = ::sound.ProcessSample(::config, in[0][i]);
+    out[0][i] = ::sound->ProcessSample(::config, in[0][i]);
   }
 }
 
@@ -36,6 +38,9 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 }
 
 [[noreturn]] void ActualFridge() {
+  // XXX: construct this thing BEFORE starting the audio callback!
+  ::sound = new (sound_memory) sound::Sound();
+
   AdcChannelConfig adcConfig;
   adcConfig.InitSingle(hw.GetPin(21));
   hw.adc.Init(&adcConfig, 1);
