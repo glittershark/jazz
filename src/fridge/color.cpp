@@ -1,5 +1,6 @@
 #include "color.hpp"
 
+#include <cmath>
 #include <cstdint>
 
 namespace fridge {
@@ -74,6 +75,10 @@ HSV::HSV(const RGB& rgb) {
   } else {
     hue = 171 + (int16_t)(rgb.red - rgb.green) * 43 / delta;
   }
+}
+
+uint8_t gamma_scale(uint8_t value, float gamma) {
+  return (uint8_t)(255. * powf((((float)value) / 255.), gamma));
 }
 
 }  // namespace color

@@ -7,6 +7,7 @@ jazz_add_firmware(fridge SOURCES
   config_transform.cpp
   sound.cpp
   ui.cpp
+  value_display.cpp
   led.cpp
 )
 
