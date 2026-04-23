@@ -3,6 +3,8 @@
 
 #ifndef UNIT_TEST
 
+#include <array>
+
 #include "config.hpp"
 #include "config_transform.hpp"
 #include "io.hpp"
@@ -11,16 +13,62 @@
 
 namespace fridge::engine {
 
+struct Microseconds {
+  uint32_t us;
+};
+
+constexpr Microseconds operator""_us(unsigned long long int us) {
+  return {.us = static_cast<uint32_t>(us)};
+}
+
+template <std::size_t NumCallbacks, Microseconds Period>
+class Timer {
+  std::array<Callback<>, NumCallbacks> callbacks_;
+  daisy::TimerHandle timer_;
+
+  static void timer_callback_(void* this_) {
+    reinterpret_cast<Timer*>(this_)->tick_();
+  }
+
+  void tick_() {
+    for (auto& cb : callbacks_) {
+      cb();
+    }
+  }
+
+ public:
+  Timer(const Timer&) = delete;
+  Timer& operator=(const Timer&) = delete;
+
+  Timer(daisy::TimerHandle::Config::Peripheral timer,
+        std::array<Callback<>, NumCallbacks> callbacks)
+      : callbacks_(callbacks) {
+    daisy::TimerHandle::Config timer_config;
+    timer_config.periph = timer;
+    timer_config.enable_irq = true;
+
+    timer_.Init(timer_config);
+    timer_.SetCallback(Timer::timer_callback_, this);
+    timer_.SetPeriod((Period.us * timer_.GetFreq()) / 1'000'000);
+  }
+
+  daisy::TimerHandle::Result Start() { return timer_.Start(); }
+};
+
 /**
  * The thing that makes the world go 'round!
  */
 class BreadboardEngine {
   io::mux::MultiGpioInMux<2> encoders_;
   io::mux::ChannelScan<8U, decltype(encoders_)> scan_;
+  Timer<1, 100_us> timer_;
+
   io::QuadratureEncoder enc1_;
   io::QuadratureEncoder enc2_;
+
   ui::Knob<ui::Size> knob1_;
   ui::Knob<ui::Size> knob2_;
+
   io::led::Controller led_controller_;
 
  public:
@@ -31,51 +79,22 @@ class BreadboardEngine {
 };
 
 class Engine {
-  // hoookay: we have 13 knobs and 8:1 muxes (in hardware), so we need two muxes
-  // in total to account for all of the knobs.
-  struct Muxes {
-    struct MuxBank {
-      // NOTE: the corresponding initialization is not UB because these struct
-      // fields are declared in THIS order, as scan depends on mux being
-      // initialized.
-      io::mux::MultiGpioInMux<2> mux;
-      io::mux::ChannelScan<8U, decltype(mux)> scan;
-    };
+  // hoookay: we have 13 knobs (2 channels each), 16 buttons (1 channel each),
+  // and 8:1 muxes (in hardware), so we need 6 muxes in total to account for
+  // everything.
+  io::mux::MultiGpioInMux<6> mux_;
+  io::mux::ChannelScan<8U, decltype(mux_)> scan_;
 
-    MuxBank bank_a;
-    MuxBank bank_b;
-  } muxes_;
+  Timer<1, 100_us> timer_;
 
-  struct Knobs {
-    struct Head {
-      io::QuadratureEncoder position;
-      io::QuadratureEncoder write_amount;
-      io::QuadratureEncoder read_amount;
-      io::QuadratureEncoder erase_amount;
-      io::QuadratureEncoder feedback;
+  // see constructor for mux assignments
+  std::array<io::QuadratureEncoder, 5> head_;
+  io::QuadratureEncoder dry_;
+  io::QuadratureEncoder wet_;
 
-      Head(io::mux::MultiGpioInMux<2>& mux, ui::Head& head);
-    } head;
-
-    // placed here because they're on the same bank as all the head knobs
-    io::QuadratureEncoder dry;
-    io::QuadratureEncoder wet;
-
-    struct LFO {
-      io::QuadratureEncoder range;
-      io::QuadratureEncoder max_grain_size;
-      io::QuadratureEncoder min_grain_size;
-      io::QuadratureEncoder reverse_chance;
-      io::QuadratureEncoder teleport_chance;
-      io::QuadratureEncoder pitch_shift_chance;
-      io::QuadratureEncoder low_octave_chance;
-      io::QuadratureEncoder high_octave_chance;
-
-      LFO(io::mux::MultiGpioInMux<2>& mux, ui::LFO& lfo);
-    } lfo;
-
-    Knobs(Muxes& muxes, ui::UI& ui);
-  } knobs_;
+  std::array<io::QuadratureEncoder, 8> lfo_;
+  std::array<io::Button, 8> head_select_;
+  std::array<io::Button, 8> lfo_select_;
 
   ui::UI ui_;
   io::led::Controller leds_;

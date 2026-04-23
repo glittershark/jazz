@@ -4,6 +4,7 @@
 #include <sys/types.h>
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <concepts>
 #include <cstddef>
@@ -12,6 +13,8 @@
 
 #include "callback.hpp"
 #include "config.hpp"
+#include "constants.hpp"
+#include "io.hpp"
 
 namespace fridge::ui {
 
@@ -31,8 +34,6 @@ concept BackingValue =
       { v1 = v2 } -> std::same_as<V&>;
       { v1 += v2 } -> std::same_as<V&>;
     };
-
-class Button {};
 
 template <BackingValue V>
 class Knob {
@@ -244,6 +245,53 @@ using SingleTurn = Bounded<Turns, 0.0f, 1.0f>;
 using Position = Bounded<Ticks<size_t>, 0, BUFFER_LEN>;
 using Size = Bounded<Ticks<size_t>, 0, 0xff>;  // TODO(nausicaa): is this sane?
 
+template <std::size_t N>
+class RadioButtons {
+  std::size_t selected_;
+
+  struct Selector {
+    RadioButtons* rb;
+    std::size_t which;
+
+    Selector() : rb(nullptr), which(0) {}
+
+    // because doing this at construction is too hard
+    void Configure(RadioButtons* rb, std::size_t which) {
+      this->rb = rb;
+      this->which = which;
+    }
+
+    void Select(bool state) {
+      if (state && rb) {
+        rb->selected_ = which;
+      }
+    }
+
+    Callback<bool> GetCallback() {
+      return MemberCallback<Selector, bool>{
+          .this_ = this,
+          .callback = &Selector::Select,
+      };
+    }
+  };
+
+  std::array<Selector, N> buttons_;
+
+ public:
+  RadioButtons() : selected_(0) {
+    for (std::size_t i = 0; i < N; ++i) {
+      buttons_[i].Configure(this, i);
+    }
+  }
+
+  void RegisterCallbacks(std::array<io::Button, N>& buttons) {
+    // i miss rust and zip()
+    for (std::size_t i = 0; i < N; ++i) {
+      buttons[i].OnChange(buttons_[i].GetCallback());
+    }
+  }
+};
+
 struct Head {
   Knob<Position> position;
   Knob<SingleTurn> write_amount;
@@ -269,6 +317,10 @@ struct LFO {
   config::LFO Config() const;
 };
 
+class TempoButton {
+  // TODO(nausicaa)
+};
+
 struct UI {
   size_t selected_head = 0;
   size_t selected_lfo = 0;
@@ -278,9 +330,10 @@ struct UI {
 
   Knob<SingleTurn> dry;
   Knob<SingleTurn> wet;
-  Button tempo;
+  TempoButton tempo;
 
-  // TODO(nausicaa): head selection buttons, etc.
+  RadioButtons<NUM_HEADS> head_select;
+  RadioButtons<NUM_LFOS> lfo_select;
 
   // TODO(nausicaa): LEDs (there are a bunch, one for each encoder and
   // selection button)
