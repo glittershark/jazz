@@ -46,17 +46,17 @@ void LFO::Select(const fridge::config::LFO& lfo) {
   high_octave_chance.Set(lfo.high_octave_chance);
 }
 
-void fridge::ui::UI::UpdateConfig(fridge::config::Config& config) const {
+void fridge::ui::UI::UpdateConfig(config::Config& config) const {
   config.heads[selected_head] = head.Config();
   config.lfos[selected_lfo] = lfo.Config();
   config.dry = dry.Get();
   config.wet = wet.Get();
 }
 
+}  // namespace fridge::ui
+
 fridge::config::Config& operator|=(fridge::config::Config& config,
-                                   const UI& ui) {
+                                   const fridge::ui::UI& ui) {
   ui.UpdateConfig(config);
   return config;
 };
-
-}  // namespace fridge::ui

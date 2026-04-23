@@ -287,8 +287,9 @@ struct UI {
   void UpdateConfig(config::Config& config) const;
 };
 
-config::Config& operator|=(config::Config& config, UI& ui);
-
 }  // namespace fridge::ui
+
+fridge::config::Config& operator|=(fridge::config::Config& config,
+                                   const fridge::ui::UI& ui);
 
 #endif  // UI_H_
