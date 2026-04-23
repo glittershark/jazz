@@ -270,8 +270,8 @@ struct LFO {
 };
 
 struct UI {
-  size_t selected_head;
-  size_t selected_lfo;
+  size_t selected_head = 0;
+  size_t selected_lfo = 0;
 
   Head head;
   LFO lfo;

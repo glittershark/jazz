@@ -11,6 +11,8 @@
 #include "libjazz/slab.hpp"
 #include "libjazz/value.hpp"
 
+namespace granular {
+
 // Constants
 constexpr const size_t BUFFER_LEN = 22050 * 1; /* 1 second */
 constexpr const size_t MAX_FADE_TIME = 128;
@@ -269,7 +271,7 @@ class BufferValue {
 
 class Granular {
  private:
-  std::array<IndicesToUpdate*, MAX_FADE_TIME> indices_to_update_;
+  std::array<IndicesToUpdate*, MAX_FADE_TIME> indices_to_update_{};
   size_t global_clock_max_ = SIZE_MAX;
   size_t global_clock_ = 0;
 
@@ -325,3 +327,5 @@ class Granular {
     return wet_signal;
   }
 };
+
+}  // namespace granular

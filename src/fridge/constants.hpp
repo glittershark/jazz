@@ -3,6 +3,8 @@
 
 #include <cstddef>
 
+namespace fridge {
+
 constexpr const size_t NUM_HEADS = 8;
 constexpr const size_t NUM_LFOS = 8;
 constexpr const size_t MAX_TARGET_PARAMS = 64;  // ??
@@ -13,5 +15,7 @@ constexpr const size_t BUFFER_LEN = 44100 * 30; /* 30 seconds */
 constexpr const size_t FADE_TIME = 128;
 
 constexpr const size_t UPDATE_CAP = ((NUM_HEADS + 1) * ((FADE_TIME + 1) * 2));
+
+}  // namespace fridge
 
 #endif  // CONSTANTS_H_

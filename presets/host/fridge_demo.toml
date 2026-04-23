@@ -1,0 +1,30 @@
+# Host CLI preset for a first fridge audio pass.
+#
+# ./build-test/src/console/jazz-console input.mp3 --preset presets/host/fridge_demo.toml --output fridge_demo.mp3
+
+effect_chain = ["fridge"]
+sample_rate = 48000
+channels = 1
+
+fridge_dry = 0.5
+fridge_wet = 0.5
+
+# Head 0 reads, writes, and slowly decays one moving tap.
+fridge_head_0_position = 0
+fridge_head_0_write_amount = 1.0
+fridge_head_0_read_amount = 1.0
+fridge_head_0_erase_amount = 0.0001
+fridge_head_0_feedback_kind = "read"
+fridge_head_0_feedback_amount = 0.0
+
+# LFO 0 scans head 0 across the buffer and reverses at each grain boundary.
+fridge_lfo_0_range = 24000
+fridge_lfo_0_min_grain_size = 12000
+fridge_lfo_0_max_grain_size = 12000
+fridge_lfo_0_reverse_chance = 1.0
+fridge_lfo_0_teleport_chance = 0.0
+fridge_lfo_0_pitch_shift_chance = 0.0
+
+fridge_lfo_0_target_0_object = "head"
+fridge_lfo_0_target_0_parameter = "position"
+fridge_lfo_0_target_0_index = 0
