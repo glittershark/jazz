@@ -237,8 +237,7 @@ void state::Initialize(const config::Config& root_config) {
     config::LFO lfo_config = root_config_.lfos[i];
     lfo_engines_[i] =
         fridge::state::LFOEngine(lfo_config, seed_ + static_cast<uint32_t>(i));
-    lfo_engines_[i].Reset(static_cast<float>(lfo_config.range) * 0.5f,
-                          fridge::state::Direction::kForwards);
+    lfo_engines_[i].Reset(0.0f, fridge::state::Direction::kForwards);
     lfo_initial_values_[i] = lfo_engines_[i].value();
   }
 }

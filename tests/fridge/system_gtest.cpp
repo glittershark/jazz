@@ -99,7 +99,7 @@ TEST(FridgeLFOSystemTest, LfoCanModulateMixerKnobs) {
 TEST(FridgeLFOSystemTest, LfoModulatesAnotherLfoOnTheNextTick) {
   fridge::config::Config config;
   config.dry = 0.0f;
-  config.lfos[0] = DeterministicLfo(2, 2);
+  config.lfos[0] = DeterministicLfo(10, 4);
   config.lfos[0].targets[0] =
       Target{.object = TargetObject::kLFO,
              .parameter = TargetParameter::kReverseChance,
@@ -162,10 +162,10 @@ TEST(FridgeLFOSystemTest, InvalidTargetsAreIgnored) {
   EXPECT_FLOAT_EQ(output.heads[0].write_amount, 0.25f);
 }
 
-TEST(FridgeLFOSystemTest, ModulatedLfoRangeIsClampedForNextTick) {
+TEST(FridgeLFOSystemTest, ModulatedLfoRangeAffectsNextTick) {
   fridge::config::Config config;
   config.dry = 0.0f;
-  config.lfos[0] = DeterministicLfo(2, 2);
+  config.lfos[0] = DeterministicLfo(10, 4);
   config.lfos[0].targets[0] = Target{.object = TargetObject::kLFO,
                                      .parameter = TargetParameter::kRange,
                                      .object_idx = 1};
@@ -177,8 +177,8 @@ TEST(FridgeLFOSystemTest, ModulatedLfoRangeIsClampedForNextTick) {
   fridge::config::Config initial = system.Reset(config);
   EXPECT_EQ(initial.lfos[1].range, 0u);
 
-  fridge::config::Config first_output = system.Update(config, 1.0f);
-  EXPECT_EQ(first_output.lfos[1].range, 1u);
+  fridge::config::Config first_output = system.Update(config, 2.0f);
+  EXPECT_EQ(first_output.lfos[1].range, 2u);
 
   fridge::config::Config second_output = system.Update(config, 1.0f);
   EXPECT_FLOAT_EQ(second_output.dry, 1.0f);

@@ -15,6 +15,19 @@ fridge::state::Direction ReverseDirection(fridge::state::Direction direction) {
              : fridge::state::Direction::kForwards;
 }
 
+float WrapToRange(float value, size_t range) {
+  const float upper_bound = static_cast<float>(range);
+  if (upper_bound <= 0.0f) {
+    return 0.0f;
+  }
+
+  float wrapped = std::fmod(value, upper_bound);
+  if (wrapped < 0.0f) {
+    wrapped += upper_bound;
+  }
+  return wrapped;
+}
+
 }  // namespace
 
 namespace fridge::state {
@@ -29,11 +42,11 @@ LFOEngine::LFOEngine(const config::LFO& config, uint32_t seed)
 
 void LFOEngine::SetConfig(const config::LFO& config) {
   config_ = config;
-  value_ = std::clamp(value_, 0.0f, static_cast<float>(config_.range));
+  value_ = WrapToRange(value_, config_.range);
 }
 
 void LFOEngine::Reset(float initial_value, Direction direction) {
-  value_ = std::clamp(initial_value, 0.0f, static_cast<float>(config_.range));
+  value_ = WrapToRange(initial_value, config_.range);
   direction_ = direction;
   StartNewGrain(true);
 }
@@ -47,9 +60,9 @@ float LFOEngine::Tick(float dt) {
     }
 
     float slice = std::min(remaining, grain_time_remaining_);
-    value_ =
-        std::clamp(value_ + (speed_ * DirectionMultiplier(direction_) * slice),
-                   0.0f, static_cast<float>(config_.range));
+    value_ = WrapToRange(
+        value_ + (speed_ * DirectionMultiplier(direction_) * slice),
+        config_.range);
     grain_time_remaining_ -= slice;
     remaining -= slice;
 

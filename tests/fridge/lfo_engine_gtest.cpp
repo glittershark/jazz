@@ -26,13 +26,22 @@ TEST(FridgeLFOTest, StartsWithSampledGrainAndUnitySpeedByDefault) {
   EXPECT_FLOAT_EQ(engine.speed(), 1.0f);
 }
 
-TEST(FridgeLFOTest, TickAdvancesAndClampsToRange) {
+TEST(FridgeLFOTest, TickAdvancesAndWrapsToRange) {
   LFO config = DeterministicLfo(2);
   LFOEngine engine(config, 1234);
 
   EXPECT_FLOAT_EQ(engine.Tick(1.5f), 1.5f);
-  EXPECT_FLOAT_EQ(engine.Tick(1.5f), 2.0f);
-  EXPECT_FLOAT_EQ(engine.value(), 2.0f);
+  EXPECT_FLOAT_EQ(engine.Tick(1.5f), 1.0f);
+  EXPECT_FLOAT_EQ(engine.value(), 1.0f);
+}
+
+TEST(FridgeLFOTest, BackwardMotionWrapsAroundRange) {
+  LFO config = DeterministicLfo(10, 4);
+  LFOEngine engine(config, 1234);
+
+  engine.Reset(0.0f, Direction::kBackwards);
+
+  EXPECT_FLOAT_EQ(engine.Tick(1.0f), 9.0f);
 }
 
 TEST(FridgeLFOTest, GrainBoundaryCanReverseDirection) {
@@ -100,13 +109,13 @@ TEST(FridgeLFOTest, LargeDtCarriesAcrossMultipleGrains) {
   EXPECT_FLOAT_EQ(engine.speed(), 1.0f);
 }
 
-TEST(FridgeLFOTest, ResetClampsInitialValueAndPreservesDirection) {
+TEST(FridgeLFOTest, ResetWrapsInitialValueAndPreservesDirection) {
   LFO config = DeterministicLfo(3, 2);
   LFOEngine engine(config, 1234);
 
   engine.Reset(99.0f, Direction::kBackwards);
 
-  EXPECT_FLOAT_EQ(engine.value(), 3.0f);
+  EXPECT_FLOAT_EQ(engine.value(), 0.0f);
   EXPECT_EQ(engine.direction(), Direction::kBackwards);
   EXPECT_EQ(engine.grain_size(), 2u);
 }
@@ -121,7 +130,7 @@ TEST(FridgeLFOTest, NonPositiveDtDoesNotAdvanceState) {
   EXPECT_FLOAT_EQ(engine.grain_time_remaining(), 3.0f);
 }
 
-TEST(FridgeLFOTest, SetConfigClampsCurrentValueToNewRange) {
+TEST(FridgeLFOTest, SetConfigWrapsCurrentValueToNewRange) {
   LFO initial_config = DeterministicLfo(10, 2);
   LFOEngine engine(initial_config, 1234);
   ASSERT_FLOAT_EQ(engine.Tick(7.0f), 7.0f);
@@ -129,7 +138,7 @@ TEST(FridgeLFOTest, SetConfigClampsCurrentValueToNewRange) {
   LFO smaller_range = DeterministicLfo(4, 2);
   engine.SetConfig(smaller_range);
 
-  EXPECT_FLOAT_EQ(engine.value(), 4.0f);
+  EXPECT_FLOAT_EQ(engine.value(), 3.0f);
   EXPECT_EQ(engine.config().range, 4u);
 }
 
