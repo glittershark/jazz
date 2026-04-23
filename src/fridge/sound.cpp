@@ -186,7 +186,7 @@ float Sound::ProcessSample(const fridge::config::Config& config, float sample) {
       Write(head.position, sample * head.write_amount);
     }
 
-    if (head.erase_amount > 0.f) {
+    if (head.erase_amount < 1.f) {
       Erase(head.position, head.erase_amount);
     }
   }

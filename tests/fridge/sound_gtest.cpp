@@ -4,6 +4,9 @@
 #include "gtest/gtest.h"
 #include "sound.hpp"
 
+using fridge::BUFFER_LEN;
+using fridge::FADE_TIME;
+using fridge::NUM_HEADS;
 using fridge::sound::BufferValue;
 using fridge::sound::IndicesToUpdate;
 using fridge::sound::Sound;
@@ -67,7 +70,7 @@ class FridgeSoundTest : public ::testing::Test {
     config.heads[0].position = 0;
     config.heads[0].read_amount = 1.0f;
     config.heads[0].write_amount = 1.0f;
-    config.heads[0].erase_amount = 0.0f;
+    config.heads[0].erase_amount = 1.0f;
     config.dry = 0.0f;
     config.wet = 1.0f;
 
@@ -75,7 +78,7 @@ class FridgeSoundTest : public ::testing::Test {
     for (size_t i = 1; i < NUM_HEADS; ++i) {
       config.heads[i].read_amount = 0.0f;
       config.heads[i].write_amount = 0.0f;
-      config.heads[i].erase_amount = 0.0f;
+      config.heads[i].erase_amount = 1.0f;
     }
   }
 };
@@ -195,7 +198,7 @@ TEST_F(FridgeSoundTest, EraseReducesSignal) {
   sound.ProcessSample(config, 0.0f);
 
   // Advance past fade time for erase
-  config.heads[0].erase_amount = 0.0f;
+  config.heads[0].erase_amount = 1.0f;
   for (size_t i = 0; i < FADE_TIME; ++i) {
     sound.ProcessSample(config, 0.0f);
   }
@@ -204,4 +207,27 @@ TEST_F(FridgeSoundTest, EraseReducesSignal) {
   config.heads[0].read_amount = 1.0f;
   float output = sound.ProcessSample(config, 0.0f);
   EXPECT_NEAR(output, 0.5f, 0.01f);
+}
+
+TEST_F(FridgeSoundTest, ZeroEraseAmountClearsSignal) {
+  config.heads[0].read_amount = 0.0f;
+  sound.ProcessSample(config, 1.0f);
+
+  config.heads[0].write_amount = 0.0f;
+  for (size_t i = 0; i < FADE_TIME; ++i) {
+    sound.ProcessSample(config, 0.0f);
+  }
+
+  config.heads[0].position = 0;
+  config.heads[0].erase_amount = 0.0f;
+  sound.ProcessSample(config, 0.0f);
+
+  config.heads[0].erase_amount = 1.0f;
+  for (size_t i = 0; i < FADE_TIME; ++i) {
+    sound.ProcessSample(config, 0.0f);
+  }
+
+  config.heads[0].read_amount = 1.0f;
+  float output = sound.ProcessSample(config, 0.0f);
+  EXPECT_NEAR(output, 0.0f, 0.01f);
 }
