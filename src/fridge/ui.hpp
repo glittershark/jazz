@@ -284,12 +284,14 @@ class RadioButtons {
     }
   }
 
+#ifndef UNIT_TEST
   void RegisterCallbacks(std::array<io::Button, N>& buttons) {
     // i miss rust and zip()
     for (std::size_t i = 0; i < N; ++i) {
       buttons[i].OnChange(buttons_[i].GetCallback());
     }
   }
+#endif  // UNIT_TEST
 };
 
 struct Head {
@@ -317,9 +319,42 @@ struct LFO {
   config::LFO Config() const;
 };
 
+#ifndef UNIT_TEST
 class TempoButton {
-  // TODO(nausicaa)
+  // times are in milliseconds
+  // TODO(nausicaa): use some ringbuffer class here instead
+  std::array<uint32_t, 8> history_;
+  uint32_t average_gap_;
+
+  void Tick(bool state);
+
+ public:
+  TempoButton();
+
+  Callback<bool> GetCallback() {
+    return MemberCallback<TempoButton, bool>{
+        .this_ = this,
+        .callback = &TempoButton::Tick,
+    };
+  }
+
+  float Estimate();
 };
+#else
+struct TempoButton {
+  void Tick(bool state) {}
+  TempoButton() = default;
+
+  Callback<bool> GetCallback() {
+    return MemberCallback<TempoButton, bool>{
+        .this_ = this,
+        .callback = &TempoButton::Tick,
+    };
+  }
+
+  float Estimate() { return 0; }
+};
+#endif  // UNIT_TEST
 
 struct UI {
   size_t selected_head = 0;

@@ -2,7 +2,13 @@
 
 #include "config.hpp"
 
-namespace fridge::ui {
+#ifndef UNIT_TEST
+#include "daisy_seed.h"
+using namespace daisy;
+#endif  // UNIT_TEST
+
+using namespace fridge;
+using namespace fridge::ui;
 
 config::Head Head::Config() const {
   return {
@@ -46,11 +52,53 @@ void LFO::Select(const fridge::config::LFO& lfo) {
   high_octave_chance.Set(lfo.high_octave_chance);
 }
 
-void fridge::ui::UI::UpdateConfig(config::Config& config) const {
+void ui::UI::UpdateConfig(config::Config& config) const {
   config.heads[selected_head] = head.Config();
   config.lfos[selected_lfo] = lfo.Config();
   config.dry = dry.Get();
   config.wet = wet.Get();
 }
 
-}  // namespace fridge::ui
+#ifndef UNIT_TEST
+
+TempoButton::TempoButton() : average_gap_(0) {
+  const auto now = System::GetNow();
+
+  for (auto& entry : history_) {
+    entry = now;
+  }
+
+  average_gap_ = 0;
+}
+
+float TempoButton::Estimate() {
+  return average_gap_ / 1000.f;
+}
+
+void TempoButton::Tick(bool state) {
+  /*
+   * right now, this thing makes its estimates via a rolling average. while this
+   * works, the thing we /actually/ want here is a low-pass filter on dt, which
+   * we could in theory achieve more effectively (for a given history length)
+   * with a low-order elliptic filter. but that probably qualifies as
+   * overengineering.
+   */
+  if (state) {
+    const auto now = System::GetNow();
+
+    // TODO(nausicaa) goddamn ring buffer, see other comment
+    for (std::size_t i = 0; i < history_.size() - 1; ++i) {
+      history_[i] = history_[i + 1];
+    }
+    history_[history_.size()] = now;
+
+    uint64_t gap_sum = 0;
+    for (std::size_t i = 0; i < history_.size() - 1; ++i) {
+      gap_sum += history_[i + 1] - history_[i];
+    }
+
+    average_gap_ = gap_sum / (history_.size() - 1);
+  }
+}
+
+#endif  // UNIT_TEST

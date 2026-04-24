@@ -121,6 +121,8 @@ Engine::Engine()
   ui_.head_select.RegisterCallbacks(head_select_);
   ui_.lfo_select.RegisterCallbacks(lfo_select_);
 
+  // TODO: tempo button should probably be connected to something lol
+
   timer_.Start();
 }
 
