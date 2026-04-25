@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(libjazz STATIC
     src/value.cpp
     src/slab.cpp
+    src/buffer.cpp
 )
 
 # Set include directories
