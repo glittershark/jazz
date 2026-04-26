@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <algorithm>
+
 #include "libjazz/buffer.hpp"
 
 using namespace jazz::buffer;
@@ -51,7 +53,6 @@ TEST(LoopTest, PushBack_with_negative_indices) {
 
   for (int i = 0; i < buf.size(); ++i) {
     ptrdiff_t diff = i - buf.size();
-    std::cout << diff << std::endl;
     EXPECT_EQ(buf[diff], i);
   }
 
@@ -77,5 +78,35 @@ TEST(LoopTest, Push_and_PushBack_in_tandem) {
   EXPECT_EQ(0, buf.PushBack(buf.size()));
   for (int i = 0; i < buf.size(); ++i) {
     EXPECT_EQ(buf[i], i + 1);
+  }
+}
+
+TEST(LoopTest, can_iterate_over_it) {
+  Loop<int, 33> buf;
+  int i = 0;
+
+  for (auto& elem : buf) {
+    elem = i++;
+    std::cout << elem << '\n';
+  }
+
+  // check with conventional loop
+  for (int i = 0; i < buf.size(); ++i) {
+    EXPECT_EQ(buf[i], i);
+  }
+}
+
+TEST(LoopTest, can_sort_it) {
+  Loop<int, 47> buf;
+  int i = 0;
+
+  for (std::size_t i = 0; i < buf.size(); ++i) {
+    buf[i] = buf.size() - 1 - i;
+  }
+
+  std::sort(buf.begin(), buf.end());
+
+  for (std::size_t i = 0; i < buf.size(); ++i) {
+    EXPECT_EQ(buf[i], i);
   }
 }

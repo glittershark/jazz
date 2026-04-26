@@ -4,6 +4,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdlib>
+#include <iterator>
 
 namespace jazz::buffer {
 
@@ -37,6 +38,59 @@ class Loop {
   }
 
  public:
+  class Iterator {
+    friend class Loop;
+    Loop* loop_;
+    std::ptrdiff_t i_;
+
+    Iterator(Loop* loop, std::ptrdiff_t i) : loop_(loop), i_(i) {}
+
+   public:
+    // required by std::iterator_traits to know how this thing works
+    using value_type = Sample;
+    using difference_type = std::ptrdiff_t;
+    using pointer = Sample*;
+    using reference = Sample&;
+    using iterator_category = std::random_access_iterator_tag;
+
+    Sample& operator*() { return (*loop_)[i_]; }
+    const Sample& operator*() const { return (*loop_)[i_]; }
+
+    // TODO: consider which of these operators should be modulo-aware
+
+    Iterator& operator++() {
+      ++i_;
+      return *this;
+    }
+
+    Iterator operator++(int) { return Iterator(loop_, i_++); }
+
+    Iterator& operator--() {
+      --i_;
+      return *this;
+    }
+
+    Iterator operator--(int) { return Iterator(loop_, i_--); }
+
+    bool operator==(const Iterator& rhs) const {
+      return loop_ == rhs.loop_ && i_ == rhs.i_;
+    }
+
+    bool operator!=(const Iterator& rhs) const { return !operator==(rhs); }
+
+    Iterator operator+(const std::ptrdiff_t rhs) const {
+      return Iterator(loop_, i_ + rhs);
+    }
+
+    Iterator operator-(const std::ptrdiff_t rhs) const {
+      return *this + (-rhs);
+    }
+
+    std::ptrdiff_t operator-(const Iterator& rhs) const { return i_ - rhs.i_; }
+
+    bool operator<(const Iterator& rhs) const { return i_ < rhs.i_; }
+  };
+
   Loop() : zero_(0), buffer_() {};
 
   Sample& operator[](std::ptrdiff_t i) { return buffer_[real_index_(i)]; }
@@ -44,7 +98,7 @@ class Loop {
     return buffer_[real_index_(i)];
   }
 
-  constexpr size_t size() const { return Size; }
+  constexpr std::size_t size() const { return Size; }
 
   Sample Push(Sample s) {
     zero_ = real_index_(-1);
@@ -60,7 +114,8 @@ class Loop {
     return old;
   }
 
-  // TODO simple forward iterator or smth
+  Iterator begin() { return Iterator(this, 0); }
+  Iterator end() { return Iterator(this, Size); }
 };
 
 }  // namespace jazz::buffer
