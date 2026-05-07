@@ -252,13 +252,18 @@ void state::ApplyCurrentDeltas(config::Config& config) const {
 void state::RecordHeadTransitions(
     size_t lfo_idx, const fridge::state::LFOTransition& transition,
     const config::Config& previous_output) {
+  // Invalid LFO indexes cannot produce a meaningful transition record.
   if (lfo_idx >= NUM_LFOS) {
     return;
   }
 
+  // Find every head position affected by this LFO. Other targets may still be
+  // modulated, but only head position jumps need a motion fade record.
   for (size_t target_idx = 0; target_idx < MAX_TARGET_PARAMS; ++target_idx) {
     const std::optional<config::Target>& target =
         output_config_.lfos[lfo_idx].targets[target_idx];
+    // Empty slots, non-head targets, non-position targets, and invalid head
+    // indexes do not participate in head transition fading.
     if (!target.has_value() || target->object != config::TargetObject::kHead ||
         target->parameter != config::TargetParameter::kPosition ||
         target->object_idx >= NUM_HEADS) {
@@ -266,6 +271,8 @@ void state::RecordHeadTransitions(
     }
 
     size_t head_idx = target->object_idx;
+    // Capture the motion before and after the transform. The transition mixer
+    // uses this pair to fade from the old moving head to the new moving head.
     head_transitions_[head_idx] = fridge::transition::HeadMotionTransition{
         .old_motion =
             fridge::transition::HeadMotion{
