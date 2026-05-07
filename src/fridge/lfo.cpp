@@ -31,7 +31,7 @@ float WrapToRange(float value, size_t range) {
 fridge::state::LFOTransition ExtendTransition(
     const fridge::state::LFOTransition& accumulated,
     const fridge::state::LFOTransition& latest) {
-  fridge::state::LFOTransition transition = latest;
+  auto transition = latest;
   transition.old_value = accumulated.old_value;
   transition.old_direction = accumulated.old_direction;
   transition.old_speed = accumulated.old_speed;
