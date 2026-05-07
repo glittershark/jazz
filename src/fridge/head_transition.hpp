@@ -71,9 +71,13 @@ class HeadTransitionMixer {
 
   // ----- Validation
 
+  // Keeps fade math from dividing by zero.
   static size_t ClampFadeTime(size_t fade_time);
+  // Wraps transitional head motion back into the sample buffer.
   static size_t WrapPosition(float position);
+  // Converts head direction into signed position movement.
   static float DirectionMultiplier(fridge::state::Direction direction);
+  // Applies a transition fade weight to a head's audio contributions.
   static config::Head ScaleHead(config::Head head, float weight);
 };
 
