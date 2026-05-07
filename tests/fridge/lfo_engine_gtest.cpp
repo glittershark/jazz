@@ -191,6 +191,21 @@ TEST(FridgeLFOTest, TickWithEventsReportsReverseTransition) {
   EXPECT_EQ(result.transition->new_direction, Direction::kBackwards);
 }
 
+TEST(FridgeLFOTest, TickWithEventsAccumulatesTransitionsAcrossTick) {
+  LFO config{.range = 10,
+             .max_grain_size = 1,
+             .min_grain_size = 1,
+             .reverse_chance = 1.0f};
+  LFOEngine engine(config, 1234);
+
+  fridge::state::LFOTickResult result = engine.TickWithEvents(2.0f);
+
+  ASSERT_TRUE(result.transition.has_value());
+  EXPECT_TRUE(result.transition->reversed);
+  EXPECT_EQ(result.transition->old_direction, Direction::kForwards);
+  EXPECT_EQ(result.transition->new_direction, Direction::kForwards);
+}
+
 TEST(FridgeLFOTest, TickWithEventsReportsTeleportTransition) {
   LFO config{.range = 10,
              .max_grain_size = 1,

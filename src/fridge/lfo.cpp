@@ -28,6 +28,18 @@ float WrapToRange(float value, size_t range) {
   return wrapped;
 }
 
+fridge::state::LFOTransition ExtendTransition(
+    const fridge::state::LFOTransition& accumulated,
+    const fridge::state::LFOTransition& latest) {
+  fridge::state::LFOTransition transition = latest;
+  transition.old_value = accumulated.old_value;
+  transition.old_direction = accumulated.old_direction;
+  transition.old_speed = accumulated.old_speed;
+  transition.reversed = accumulated.reversed || latest.reversed;
+  transition.teleported = accumulated.teleported || latest.teleported;
+  return transition;
+}
+
 }  // namespace
 
 namespace fridge::state {
@@ -79,13 +91,7 @@ LFOTickResult LFOEngine::TickWithEvents(float dt) {
       std::optional<LFOTransition> transition = StartNewGrain(false);
       if (transition.has_value()) {
         if (result.transition.has_value()) {
-          result.transition->new_value = transition->new_value;
-          result.transition->new_direction = transition->new_direction;
-          result.transition->new_speed = transition->new_speed;
-          result.transition->reversed =
-              result.transition->reversed || transition->reversed;
-          result.transition->teleported =
-              result.transition->teleported || transition->teleported;
+          result.transition = ExtendTransition(*result.transition, *transition);
         } else {
           result.transition = transition;
         }
