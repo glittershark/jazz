@@ -87,11 +87,16 @@ void TempoButton::Tick(bool state) {
     const auto now = System::GetNow();
 
     // TODO(nausicaa) goddamn ring buffer, see other comment
+
+    // 1. shift the history left one step
     for (std::size_t i = 0; i < history_.size() - 1; ++i) {
       history_[i] = history_[i + 1];
     }
+
+    // 2. push the latest timestamp to the end of history
     history_[history_.size()] = now;
 
+    // 3. average the delta between each pair of elements in the history
     uint64_t gap_sum = 0;
     for (std::size_t i = 0; i < history_.size() - 1; ++i) {
       gap_sum += history_[i + 1] - history_[i];

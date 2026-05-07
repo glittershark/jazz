@@ -321,9 +321,11 @@ struct LFO {
 
 #ifndef UNIT_TEST
 class TempoButton {
+  constexpr const static size_t HISTORY_LENGTH = 2;
+
   // times are in milliseconds
   // TODO(nausicaa): use some ringbuffer class here instead
-  std::array<uint32_t, 8> history_;
+  std::array<uint32_t, HISTORY_LENGTH> history_;
   uint32_t average_gap_;
 
   void Tick(bool state);

@@ -11,6 +11,18 @@ using namespace daisy::seed;
 using namespace fridge;
 using namespace fridge::engine;
 
+Timer::Timer(daisy::TimerHandle::Config::Peripheral timer, Callback<> callback,
+             std::chrono::microseconds period)
+    : callback_(callback), period_(period) {
+  daisy::TimerHandle::Config timer_config;
+  timer_config.periph = timer;
+  timer_config.enable_irq = true;
+
+  timer_.Init(timer_config);
+  timer_.SetCallback(Timer::timer_callback_, this);
+  timer_.SetPeriod((period_.count() * timer_.GetFreq()) / 1'000'000);
+}
+
 BreadboardEngine::BreadboardEngine()
     : encoders_({io::mux::GpioInMux(D4), io::mux::GpioInMux(D3)}),
       scan_(io::mux::Address(
@@ -18,7 +30,7 @@ BreadboardEngine::BreadboardEngine()
                 /* b = */ D16,
                 /* c = */ D17),
             encoders_),
-      timer_(TimerHandle::Config::Peripheral::TIM_3, {scan_.GetCallback()}),
+      timer_(TimerHandle::Config::Peripheral::TIM_3, scan_.GetCallback()),
       enc1_(encoders_.channel(0, 2), encoders_.channel(1, 2)),
       enc2_(encoders_.channel(0, 0), encoders_.channel(1, 0)) {
   enc1_.OnChange(knob1_.GetCallback());
@@ -57,7 +69,7 @@ Engine::Engine()
 
       scan_(io::mux::Address(D7, D8, D9), mux_),
 
-      timer_(TimerHandle::Config::Peripheral::TIM_3, {scan_.GetCallback()}),
+      timer_(TimerHandle::Config::Peripheral::TIM_3, scan_.GetCallback()),
 
       // head knobs are on mux 0 & 1
       head_({
