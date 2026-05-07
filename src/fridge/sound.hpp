@@ -263,8 +263,7 @@ class Sound {
    * (which should be between 0 and 1)
    * */
   void Erase(size_t position, float amount);
-  void ApplyHead(const fridge::config::Head& head, float sample,
-                 float& wet_signal);
+  float ApplyHead(const fridge::config::Head& head, float sample);
 
  public:
   /**
