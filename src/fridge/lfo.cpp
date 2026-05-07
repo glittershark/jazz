@@ -16,11 +16,11 @@ fridge::state::Direction ReverseDirection(fridge::state::Direction direction) {
 }
 
 float WrapToRange(float value, size_t range) {
-  const float upper_bound = static_cast<float>(range);
-  if (upper_bound <= 0.0f) {
+  if (range == 0) {
     return 0.0f;
   }
 
+  const float upper_bound = static_cast<float>(range);
   float wrapped = std::fmod(value, upper_bound);
   if (wrapped < 0.0f) {
     wrapped += upper_bound;

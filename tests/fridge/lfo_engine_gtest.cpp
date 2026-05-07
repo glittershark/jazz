@@ -44,6 +44,16 @@ TEST(FridgeLFOTest, BackwardMotionWrapsAroundRange) {
   EXPECT_FLOAT_EQ(engine.Tick(1.0f), 9.0f);
 }
 
+TEST(FridgeLFOTest, ZeroRangeStaysAtZero) {
+  LFO config = DeterministicLfo(0, 4);
+  LFOEngine engine(config, 1234);
+
+  engine.Reset(5.0f, Direction::kForwards);
+
+  EXPECT_FLOAT_EQ(engine.value(), 0.0f);
+  EXPECT_FLOAT_EQ(engine.Tick(1.0f), 0.0f);
+}
+
 TEST(FridgeLFOTest, GrainBoundaryCanReverseDirection) {
   LFO config{.range = 10,
              .max_grain_size = 2,
