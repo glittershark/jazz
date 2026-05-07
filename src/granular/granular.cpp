@@ -285,11 +285,11 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 
 #ifndef UNIT_TEST
 int main() {
-  granular::hw.Configure();
-  granular::hw.Init();
-  granular::hw.SetAudioBlockSize(16);
+  hw.Configure();
+  hw.Init();
+  hw.SetAudioBlockSize(16);
 
-  granular::hw.StartAudio(granular::AudioCallback);
+  hw.StartAudio(granular::AudioCallback);
   for (;;) {
   }
 }
