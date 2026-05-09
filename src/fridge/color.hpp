@@ -14,7 +14,7 @@ struct RGB {
   uint8_t green;
   uint8_t blue;
 
-  RGB(uint8_t r, uint8_t g, uint8_t b) : red(r), green(g), blue(b) {}
+  constexpr RGB(uint8_t r, uint8_t g, uint8_t b) : red(r), green(g), blue(b) {}
   RGB(const HSV& hsv);
   RGB(const RGB&) = default;
 };
@@ -24,7 +24,8 @@ struct HSV {
   uint8_t saturation;
   uint8_t value;
 
-  HSV(uint8_t h, uint8_t s, uint8_t v) : hue(h), saturation(s), value(v) {}
+  constexpr HSV(uint8_t h, uint8_t s, uint8_t v)
+      : hue(h), saturation(s), value(v) {}
   HSV(const RGB& rgb);
   HSV(const HSV&) = default;
 };
@@ -35,7 +36,7 @@ struct XYZ {
   uint8_t y;
   uint8_t z;
 
-  XYZ(uint8_t x, uint8_t y, uint8_t z) : x(x), y(y), z(z) {}
+  constexpr XYZ(uint8_t x, uint8_t y, uint8_t z) : x(x), y(y), z(z) {}
   XYZ(const RGB& rgb);
   operator RGB() const;
   XYZ(const XYZ&) = default;
