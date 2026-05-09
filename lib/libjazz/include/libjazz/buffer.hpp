@@ -9,7 +9,7 @@
 namespace jazz::buffer {
 
 /**
- * Loop buffer / circular array / pseudo-deque.
+ * Circular array / loop buffer / pseudo-deque.
  *
  * The conceptual model is:
  * - can be indexed with both positive and negative numbers and will wrap around
@@ -19,13 +19,13 @@ namespace jazz::buffer {
  *   (since it's a fixed size). after this operation, buf[0] / buf[-1] will
  *   contain the item we just wrote.
  */
-template <typename Sample, const std::size_t Size>
-class Loop {
+template <typename T, const std::size_t Size>
+class CircularArray {
 #ifdef UNIT_TEST
  public:
 #endif
 
-  std::array<Sample, Size> buffer_;
+  std::array<T, Size> buffer_;
   std::ptrdiff_t zero_;
 
   std::size_t real_index_(std::ptrdiff_t i) const {
@@ -39,22 +39,22 @@ class Loop {
 
  public:
   class Iterator {
-    friend class Loop;
-    Loop* loop_;
+    friend class CircularArray;
+    CircularArray* loop_;
     std::ptrdiff_t i_;
 
-    Iterator(Loop* loop, std::ptrdiff_t i) : loop_(loop), i_(i) {}
+    Iterator(CircularArray* loop, std::ptrdiff_t i) : loop_(loop), i_(i) {}
 
    public:
     // required by std::iterator_traits to know how this thing works
-    using value_type = Sample;
+    using value_type = T;
     using difference_type = std::ptrdiff_t;
-    using pointer = Sample*;
-    using reference = Sample&;
+    using pointer = T*;
+    using reference = T&;
     using iterator_category = std::random_access_iterator_tag;
 
-    Sample& operator*() { return (*loop_)[i_]; }
-    const Sample& operator*() const { return (*loop_)[i_]; }
+    T& operator*() { return (*loop_)[i_]; }
+    const T& operator*() const { return (*loop_)[i_]; }
 
     // TODO: consider which of these operators should be modulo-aware
 
@@ -91,24 +91,24 @@ class Loop {
     bool operator<(const Iterator& rhs) const { return i_ < rhs.i_; }
   };
 
-  Loop() : zero_(0), buffer_() {};
+  CircularArray() : zero_(0), buffer_() {};
 
-  Sample& operator[](std::ptrdiff_t i) { return buffer_[real_index_(i)]; }
-  const Sample& operator[](std::ptrdiff_t i) const {
+  T& operator[](std::ptrdiff_t i) { return buffer_[real_index_(i)]; }
+  const T& operator[](std::ptrdiff_t i) const {
     return buffer_[real_index_(i)];
   }
 
   constexpr std::size_t size() const { return Size; }
 
-  Sample Push(Sample s) {
+  T Push(T s) {
     zero_ = real_index_(-1);
-    Sample old = buffer_[zero_];
+    T old = buffer_[zero_];
     buffer_[zero_] = s;
     return old;
   }
 
-  Sample PushBack(Sample s) {
-    Sample old = buffer_[zero_];
+  T PushBack(T s) {
+    T old = buffer_[zero_];
     buffer_[zero_] = s;
     zero_ = real_index_(1);
     return old;

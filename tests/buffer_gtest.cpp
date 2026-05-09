@@ -6,8 +6,8 @@
 
 using namespace jazz::buffer;
 
-TEST(LoopTest, correct_indexing) {
-  Loop<int, 993> buf;
+TEST(CircularArrayTest, correct_indexing) {
+  CircularArray<int, 993> buf;
 
   EXPECT_EQ(buf.real_index_(0), 0);
   EXPECT_EQ(buf.real_index_(1), 1);
@@ -19,15 +19,15 @@ TEST(LoopTest, correct_indexing) {
   EXPECT_EQ(buf.real_index_(-buf.size()), 0);
 }
 
-TEST(LoopTest, initializes_to_zero) {
-  Loop<int, 1024> buf;
+TEST(CircularArrayTest, initializes_to_zero) {
+  CircularArray<int, 1024> buf;
   for (int i = 0; i < buf.size(); ++i) {
     EXPECT_EQ(buf[i], 0);
   }
 }
 
-TEST(LoopTest, PushBack_pushes_onto_the_end) {
-  Loop<int, 33> buf;
+TEST(CircularArrayTest, PushBack_pushes_onto_the_end) {
+  CircularArray<int, 33> buf;
 
   for (int i = 0; i < buf.size(); ++i) {
     EXPECT_EQ(buf.zero_, i);
@@ -44,8 +44,8 @@ TEST(LoopTest, PushBack_pushes_onto_the_end) {
   EXPECT_EQ(buf[0], 1);
 }
 
-TEST(LoopTest, PushBack_with_negative_indices) {
-  Loop<int, 47> buf;
+TEST(CircularArrayTest, PushBack_with_negative_indices) {
+  CircularArray<int, 47> buf;
 
   for (int i = 0; i < buf.size(); ++i) {
     buf.PushBack(i);
@@ -60,8 +60,8 @@ TEST(LoopTest, PushBack_with_negative_indices) {
   EXPECT_EQ(buf[-1], buf.size() - 1);
 }
 
-TEST(LoopTest, Push_and_PushBack_in_tandem) {
-  Loop<int, 93> buf;
+TEST(CircularArrayTest, Push_and_PushBack_in_tandem) {
+  CircularArray<int, 93> buf;
 
   for (int i = 0; i < buf.size(); ++i) {
     buf[i] = i;
@@ -81,8 +81,8 @@ TEST(LoopTest, Push_and_PushBack_in_tandem) {
   }
 }
 
-TEST(LoopTest, can_iterate_over_it) {
-  Loop<int, 33> buf;
+TEST(CircularArrayTest, can_iterate_over_it) {
+  CircularArray<int, 33> buf;
   int i = 0;
 
   for (auto& elem : buf) {
@@ -96,8 +96,8 @@ TEST(LoopTest, can_iterate_over_it) {
   }
 }
 
-TEST(LoopTest, can_sort_it) {
-  Loop<int, 47> buf;
+TEST(CircularArrayTest, can_sort_it) {
+  CircularArray<int, 47> buf;
   int i = 0;
 
   for (std::size_t i = 0; i < buf.size(); ++i) {
