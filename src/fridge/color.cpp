@@ -131,6 +131,17 @@ XYZ::operator RGB() const {
   return RGB(gamma_correct(r), gamma_correct(g), gamma_correct(b));
 }
 
+bool XYZ::operator==(const XYZ& other) const {
+  return other.x == x && other.y == y && other.z == z;
+}
+
+std::ostream& operator<<(std::ostream& os, const XYZ& xyz) {
+  os << "XYZ{ .x = " << static_cast<uint32_t>(xyz.x)
+     << ", .y = " << static_cast<uint32_t>(xyz.y)
+     << ", .z = " << static_cast<uint32_t>(xyz.z) << " }";
+  return os;
+}
+
 uint8_t gamma_scale(uint8_t value, float gamma) {
   // See https://en.wikipedia.org/wiki/Gamma_correction
   float res = 255. * powf(static_cast<float>(value) / 255., gamma);
