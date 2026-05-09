@@ -10,9 +10,11 @@
 #include <iostream>
 #include <type_traits>
 
-#include "color.hpp"
+#include "libjazz/color.hpp"
 
 namespace fridge::ui {
+
+using namespace jazz;
 
 /*
  * Various methods of displaying some "current value" using a single RGB LED

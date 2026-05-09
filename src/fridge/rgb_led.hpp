@@ -1,8 +1,8 @@
 #ifndef RGB_LED_H_
 #define RGB_LED_H_
 
-#include "color.hpp"
 #include "led.hpp"
+#include "libjazz/color.hpp"
 #include "value_display.hpp"
 
 namespace fridge::ui {
@@ -19,7 +19,7 @@ class RgbLed {
       : red_(red), green_(green), blue_(blue) {};
 
   RgbLed& SetOn(bool on);
-  RgbLed& SetColor(fridge::color::RGB color);
+  RgbLed& SetColor(jazz::color::RGB color);
 
   fridge::io::led::Led& red() { return red_; }
   fridge::io::led::Led& green() { return green_; }

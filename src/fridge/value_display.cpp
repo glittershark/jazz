@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include "color.hpp"
+#include "libjazz/color.hpp"
 
 namespace fridge::ui::value_display {
 

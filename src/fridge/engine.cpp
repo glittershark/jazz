@@ -2,10 +2,11 @@
 
 #ifndef UNIT_TEST
 
-#include "color.hpp"
 #include "daisy_seed.h"
 #include "io.hpp"
+#include "libjazz/color.hpp"
 
+using namespace jazz;
 using namespace daisy;
 using namespace daisy::seed;
 using namespace fridge;

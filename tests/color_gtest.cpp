@@ -1,9 +1,9 @@
-#include "color.hpp"
 #include "gtest/gtest.h"
+#include "libjazz/color.hpp"
 #include "rapidcheck/gtest.h"
 #include "test_util.hpp"
 
-using namespace fridge::color;
+using namespace jazz::color;
 
 namespace {
 

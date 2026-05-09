@@ -1,11 +1,12 @@
 #include <cstdint>
 
-#include "color.hpp"
+#include "../test_util.hpp"
 #include "gtest/gtest.h"
+#include "libjazz/color.hpp"
 #include "rapidcheck/gtest.h"
-#include "test_util.hpp"
 #include "value_display.hpp"
 
+using namespace jazz;
 using namespace fridge;
 namespace {
 
