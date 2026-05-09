@@ -11,14 +11,14 @@ using namespace jazz::buffer;
 TEST(CircularArrayTest, correct_indexing) {
   CircularArray<int, 993> buf;
 
-  EXPECT_EQ(buf.real_index_(0), 0);
-  EXPECT_EQ(buf.real_index_(1), 1);
+  EXPECT_EQ(buf.RealIndex(0), 0);
+  EXPECT_EQ(buf.RealIndex(1), 1);
 
-  EXPECT_EQ(buf.real_index_(buf.size()), 0);
-  EXPECT_EQ(buf.real_index_(buf.size() + 1), 1);
+  EXPECT_EQ(buf.RealIndex(buf.size()), 0);
+  EXPECT_EQ(buf.RealIndex(buf.size() + 1), 1);
 
-  EXPECT_EQ(buf.real_index_(-1), buf.size() - 1);
-  EXPECT_EQ(buf.real_index_(-buf.size()), 0);
+  EXPECT_EQ(buf.RealIndex(-1), buf.size() - 1);
+  EXPECT_EQ(buf.RealIndex(-buf.size()), 0);
 }
 
 TEST(CircularArrayTest, initializes_to_zero) {

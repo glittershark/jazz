@@ -70,22 +70,22 @@ class Engine {
   // hoookay: we have 13 knobs (2 channels each), 16 buttons (1 channel each),
   // and 8:1 muxes (in hardware), so we need 6 muxes in total to account for
   // everything.
-  constexpr const static size_t NUM_MUXES = 6;
+  constexpr const static size_t kMuxes = 6;
 
-  constexpr const static size_t NUM_HEAD_KNOBS = 5;
-  constexpr const static size_t NUM_LFO_KNOBS = 8;
+  constexpr const static size_t kHeadKnobs = 5;
+  constexpr const static size_t kLfoKnobs = 8;
 
-  io::mux::MultiGpioInMux<NUM_MUXES> mux_;
-  io::mux::ChannelScan<NUM_MUXES, decltype(mux_)> scan_;
+  io::mux::MultiGpioInMux<kMuxes> mux_;
+  io::mux::ChannelScan<kMuxes, decltype(mux_)> scan_;
 
   Timer timer_;
 
   // see constructor for mux assignments
-  std::array<io::QuadratureEncoder, NUM_HEAD_KNOBS> head_;
+  std::array<io::QuadratureEncoder, kHeadKnobs> head_;
   io::QuadratureEncoder dry_;
   io::QuadratureEncoder wet_;
 
-  std::array<io::QuadratureEncoder, NUM_LFO_KNOBS> lfo_;
+  std::array<io::QuadratureEncoder, kLfoKnobs> lfo_;
   std::array<io::Button, NUM_HEADS> head_select_;
   std::array<io::Button, NUM_LFOS> lfo_select_;
 

@@ -129,7 +129,7 @@ class CircularArray {
    * 2. performs an /unsigned/ modulus on the /signed/ shifted result so that we
    *    wrap around the end of the array.
    */
-  std::size_t real_index_(std::ptrdiff_t i) const {
+  std::size_t RealIndex(std::ptrdiff_t i) const {
     auto rotated = zero_ + i;
 
     /*
@@ -159,10 +159,8 @@ class CircularArray {
 
   constexpr std::size_t size() const { return Size; }
 
-  T& operator[](std::ptrdiff_t i) { return buffer_[real_index_(i)]; }
-  const T& operator[](std::ptrdiff_t i) const {
-    return buffer_[real_index_(i)];
-  }
+  T& operator[](std::ptrdiff_t i) { return buffer_[RealIndex(i)]; }
+  const T& operator[](std::ptrdiff_t i) const { return buffer_[RealIndex(i)]; }
 
   /*
    * Pushes an element onto the front (index 0) of the array, popping off the
@@ -170,7 +168,7 @@ class CircularArray {
    * one position.
    */
   T Push(T s) {
-    zero_ = real_index_(-1);
+    zero_ = RealIndex(-1);
     T old = buffer_[zero_];
     buffer_[zero_] = s;
     return old;
@@ -184,7 +182,7 @@ class CircularArray {
   T PushBack(T s) {
     T old = buffer_[zero_];
     buffer_[zero_] = s;
-    zero_ = real_index_(1);
+    zero_ = RealIndex(1);
     return old;
   }
 };
