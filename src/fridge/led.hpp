@@ -1,14 +1,19 @@
 #ifndef LED_H_
 #define LED_H_
 
+#include <cstdint>
+
 #ifndef UNIT_TEST
 
 #include <array>
-#include <cstdint>
 
 #include "per/i2c.h"
 
+#endif  // UNIT_TEST
+
 namespace fridge::io::led {
+
+#ifndef UNIT_TEST
 
 using daisy::I2CHandle;
 
@@ -106,8 +111,31 @@ class Controller {
   void Write(BitAddress addr, bool value);
 };
 
-}  // namespace fridge::io::led
+using Led = Controller::Led;
+
+#else  // UNIT_TEST
+
+class MockLed {
+  bool on_ = false;
+  uint8_t duty_ = 0;
+
+ public:
+  MockLed& SetOn(bool on) {
+    on_ = on;
+    return *this;
+  };
+  MockLed& SetPwm(uint8_t duty) {
+    duty_ = duty;
+    return *this;
+  };
+
+  bool on() const { return on_; };
+  uint8_t duty() const { return duty_; }
+};
+using Led = MockLed;
 
 #endif  // UNIT_TEST
+
+}  // namespace fridge::io::led
 
 #endif  // LED_H_

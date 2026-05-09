@@ -1,7 +1,5 @@
 #include "rgb_led.hpp"
 
-#ifndef UNIT_TEST
-
 #include "color.hpp"
 
 namespace fridge::ui {
@@ -23,5 +21,3 @@ RgbLed& RgbLed::SetColor(fridge::color::RGB color) {
 }
 
 }  // namespace fridge::ui
-
-#endif  // UNIT_TEST
