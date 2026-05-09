@@ -1,24 +1,21 @@
 #ifndef RGB_LED_H_
 #define RGB_LED_H_
 
-#include "value_display.hpp"
-#ifndef UNIT_TEST
-
 #include "color.hpp"
 #include "led.hpp"
+#include "value_display.hpp"
 
 namespace fridge::ui {
 
 /* Bound to the lifetime of a referred fridge::io::led::Controller */
 class RgbLed {
-  fridge::io::led::Controller::Led red_;
-  fridge::io::led::Controller::Led green_;
-  fridge::io::led::Controller::Led blue_;
+  fridge::io::led::Led red_;
+  fridge::io::led::Led green_;
+  fridge::io::led::Led blue_;
 
  public:
-  RgbLed(fridge::io::led::Controller::Led red,
-         fridge::io::led::Controller::Led green,
-         fridge::io::led::Controller::Led blue)
+  RgbLed(fridge::io::led::Led red, fridge::io::led::Led green,
+         fridge::io::led::Led blue)
       : red_(red), green_(green), blue_(blue) {};
 
   RgbLed& SetOn(bool on);
@@ -40,7 +37,5 @@ class RgbLedValueDisplay : public RgbLed {
 };
 
 }  // namespace fridge::ui
-
-#endif  // UNIT_TEST
 
 #endif  // RGB_LED_H_
