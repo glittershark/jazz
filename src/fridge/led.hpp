@@ -1,17 +1,20 @@
 #ifndef LED_H_
 #define LED_H_
 
+#include <array>
+#include <cassert>
 #include <cstdint>
 
 #ifndef UNIT_TEST
-
-#include <array>
 
 #include "per/i2c.h"
 
 #endif  // UNIT_TEST
 
 namespace fridge::io::led {
+
+constexpr const uint8_t kMaxX = 7;
+constexpr const uint8_t kMaxY = 8;
 
 #ifndef UNIT_TEST
 
@@ -78,8 +81,17 @@ class Controller {
    */
   Controller(uint8_t address = 0x74);
 
-  Led A(uint8_t x, uint8_t y) { return Led(*this, Matrix::A, x, y); };
-  Led B(uint8_t x, uint8_t y) { return Led(*this, Matrix::B, x, y); };
+  Led A(uint8_t x, uint8_t y) {
+    assert(x <= kMaxX);
+    assert(y <= kMaxY);
+    return Led(*this, Matrix::A, x, y);
+  };
+
+  Led B(uint8_t x, uint8_t y) {
+    assert(x <= kMaxX);
+    assert(y <= kMaxY);
+    return Led(*this, Matrix::B, x, y);
+  };
 
  private:
   struct CachedReg {
@@ -133,6 +145,24 @@ class MockLed {
   uint8_t duty() const { return duty_; }
 };
 using Led = MockLed;
+
+class MockController {
+  std::array<std::array<MockLed, kMaxX + 1>, kMaxY + 1> a_;
+  std::array<std::array<MockLed, kMaxX + 1>, kMaxY + 1> b_;
+
+ public:
+  MockLed A(uint8_t x, uint8_t y) {
+    assert(x <= kMaxX);
+    assert(y <= kMaxY);
+    return a_[x][y];
+  }
+  MockLed B(uint8_t x, uint8_t y) {
+    assert(x <= kMaxX);
+    assert(y <= kMaxY);
+    return b_[x][y];
+  }
+};
+using Controller = MockController;
 
 #endif  // UNIT_TEST
 
