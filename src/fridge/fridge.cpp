@@ -9,8 +9,10 @@
 #include "config.hpp"
 #include "daisy_seed.h"
 #include "engine.hpp"
+#include "libjazz/color.hpp"
 #include "sound.hpp"
 
+using namespace jazz;
 using namespace fridge;
 using namespace daisy;
 

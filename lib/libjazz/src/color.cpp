@@ -1,11 +1,9 @@
-#include "color.hpp"
+#include "libjazz/color.hpp"
 
 #include <cmath>
 #include <cstdint>
 
-namespace fridge {
-
-namespace color {
+namespace jazz::color {
 
 RGB::RGB(const HSV& hsv) {
   if (hsv.saturation == 0) {
@@ -148,6 +146,4 @@ uint8_t gamma_scale(uint8_t value, float gamma) {
   return static_cast<uint8_t>(res);
 }
 
-}  // namespace color
-
-}  // namespace fridge
+}  // namespace jazz::color

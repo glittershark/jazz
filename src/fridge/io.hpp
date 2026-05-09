@@ -7,9 +7,9 @@
 #include <optional>
 
 #include "callback.hpp"
-#include "color.hpp"
 #include "daisy_seed.h"
 #include "led.hpp"
+#include "libjazz/color.hpp"
 #include "pwm.hpp"
 
 namespace fridge::io {

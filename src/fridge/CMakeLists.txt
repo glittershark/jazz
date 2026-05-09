@@ -1,7 +1,6 @@
 jazz_add_firmware(fridge SOURCES
   fridge.cpp
   pwm.cpp
-  color.cpp
   io.cpp
   lfo.cpp
   head_transition.cpp

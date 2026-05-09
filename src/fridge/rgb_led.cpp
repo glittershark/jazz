@@ -1,6 +1,6 @@
 #include "rgb_led.hpp"
 
-#include "color.hpp"
+#include "libjazz/color.hpp"
 
 namespace fridge::ui {
 
@@ -12,7 +12,7 @@ RgbLed& RgbLed::SetOn(bool on) {
   return *this;
 }
 
-RgbLed& RgbLed::SetColor(fridge::color::RGB color) {
+RgbLed& RgbLed::SetColor(jazz::color::RGB color) {
   red_.SetPwm(color.red);
   green_.SetPwm(color.green);
   blue_.SetPwm(color.blue);

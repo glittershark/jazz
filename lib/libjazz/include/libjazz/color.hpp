@@ -1,5 +1,5 @@
-#ifndef COLOR_H_
-#define COLOR_H_
+#ifndef JAZZ_COLOR_H_
+#define JAZZ_COLOR_H_
 
 #ifdef UNIT_TEST
 #include <rapidcheck.h>
@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <ostream>
 
-namespace fridge {
+namespace jazz {
 namespace color {
 
 struct HSV;
@@ -52,13 +52,13 @@ std::ostream& operator<<(std::ostream& os, const XYZ& xyz);
 uint8_t gamma_scale(uint8_t value, float gamma);
 
 }  // namespace color
-}  // namespace fridge
+}  // namespace jazz
 
 #ifdef UNIT_TEST
 
 namespace rc {
 
-using namespace fridge::color;
+using namespace jazz::color;
 
 template <>
 struct Arbitrary<RGB> {
@@ -91,4 +91,4 @@ struct Arbitrary<XYZ> {
 
 #endif  // UNIT_TEST
 
-#endif  // COLOR_H_
+#endif  // JAZZ_COLOR_H_
