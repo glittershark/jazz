@@ -15,6 +15,8 @@
 #include "config.hpp"
 #include "constants.hpp"
 #include "io.hpp"
+#include "rgb_led.hpp"
+#include "value_display.hpp"
 
 namespace fridge::ui {
 
@@ -37,11 +39,12 @@ concept BackingValue =
 
 template <BackingValue V>
 class Knob {
-  V value_;
-
   static void callback(Knob* this_, int ticks, float turns) {
     this_->Increment(ticks, turns);
   }
+
+ protected:
+  V value_;
 
  public:
   Knob() = default;
@@ -61,6 +64,35 @@ class Knob {
   V& Increment(int ticks, float turns) {
     return value_.Increment(ticks, turns);
   }
+};
+
+template <BackingValue V, ValueDisplay VD>
+class KnobWithDisplay : public Knob<V> {
+  RgbLedValueDisplay<VD> value_display_;
+  void UpdateDisplay() {
+    // TODO(aspen): We may want to turn the LEDs on higher up an abstraction
+    // level at some point. For now, this should suffice.
+    value_display_.SetOn(true);
+    value_display_.SetValue(this->Get());
+  }
+
+ public:
+  KnobWithDisplay(RgbLedValueDisplay<VD> value_display)
+      : value_display_(value_display) {};
+
+  void Set(const V& rhs) {
+    Knob<V>::Set(rhs);
+    UpdateDisplay();
+  }
+
+  V& Increment(int ticks, float turns) {
+    auto res = Knob<V>::Increment(ticks, turns);
+    UpdateDisplay();
+    return res;
+  }
+
+  RgbLedValueDisplay<VD>& value_display() { return value_display_; }
+  RgbLed& rgb_led() { return value_display_; }
 };
 
 template <BackingValue V>
@@ -309,7 +341,7 @@ struct LFO {
   Knob<Size> range;
   Knob<Size> max_grain_size;
   Knob<Size> min_grain_size;
-  Knob<SingleTurn> reverse_chance;
+  KnobWithDisplay<SingleTurn, value_display::CieInterp> reverse_chance;
   Knob<SingleTurn> teleport_chance;
   Knob<SingleTurn> pitch_shift_chance;
   Knob<SingleTurn> low_octave_chance;
@@ -375,6 +407,8 @@ struct UI {
   // TODO(nausicaa): LEDs (there are a bunch, one for each encoder and
   // selection button)
   void UpdateConfig(config::Config& config) const;
+
+  UI(io::led::Controller& led_controller);
 };
 
 }  // namespace fridge::ui

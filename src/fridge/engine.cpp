@@ -109,7 +109,9 @@ Engine::Engine()
           mux_.channel(5, 0), mux_.channel(5, 1), mux_.channel(5, 2),
           mux_.channel(5, 3), mux_.channel(5, 4), mux_.channel(5, 5),
           mux_.channel(5, 6), mux_.channel(5, 7),
-      } {
+      },
+
+      ui_(leds_) {
   // assign physical controls to UI controls
   head_[0].OnChange(ui_.head.position.GetCallback());
   head_[1].OnChange(ui_.head.write_amount.GetCallback());

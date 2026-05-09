@@ -1,20 +1,25 @@
 #include "config.hpp"
 #include "gtest/gtest.h"
+#include "led.hpp"
 #include "ui.hpp"
 
 using namespace fridge;
 
 namespace {
 
-TEST(UITest, UI_can_be_constructed) {
-  ui::UI ui;
+struct UITest : public testing::Test {
+  io::led::Controller leds;
+};
+
+TEST_F(UITest, UI_can_be_constructed) {
+  ui::UI ui(leds);
 }
 
-TEST(UITest, update_head_knobs_via_callbacks) {
+TEST_F(UITest, update_head_knobs_via_callbacks) {
   const unsigned garbage = 21307;
   const size_t selected_head = 5;
 
-  ui::UI ui;
+  ui::UI ui(leds);
   ui.selected_head = selected_head;
   config::Config config;
 
@@ -66,11 +71,11 @@ TEST(UITest, update_head_knobs_via_callbacks) {
   }
 }
 
-TEST(UITest, update_lfo_knobs_via_callbacks) {
+TEST_F(UITest, update_lfo_knobs_via_callbacks) {
   const unsigned garbage = 21307;
   const size_t selected_lfo = 6;
 
-  ui::UI ui;
+  ui::UI ui(leds);
   ui.selected_lfo = selected_lfo;
   config::Config config;
 
@@ -114,7 +119,7 @@ TEST(UITest, update_lfo_knobs_via_callbacks) {
                         config.lfos[selected_lfo].high_octave_chance, 0.3f);
 }
 
-TEST(UITest, single_turn_knob_saturates) {
+TEST_F(UITest, single_turn_knob_saturates) {
   ui::Knob<ui::SingleTurn> knob;
   ASSERT_FLOAT_EQ(knob.Get(), 0.0f);
 
@@ -134,7 +139,7 @@ TEST(UITest, single_turn_knob_saturates) {
   EXPECT_FLOAT_EQ(knob.Get(), 0.0f);
 }
 
-TEST(UITest, position_knob_saturates) {
+TEST_F(UITest, position_knob_saturates) {
   const int third_of_buffer = static_cast<int>(BUFFER_LEN) / 3;
   ui::Knob<ui::Position> knob;
 
@@ -148,6 +153,26 @@ TEST(UITest, position_knob_saturates) {
 
   knob.GetCallback()(4 * third_of_buffer, 0);
   EXPECT_EQ(knob.Get(), BUFFER_LEN);
+}
+
+TEST_F(UITest, reverse_chance_knob_uses_led_to_display) {
+  ui::UI ui(leds);
+
+  auto& knob = ui.lfo.reverse_chance;
+
+  knob.Set(0.7);
+
+  auto rgb_led = knob.rgb_led();
+  auto red = rgb_led.red();
+  auto green = rgb_led.green();
+  auto blue = rgb_led.blue();
+
+  EXPECT_TRUE(red.on());
+  EXPECT_TRUE(green.on());
+  EXPECT_TRUE(blue.on());
+
+  EXPECT_GT(green.duty(), 0);
+  EXPECT_GT(blue.duty(), 0);
 }
 
 }  // namespace
