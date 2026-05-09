@@ -3,13 +3,45 @@
 
 #ifndef UNIT_TEST
 
+#include <array>
+#include <chrono>
+
 #include "config.hpp"
 #include "config_transform.hpp"
+#include "constants.hpp"
 #include "io.hpp"
 #include "led.hpp"
 #include "ui.hpp"
 
 namespace fridge::engine {
+
+using namespace std::chrono_literals;
+
+/**
+ * Calls a given callback at some microsecond period, consuming a timer
+ * peripheral to do so. Used for stuff that, you know, needs regular, even
+ * updates.
+ */
+class Timer {
+  Callback<> callback_;
+  daisy::TimerHandle timer_;
+  std::chrono::microseconds period_;
+
+  static void timer_callback_(void* this_) {
+    static_cast<Timer*>(this_)->tick_();
+  }
+
+  void tick_() { callback_(); }
+
+ public:
+  Timer(const Timer&) = delete;
+  Timer& operator=(const Timer&) = delete;
+
+  Timer(daisy::TimerHandle::Config::Peripheral timer, Callback<> callback,
+        std::chrono::microseconds period = 100us);
+
+  daisy::TimerHandle::Result Start() { return timer_.Start(); }
+};
 
 /**
  * The thing that makes the world go 'round!
@@ -17,10 +49,14 @@ namespace fridge::engine {
 class BreadboardEngine {
   io::mux::MultiGpioInMux<2> encoders_;
   io::mux::ChannelScan<8U, decltype(encoders_)> scan_;
+  Timer timer_;
+
   io::QuadratureEncoder enc1_;
   io::QuadratureEncoder enc2_;
+
   ui::Knob<ui::Size> knob1_;
   ui::Knob<ui::Size> knob2_;
+
   io::led::Controller led_controller_;
 
  public:
@@ -31,51 +67,27 @@ class BreadboardEngine {
 };
 
 class Engine {
-  // hoookay: we have 13 knobs and 8:1 muxes (in hardware), so we need two muxes
-  // in total to account for all of the knobs.
-  struct Muxes {
-    struct MuxBank {
-      // NOTE: the corresponding initialization is not UB because these struct
-      // fields are declared in THIS order, as scan depends on mux being
-      // initialized.
-      io::mux::MultiGpioInMux<2> mux;
-      io::mux::ChannelScan<8U, decltype(mux)> scan;
-    };
+  // hoookay: we have 13 knobs (2 channels each), 16 buttons (1 channel each),
+  // and 8:1 muxes (in hardware), so we need 6 muxes in total to account for
+  // everything.
+  constexpr const static size_t NUM_MUXES = 6;
 
-    MuxBank bank_a;
-    MuxBank bank_b;
-  } muxes_;
+  constexpr const static size_t NUM_HEAD_KNOBS = 5;
+  constexpr const static size_t NUM_LFO_KNOBS = 8;
 
-  struct Knobs {
-    struct Head {
-      io::QuadratureEncoder position;
-      io::QuadratureEncoder write_amount;
-      io::QuadratureEncoder read_amount;
-      io::QuadratureEncoder erase_amount;
-      io::QuadratureEncoder feedback;
+  io::mux::MultiGpioInMux<NUM_MUXES> mux_;
+  io::mux::ChannelScan<NUM_MUXES, decltype(mux_)> scan_;
 
-      Head(io::mux::MultiGpioInMux<2>& mux, ui::Head& head);
-    } head;
+  Timer timer_;
 
-    // placed here because they're on the same bank as all the head knobs
-    io::QuadratureEncoder dry;
-    io::QuadratureEncoder wet;
+  // see constructor for mux assignments
+  std::array<io::QuadratureEncoder, NUM_HEAD_KNOBS> head_;
+  io::QuadratureEncoder dry_;
+  io::QuadratureEncoder wet_;
 
-    struct LFO {
-      io::QuadratureEncoder range;
-      io::QuadratureEncoder max_grain_size;
-      io::QuadratureEncoder min_grain_size;
-      io::QuadratureEncoder reverse_chance;
-      io::QuadratureEncoder teleport_chance;
-      io::QuadratureEncoder pitch_shift_chance;
-      io::QuadratureEncoder low_octave_chance;
-      io::QuadratureEncoder high_octave_chance;
-
-      LFO(io::mux::MultiGpioInMux<2>& mux, ui::LFO& lfo);
-    } lfo;
-
-    Knobs(Muxes& muxes, ui::UI& ui);
-  } knobs_;
+  std::array<io::QuadratureEncoder, NUM_LFO_KNOBS> lfo_;
+  std::array<io::Button, NUM_HEADS> head_select_;
+  std::array<io::Button, NUM_LFOS> lfo_select_;
 
   ui::UI ui_;
   io::led::Controller leds_;

@@ -11,20 +11,33 @@ using namespace daisy::seed;
 using namespace fridge;
 using namespace fridge::engine;
 
+Timer::Timer(daisy::TimerHandle::Config::Peripheral timer, Callback<> callback,
+             std::chrono::microseconds period)
+    : callback_(callback), period_(period) {
+  daisy::TimerHandle::Config timer_config;
+  timer_config.periph = timer;
+  timer_config.enable_irq = true;
+
+  timer_.Init(timer_config);
+  timer_.SetCallback(Timer::timer_callback_, this);
+  timer_.SetPeriod((period_.count() * timer_.GetFreq()) / 1'000'000);
+}
+
 BreadboardEngine::BreadboardEngine()
     : encoders_({io::mux::GpioInMux(D4), io::mux::GpioInMux(D3)}),
-      scan_(io::mux::channel_scan::make<8>(
-          io::mux::Address(
-              /* a = */ D15,
-              /* b = */ D16,
-              /* c = */ D17),
-          TimerHandle::Config::Peripheral::TIM_3, encoders_)),
+      scan_(io::mux::Address(
+                /* a = */ D15,
+                /* b = */ D16,
+                /* c = */ D17),
+            encoders_),
+      timer_(TimerHandle::Config::Peripheral::TIM_3, scan_.GetCallback()),
       enc1_(encoders_.channel(0, 2), encoders_.channel(1, 2)),
       enc2_(encoders_.channel(0, 0), encoders_.channel(1, 0)) {
   enc1_.OnChange(knob1_.GetCallback());
   enc2_.OnChange(knob2_.GetCallback());
   knob1_.Set(0);
   knob2_.Set(0);
+  timer_.Start();
 }
 
 void BreadboardEngine::Tick() {
@@ -43,73 +56,87 @@ void BreadboardEngine::Tick() {
   }
 }
 
-Engine::Knobs::Head::Head(io::mux::MultiGpioInMux<2>& mux, ui::Head& head)
-    : position(mux.channel(0, 0), mux.channel(1, 0)),
-      write_amount(mux.channel(0, 1), mux.channel(1, 1)),
-      read_amount(mux.channel(0, 2), mux.channel(1, 2)),
-      erase_amount(mux.channel(0, 3), mux.channel(1, 3)),
-      feedback(mux.channel(0, 4), mux.channel(1, 4)) {
-  position.OnChange(head.position.GetCallback());
-  write_amount.OnChange(head.write_amount.GetCallback());
-  read_amount.OnChange(head.read_amount.GetCallback());
-  erase_amount.OnChange(head.erase_amount.GetCallback());
-  position.OnChange(head.position.GetCallback());
-}
-
-Engine::Knobs::LFO::LFO(io::mux::MultiGpioInMux<2>& mux, ui::LFO& lfo)
-    : range(mux.channel(0, 0), mux.channel(1, 0)),
-      max_grain_size(mux.channel(0, 1), mux.channel(1, 1)),
-      min_grain_size(mux.channel(0, 2), mux.channel(1, 2)),
-      reverse_chance(mux.channel(0, 3), mux.channel(1, 3)),
-      teleport_chance(mux.channel(0, 4), mux.channel(1, 4)),
-      pitch_shift_chance(mux.channel(0, 5), mux.channel(1, 5)),
-      low_octave_chance(mux.channel(0, 6), mux.channel(1, 6)),
-      high_octave_chance(mux.channel(0, 7), mux.channel(1, 7)) {
-  range.OnChange(lfo.range.GetCallback());
-  max_grain_size.OnChange(lfo.max_grain_size.GetCallback());
-  min_grain_size.OnChange(lfo.min_grain_size.GetCallback());
-  reverse_chance.OnChange(lfo.reverse_chance.GetCallback());
-  teleport_chance.OnChange(lfo.teleport_chance.GetCallback());
-  pitch_shift_chance.OnChange(lfo.pitch_shift_chance.GetCallback());
-  low_octave_chance.OnChange(lfo.low_octave_chance.GetCallback());
-  high_octave_chance.OnChange(lfo.high_octave_chance.GetCallback());
-}
-
-Engine::Knobs::Knobs(Engine::Muxes& muxes, ui::UI& ui)
-    : head(muxes.bank_a.mux, ui.head),
-      dry(muxes.bank_a.mux.channel(0, 5), muxes.bank_a.mux.channel(1, 5)),
-      wet(muxes.bank_a.mux.channel(0, 6), muxes.bank_a.mux.channel(1, 6)),
-      lfo(muxes.bank_b.mux, ui.lfo) {
-  dry.OnChange(ui.dry.GetCallback());
-  wet.OnChange(ui.dry.GetCallback());
-}
-
 Engine::Engine()
     // TODO: assign the right pins in here
-    : muxes_{
-          .bank_a{
-              .mux = io::mux::MultiGpioInMux<2>({
-                  io::mux::GpioInMux(D1),
-                  io::mux::GpioInMux(D2),
-              }),
-              .scan = io::mux::channel_scan::make<8>(
-                  io::mux::Address(D3, D4, D5),
-                  TimerHandle::Config::Peripheral::TIM_3, muxes_.bank_a.mux),
-          },
+    : mux_({
+          io::mux::GpioInMux(D1),
+          io::mux::GpioInMux(D2),
+          io::mux::GpioInMux(D3),
+          io::mux::GpioInMux(D4),
+          io::mux::GpioInMux(D5),
+          io::mux::GpioInMux(D6),
+      }),
 
-          .bank_b{
-              .mux = io::mux::MultiGpioInMux<2>({
-                  io::mux::GpioInMux(D6),
-                  io::mux::GpioInMux(D7),
-              }),
-              .scan = io::mux::channel_scan::make<8>(
-                  io::mux::Address(D8, D9, D10),
-                  TimerHandle::Config::Peripheral::TIM_4, muxes_.bank_b.mux),
-          },
-    },
+      scan_(io::mux::Address(D7, D8, D9), mux_),
 
-      // this kills the clang-format
-      knobs_(muxes_, ui_) {}
+      timer_(TimerHandle::Config::Peripheral::TIM_3, scan_.GetCallback()),
+
+      // head knobs are on mux 0 & 1
+      head_({
+          {mux_.channel(0, 0), mux_.channel(1, 0)},
+          {mux_.channel(0, 1), mux_.channel(1, 1)},
+          {mux_.channel(0, 2), mux_.channel(1, 2)},
+          {mux_.channel(0, 3), mux_.channel(1, 3)},
+          {mux_.channel(0, 4), mux_.channel(1, 4)},
+      }),
+
+      // dry/wet are also on mux 0 & 1
+      dry_(mux_.channel(0, 5), mux_.channel(1, 5)),
+      wet_(mux_.channel(0, 6), mux_.channel(1, 6)),
+      // one spare channel on mux 0 & 1
+
+      // lfo knobs are on mux 2 & 3
+      lfo_({
+          {mux_.channel(2, 0), mux_.channel(3, 0)},
+          {mux_.channel(2, 1), mux_.channel(3, 1)},
+          {mux_.channel(2, 2), mux_.channel(3, 2)},
+          {mux_.channel(2, 3), mux_.channel(3, 3)},
+          {mux_.channel(2, 4), mux_.channel(3, 4)},
+          {mux_.channel(2, 5), mux_.channel(3, 5)},
+          {mux_.channel(2, 6), mux_.channel(3, 6)},
+          {mux_.channel(2, 7), mux_.channel(3, 7)},
+      }),
+
+      // head selection is on mux 4
+      head_select_{
+          mux_.channel(4, 0), mux_.channel(4, 1), mux_.channel(4, 2),
+          mux_.channel(4, 3), mux_.channel(4, 4), mux_.channel(4, 5),
+          mux_.channel(4, 6), mux_.channel(4, 7),
+      },
+
+      // lfo selection is on mux 5
+      lfo_select_{
+          mux_.channel(5, 0), mux_.channel(5, 1), mux_.channel(5, 2),
+          mux_.channel(5, 3), mux_.channel(5, 4), mux_.channel(5, 5),
+          mux_.channel(5, 6), mux_.channel(5, 7),
+      } {
+  // assign physical controls to UI controls
+  head_[0].OnChange(ui_.head.position.GetCallback());
+  head_[1].OnChange(ui_.head.write_amount.GetCallback());
+  head_[2].OnChange(ui_.head.read_amount.GetCallback());
+  head_[3].OnChange(ui_.head.erase_amount.GetCallback());
+  head_[4].OnChange(ui_.head.feedback.GetCallback());
+
+  dry_.OnChange(ui_.dry.GetCallback());
+  wet_.OnChange(ui_.wet.GetCallback());
+
+  lfo_[0].OnChange(ui_.lfo.range.GetCallback());
+  lfo_[1].OnChange(ui_.lfo.max_grain_size.GetCallback());
+  lfo_[2].OnChange(ui_.lfo.min_grain_size.GetCallback());
+  lfo_[3].OnChange(ui_.lfo.reverse_chance.GetCallback());
+  lfo_[4].OnChange(ui_.lfo.teleport_chance.GetCallback());
+  lfo_[5].OnChange(ui_.lfo.pitch_shift_chance.GetCallback());
+  lfo_[6].OnChange(ui_.lfo.low_octave_chance.GetCallback());
+  lfo_[7].OnChange(ui_.lfo.high_octave_chance.GetCallback());
+
+  // and then physical buttons (registers in the order you would expect)
+  ui_.head_select.RegisterCallbacks(head_select_);
+  ui_.lfo_select.RegisterCallbacks(lfo_select_);
+
+  // TODO: tempo button should probably be connected to something lol
+
+  timer_.Start();
+}
 
 void Engine::Tick(config::Config& config, float dt) {
   ui_.UpdateConfig(config);

@@ -67,6 +67,10 @@ void GpioInMux::Channel::OnChange(void (*callback)(void*, bool), void* data) {
   mux_->RegisterCallback(channel_, {.callback = callback, .data = data});
 }
 
+void GpioInMux::Channel::OnChange(Callback<bool> cb) {
+  mux_->RegisterCallback(channel_, cb);
+}
+
 }  // namespace mux
 
 QuadratureEncoder::QuadratureEncoder(mux::GpioInMux::Channel a,
@@ -91,6 +95,17 @@ void QuadratureEncoder::Changed(int ticks) {
 }
 
 void QuadratureEncoder::OnChange(Callback<int, float> on_change) {
+  on_change_ = on_change;
+}
+
+Button::Button(mux::GpioInMux::Channel c) : c_(c) {
+  c_.OnChange(MemberCallback<Button, bool>{
+      .this_ = this,
+      .callback = &Button::Changed,
+  });
+}
+
+void Button::OnChange(Callback<bool> on_change) {
   on_change_ = on_change;
 }
 

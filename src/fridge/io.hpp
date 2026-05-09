@@ -1,17 +1,16 @@
 #ifndef IO_H_
 #define IO_H_
 
+#ifndef UNIT_TEST
+
 #include <array>
 #include <optional>
 
 #include "callback.hpp"
 #include "color.hpp"
+#include "daisy_seed.h"
 #include "led.hpp"
 #include "pwm.hpp"
-
-#ifndef UNIT_TEST
-
-#include "daisy_seed.h"
 
 namespace fridge::io {
 
@@ -53,38 +52,20 @@ class ChannelScan {
     callback_.AfterChange(channel, arg);
   }
 
-  static void timer_callback_(void* channel_scan) {
-    ((ChannelScan*)channel_scan)->TimerCallback();
-  };
-
  public:
   ChannelScan(const ChannelScan&) = delete;
   ChannelScan& operator=(const ChannelScan&) = delete;
 
-  ChannelScan(Address address, TimerHandle::Config::Peripheral timer,
-              CB& callback)
-      : address_(std::move(address)), callback_(callback) {
-    TimerHandle::Config timer_config;
-    timer_config.periph = timer;
-    timer_config.enable_irq = true;
+  ChannelScan(Address address, CB& callback)
+      : address_(std::move(address)), callback_(callback) {};
 
-    timer_.Init(timer_config);
-    timer_.SetCallback(ChannelScan::timer_callback_, this);
-    timer_.SetPeriod((kFreqUs * timer_.GetFreq()) / 1'000'000);
-  };
-
-  TimerHandle::Result Start() { return timer_.Start(); };
+  MemberCallback<ChannelScan> GetCallback() {
+    return {
+        .this_ = this,
+        .callback = &ChannelScan::TimerCallback,
+    };
+  }
 };
-
-namespace channel_scan {
-
-template <size_t N, typename C>
-static ChannelScan<N, C> make(Address address,
-                              TimerHandle::Config::Peripheral timer, C& cb) {
-  return ChannelScan<N, C>(std::move(address), timer, cb);
-};
-
-}  // namespace channel_scan
 
 class GpioInMux {
  public:
@@ -121,7 +102,9 @@ class GpioInMux {
     Channel(GpioInMux* mux, uint8_t channel) : mux_(mux), channel_(channel) {}
     bool Read() const { return mux_->Read(channel_); }
 
+    // TODO: migrate entirely to Callback<bool>
     void OnChange(void (*callback)(void*, bool), void* data);
+    void OnChange(Callback<bool> cb);
   };
 
   Channel channel(uint8_t channel) { return Channel(this, channel); }
@@ -203,7 +186,26 @@ class QuadratureEncoder {
   QuadratureEncoder(mux::GpioInMux::Channel a, mux::GpioInMux::Channel b,
                     uint32_t ticks_per_turn = 96);
 
+  // chained constructor so we can use std::initializer_list
+  QuadratureEncoder(std::array<mux::GpioInMux::Channel, 2> channels)
+      : QuadratureEncoder(channels[0], channels[1]) {}
+
   void OnChange(Callback<int, float>);
+};
+
+class Button {
+  mux::GpioInMux::Channel c_;
+  Callback<bool> on_change_;
+
+  void Changed(bool new_value) { on_change_(new_value); }
+
+ public:
+  Button(const Button&) = delete;
+  Button& operator=(const Button&) = delete;
+
+  Button(mux::GpioInMux::Channel c);
+
+  void OnChange(Callback<bool>);
 };
 
 }  // namespace fridge::io
