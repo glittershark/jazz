@@ -39,6 +39,9 @@ function(add_gtest source_file)
 
   # Add the target as a test
   add_test(NAME ${test_name} COMMAND ${test_name})
+
+  # Make concept debugging easier (read: possible)
+  target_compile_options(${test_name} PRIVATE -fconcepts-diagnostics-depth=9)
 endfunction(add_gtest)
 
 # Generate test executables from files ending in *_gtest.cpp

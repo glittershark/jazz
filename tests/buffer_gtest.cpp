@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <iterator>
+#include <sstream>
 
 #include "libjazz/buffer.hpp"
 
@@ -82,6 +84,10 @@ TEST(CircularArrayTest, Push_and_PushBack_in_tandem) {
 }
 
 TEST(CircularArrayTest, can_iterate_over_it) {
+  // NOTE: for this to pass, we /also/ have to be sure we instantiate all the
+  // bullshit in that class
+  static_assert(std::random_access_iterator<CircularArray<int, 33>::iterator>);
+
   CircularArray<int, 33> buf;
   int i = 0;
 
@@ -109,4 +115,14 @@ TEST(CircularArrayTest, can_sort_it) {
   for (std::size_t i = 0; i < buf.size(); ++i) {
     EXPECT_EQ(buf[i], i);
   }
+}
+
+TEST(CircularArrayTest, ostream_print) {
+  std::ostringstream os;
+  CircularArray<int, 5> buf;
+  for (int i = 0; i < buf.size(); ++i) {
+    buf[i] = i;
+  }
+  os << buf;
+  EXPECT_STREQ("CircularArray{0, 1, 2, 3, 4}", os.str().c_str());
 }
