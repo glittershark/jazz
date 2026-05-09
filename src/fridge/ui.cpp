@@ -1,6 +1,8 @@
 #include "ui.hpp"
 
 #include "config.hpp"
+#include "led.hpp"
+#include "value_display.hpp"
 
 #ifndef UNIT_TEST
 #include "daisy_seed.h"
@@ -58,6 +60,20 @@ void ui::UI::UpdateConfig(config::Config& config) const {
   config.dry = dry.Get();
   config.wet = wet.Get();
 }
+
+constexpr const value_display::CieInterp kBlueToGreen = {
+    .start = color::XYZ(18, 7, 95),
+    .end = color::XYZ(35, 71, 12),
+};
+
+ui::UI::UI(io::led::Controller& leds)
+    : lfo{.reverse_chance =
+              KnobWithDisplay<SingleTurn, value_display::CieInterp>(
+                  RgbLedValueDisplay(
+                      kBlueToGreen,
+                      RgbLed(leds.B(0, 1), leds.B(1, 1), leds.B(2, 1))))
+
+      } {}
 
 #ifndef UNIT_TEST
 

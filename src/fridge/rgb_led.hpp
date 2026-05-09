@@ -20,6 +20,10 @@ class RgbLed {
 
   RgbLed& SetOn(bool on);
   RgbLed& SetColor(fridge::color::RGB color);
+
+  fridge::io::led::Led& red() { return red_; }
+  fridge::io::led::Led& green() { return green_; }
+  fridge::io::led::Led& blue() { return blue_; }
 };
 
 template <ValueDisplay VD>
