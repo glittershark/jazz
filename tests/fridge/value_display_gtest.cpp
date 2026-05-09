@@ -1,3 +1,5 @@
+#include <cstdint>
+
 #include "color.hpp"
 #include "gtest/gtest.h"
 #include "rapidcheck/gtest.h"
@@ -52,6 +54,45 @@ TEST(CieInterpTest, Interpolation) {
   EXPECT_NEAR(res.x, 50, 1);
   EXPECT_NEAR(res.y, 150, 1);
   EXPECT_NEAR(res.z, 125, 1);
+}
+
+TEST(MultiSegmentCieInterpTest, MultiSegmentInterpolation) {
+  ui::value_display::MultiSegmentCieInterp<2> interp{
+      .start = color::XYZ(0, 0, 255),
+      .midpoints = {{{.color = color::XYZ(150, 0, 255), .point = 150},
+                     {.color = color::XYZ(200, 0, 255), .point = 200}}},
+      .end = color::XYZ(255, 0, 255),
+  };
+
+  color::XYZ res = interp(0);
+  EXPECT_EQ(res, color::XYZ(0, 0, 255));
+
+  res = interp(100);
+  EXPECT_EQ(res, color::XYZ(58, 0, 255));
+
+  res = interp(160);
+  EXPECT_EQ(res, color::XYZ(181, 0, 255));
+
+  res = interp(220);
+  EXPECT_EQ(res, color::XYZ(213, 0, 255));
+
+  res = interp(255);
+  EXPECT_EQ(res, color::XYZ(255, 0, 255));
+}
+
+RC_GTEST_PROP(MultiSegmentCieInterpTest, NoSegmentsIsEquivalentToInterp,
+              (const color::XYZ start, const color::XYZ end,
+               const uint8_t value)) {
+  ui::value_display::MultiSegmentCieInterp<0> interp{.start = start,
+                                                     .end = end};
+  ui::value_display::CieInterp oracle{
+      .start = start,
+      .end = end,
+  };
+
+  color::XYZ res = interp(value);
+  color::XYZ expected = oracle(value);
+  EXPECT_EQ(res, expected);
 }
 
 }  // namespace

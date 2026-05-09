@@ -1,8 +1,12 @@
 #ifndef COLOR_H_
 #define COLOR_H_
 
-#include <concepts>
+#ifdef UNIT_TEST
+#include <rapidcheck.h>
+#endif  // UNIT_TEST
+
 #include <cstdint>
+#include <ostream>
 
 namespace fridge {
 namespace color {
@@ -39,11 +43,51 @@ struct XYZ {
   XYZ(const RGB& rgb);
   operator RGB() const;
   XYZ(const XYZ&) = default;
+  bool operator==(const XYZ& other) const;
 };
+
+std::ostream& operator<<(std::ostream& os, const XYZ& xyz);
 
 uint8_t gamma_scale(uint8_t value, float gamma);
 
 }  // namespace color
 }  // namespace fridge
+
+#ifdef UNIT_TEST
+
+namespace rc {
+
+using namespace fridge::color;
+
+template <>
+struct Arbitrary<RGB> {
+  static Gen<RGB> arbitrary() {
+    return gen::construct<RGB>(gen::arbitrary<uint8_t>(),
+                               gen::arbitrary<uint8_t>(),
+                               gen::arbitrary<uint8_t>());
+  }
+};
+
+template <>
+struct Arbitrary<HSV> {
+  static Gen<HSV> arbitrary() {
+    return gen::construct<HSV>(gen::arbitrary<uint8_t>(),
+                               gen::arbitrary<uint8_t>(),
+                               gen::arbitrary<uint8_t>());
+  }
+};
+
+template <>
+struct Arbitrary<XYZ> {
+  static Gen<XYZ> arbitrary() {
+    return gen::construct<XYZ>(gen::arbitrary<uint8_t>(),
+                               gen::arbitrary<uint8_t>(),
+                               gen::arbitrary<uint8_t>());
+  }
+};
+
+}  // namespace rc
+
+#endif  // UNIT_TEST
 
 #endif  // COLOR_H_
