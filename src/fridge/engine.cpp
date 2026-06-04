@@ -144,9 +144,11 @@ Engine::Engine()
   timer_.Start();
 }
 
-void Engine::Tick(config::Config& config, float dt) {
-  ui_.UpdateConfig(config);
-  transform_.Update(config, dt);
+const fridge::transition::Frame& Engine::Tick(config::Config& config,
+                                              float dt) {
+  // ui_.UpdateConfig(config);
+  config = transform_.Update(config, dt);
+  return head_transitions_.Update(config, transform_.head_transitions());
 }
 
 #endif  // UNIT_TEST
