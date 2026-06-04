@@ -77,12 +77,13 @@ Engine::Engine()
           {mux_.channel(0, 1), mux_.channel(1, 1)},
           {mux_.channel(0, 2), mux_.channel(1, 2)},
           {mux_.channel(0, 3), mux_.channel(1, 3)},
-          {mux_.channel(0, 4), mux_.channel(1, 4)},
+          // feedback =
+          {mux_.channel(3, 2), mux_.channel(2, 2)},
       }),
 
       // dry/wet are also on mux 0 & 1
       dry_(mux_.channel(0, 5), mux_.channel(1, 5)),
-      wet_(mux_.channel(0, 6), mux_.channel(1, 6)),
+      wet_(mux_.channel(3, 0), mux_.channel(2, 0)),
       // one spare channel on mux 0 & 1
 
       // lfo knobs are on mux 2 & 3
@@ -99,16 +100,18 @@ Engine::Engine()
 
       // head selection is on mux 4
       head_select_{
-          mux_.channel(4, 0), mux_.channel(4, 1), mux_.channel(4, 2),
+          mux_.channel(4, 0), /*/mux_.channel(4, 1), mux_.channel(4, 2),
           mux_.channel(4, 3), mux_.channel(4, 4), mux_.channel(4, 5),
           mux_.channel(4, 6), mux_.channel(4, 7),
+          */
       },
 
       // lfo selection is on mux 5
       lfo_select_{
-          mux_.channel(5, 0), mux_.channel(5, 1), mux_.channel(5, 2),
+          mux_.channel(5, 0), /*mux_.channel(5, 1), mux_.channel(5, 2),
           mux_.channel(5, 3), mux_.channel(5, 4), mux_.channel(5, 5),
           mux_.channel(5, 6), mux_.channel(5, 7),
+          */
       },
 
       ui_(leds_) {

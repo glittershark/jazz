@@ -12,25 +12,58 @@ Update* BufferValue::PushBack(Update&& update) {
   if (isSampleWithUpdates()) {
     auto head = asSampleWithUpdates();
 
-    if (head->first_update == nullptr) {
-      head->first_update = UPDATES.Alloc(update);
-      return head->first_update;
-    } else {
-      Update* cur = asSampleWithUpdates()->first_update;
-      while (cur->next_ != nullptr) {
-        cur = cur->next_;
-      }
-      cur->next_ = UPDATES.Alloc(update);
-
-      return cur->next_;
+    // For erases, merge into the single pending erase rather than appending.
+    // Multiplying the values is equivalent to applying both erases in sequence,
+    // so the final result is the same.
+    if (update.kind == Update::Kind::kErase && head->erase_update != nullptr) {
+      head->erase_update->value *= update.value;
+      return head->erase_update;
     }
+
+    // Append via tail pointer — O(1).
+    auto new_update = UPDATES.Alloc(update);
+    if (head->last_update == nullptr) {
+      head->first_update = new_update;
+    } else {
+      head->last_update->next_ = new_update;
+    }
+    head->last_update = new_update;
+    if (update.kind == Update::Kind::kErase) {
+      head->erase_update = new_update;
+    }
+    return new_update;
   } else {
     float sample = asSample();
     auto upd = UPDATES.Alloc(update);
     decltype(SAMPLES)::Ptr<&SAMPLES> head =
         SAMPLES.AllocPtr<&SAMPLES>(sample, upd);
     new (this) BufferValue(head);
+    auto h = asSampleWithUpdates();
+    // last_update is set by the SampleWithUpdates constructor; set erase_update.
+    if (update.kind == Update::Kind::kErase) {
+      h->erase_update = upd;
+    }
     return upd;
+  }
+}
+
+void BufferValue::OnUpdateFreed(Update* freed_update) {
+  if (!isSampleWithUpdates()) {
+    return;
+  }
+  auto head = asSampleWithUpdates();
+
+  if (freed_update == head->erase_update) {
+    head->erase_update = nullptr;
+  }
+
+  if (freed_update == head->last_update) {
+    // Freed the tail — scan for the new last node.
+    Update* last = nullptr;
+    for (Update* cur = head->first_update; cur != nullptr; cur = cur->next_) {
+      last = cur;
+    }
+    head->last_update = last;
   }
 }
 
@@ -68,6 +101,7 @@ void Sound::DoUpdate(size_t index) {
       if (time_till_ripe == 0) {
         content->setSample(content->sample() * update->value);
         *update_ptr = update->next_;
+        content->OnUpdateFreed(update);
         UPDATES.Free(update);
         continue;
       }
@@ -85,6 +119,7 @@ void Sound::DoUpdate(size_t index) {
           global_clock_max_;
       if (time_till_ripe == 0) {
         *update_ptr = update->next_;
+        content->OnUpdateFreed(update);
         UPDATES.Free(update);
         content->setSample(content->sample() + update->value);
         continue;

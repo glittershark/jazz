@@ -155,10 +155,10 @@ TEST_F(UITest, position_knob_saturates) {
   EXPECT_EQ(knob.Get(), BUFFER_LEN);
 }
 
-TEST_F(UITest, reverse_chance_knob_uses_led_to_display) {
+TEST_F(UITest, wet_knob_uses_led_to_display) {
   ui::UI ui(leds);
 
-  auto& knob = ui.lfo.reverse_chance;
+  auto& knob = ui.wet;
 
   knob.Set(0.7);
 
