@@ -145,7 +145,7 @@ Engine::Engine()
 
 void Engine::Tick(config::Config& config, float dt) {
   ui_.UpdateConfig(config);
-  transform_.Update(config, dt);
+  config = transform_.Update(config, dt);
 }
 
 #endif  // UNIT_TEST

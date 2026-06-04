@@ -1,4 +1,5 @@
 #include "rgb_led.hpp"
+#include "system.h"
 #include "value_display.hpp"
 
 #ifndef UNIT_TEST
@@ -46,8 +47,14 @@ config::Config config{
 };
 
 sound::Sound* sound;
+engine::Engine* engine = nullptr;
 
 char /*DSY_SDRAM_BSS*/ sound_memory[sizeof(sound::Sound)];
+char engine_memory[sizeof(engine::Engine)];
+
+constexpr const float kAudioBlockSize = 32;
+constexpr const float kAudioCallbackDelaySec =
+    static_cast<float>(kAudioBlockSize) / static_cast<float>(44100);
 
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
@@ -55,6 +62,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
     auto res = ::sound->ProcessSample(::config, in[0][i]);
     out[0][i] = res;
   }
+  ::engine->Tick(::config, kAudioCallbackDelaySec);
 }
 
 [[noreturn]] void Breadboard() {
@@ -96,24 +104,19 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
   // hw.adc.Init(&adcConfig, 1);
   // hw.adc.Start();
 
-  hw.StartAudio(AudioCallback);
+  ::engine = new (engine_memory) engine::Engine();
 
-  engine::Engine engine;
+  hw.StartAudio(AudioCallback);
 
   hw.PrintLine("Now refrigerating your heads...");
 
   for (;;) {
-    const uint32_t delay_ms = 10;
-    const float dt = delay_ms / 1000.f;
-
-    engine.Tick(::config, dt);
-    System::Delay(delay_ms);
   }
 }
 
 [[noreturn]] int main() {
   hw.Init();
-  hw.SetAudioBlockSize(8);
+  hw.SetAudioBlockSize(kAudioBlockSize);
   hw.StartLog(false);
 
   ActualFridge();
