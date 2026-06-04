@@ -143,9 +143,9 @@ Engine::Engine()
   timer_.Start();
 }
 
-void Engine::Tick(config::Config& config, float dt) {
-  ui_.UpdateConfig(config);
-  config = transform_.Update(config, dt);
+const config::Config& Engine::Tick(config::Config& root_config, float dt) {
+  // ui_.UpdateConfig(root_config);
+  return transform_.Update(root_config, dt);
 }
 
 #endif  // UNIT_TEST

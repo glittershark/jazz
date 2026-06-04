@@ -96,7 +96,7 @@ class Engine {
  public:
   Engine();
 
-  void Tick(config::Config& config, float dt);
+  const config::Config& Tick(config::Config& root_config, float dt);
 };
 
 }  // namespace fridge::engine

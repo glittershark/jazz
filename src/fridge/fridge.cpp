@@ -1,5 +1,4 @@
 #include "rgb_led.hpp"
-#include "system.h"
 #include "value_display.hpp"
 
 #ifndef UNIT_TEST
@@ -11,13 +10,14 @@
 #include "daisy_seed.h"
 #include "engine.hpp"
 #include "sound.hpp"
+#include "system.h"
 
 using namespace fridge;
 using namespace daisy;
 
 DaisySeed hw;
 
-config::Config config{
+config::Config root_config{
     .heads{
         {{.position = 0,
           .write_amount = 1.0f,
@@ -58,11 +58,11 @@ constexpr const float kAudioCallbackDelaySec =
 
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
+  ::engine->Tick(::root_config, kAudioCallbackDelaySec);
   for (size_t i = 0; i < size; ++i) {
-    auto res = ::sound->ProcessSample(::config, in[0][i]);
+    auto res = ::sound->ProcessSample(::root_config, in[0][i]);
     out[0][i] = res;
   }
-  ::engine->Tick(::config, kAudioCallbackDelaySec);
 }
 
 [[noreturn]] void Breadboard() {
