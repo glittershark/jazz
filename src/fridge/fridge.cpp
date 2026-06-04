@@ -58,9 +58,9 @@ constexpr const float kAudioCallbackDelaySec =
 
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
-  ::engine->Tick(::root_config, kAudioCallbackDelaySec);
+  auto config = ::engine->Tick(::root_config, kAudioCallbackDelaySec);
   for (size_t i = 0; i < size; ++i) {
-    auto res = ::sound->ProcessSample(::root_config, in[0][i]);
+    auto res = ::sound->ProcessSample(config, in[0][i]);
     out[0][i] = res;
   }
 }
