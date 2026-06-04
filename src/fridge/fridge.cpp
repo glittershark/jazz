@@ -58,11 +58,13 @@ constexpr const float kAudioCallbackDelaySec =
 
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
+  const fridge::transition::Frame& frame =
+      ::engine->Tick(::config, kAudioCallbackDelaySec);
+
   for (size_t i = 0; i < size; ++i) {
-    auto res = ::sound->ProcessSample(::config, in[0][i]);
+    auto res = ::sound->ProcessSample(frame, in[0][i]);
     out[0][i] = res;
   }
-  ::engine->Tick(::config, kAudioCallbackDelaySec);
 }
 
 [[noreturn]] void Breadboard() {

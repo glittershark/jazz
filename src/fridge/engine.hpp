@@ -9,6 +9,7 @@
 #include "config.hpp"
 #include "config_transform.hpp"
 #include "constants.hpp"
+#include "head_transition.hpp"
 #include "io.hpp"
 #include "led.hpp"
 #include "ui.hpp"
@@ -92,11 +93,12 @@ class Engine {
   ui::UI ui_;
   io::led::Controller leds_;
   transform::state transform_;
+  transition::HeadTransitionMixer head_transitions_;
 
  public:
   Engine();
 
-  void Tick(config::Config& config, float dt);
+  const transition::Frame& Tick(config::Config& config, float dt);
 };
 
 }  // namespace fridge::engine
