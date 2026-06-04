@@ -98,6 +98,8 @@ class Iterator {
   bool operator>=(const Iterator& rhs) const { return i_ >= rhs.i_; }
 };
 
+namespace {
+
 /**
  * Circular array / loop buffer / pseudo-deque.
  *
@@ -185,6 +187,16 @@ class CircularArray {
     zero_ = RealIndex(1);
     return old;
   }
+
+  bool Fast() { return false; }
+};
+
+}  // namespace
+
+template <typename T>
+class CircularArray<T, 2> {
+ public:
+  bool Fast() { return true; }
 };
 
 }  // namespace jazz::buffer

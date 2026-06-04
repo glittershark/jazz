@@ -126,3 +126,12 @@ TEST(CircularArrayTest, ostream_print) {
   os << buf;
   EXPECT_STREQ("CircularArray{0, 1, 2, 3, 4}", os.str().c_str());
 }
+
+TEST(CircularArrayTest, powers_of_two_are_optimized) {
+  CircularArray<int, 2> buf;
+  for (auto& i : buf) {
+    i = 9;
+  }
+
+  EXPECT_TRUE(buf.Fast());
+}
