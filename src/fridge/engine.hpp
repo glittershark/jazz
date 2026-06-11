@@ -2,6 +2,8 @@
 #define ENGINE_H_
 
 #include <cstdint>
+
+#include "libjazz/units.hpp"
 #ifndef UNIT_TEST
 
 #include <array>
@@ -18,6 +20,7 @@
 namespace fridge::engine {
 
 using namespace std::chrono_literals;
+using jazz::units::Samples;
 
 /**
  * Calls a given callback at some microsecond period, consuming a timer
@@ -99,7 +102,7 @@ class Engine {
  public:
   Engine();
 
-  const transition::Frame& Tick(config::Config& config, uint32_t dt);
+  const transition::Frame& Tick(config::Config& config, Samples<uint32_t> dt);
 };
 
 }  // namespace fridge::engine

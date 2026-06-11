@@ -25,7 +25,10 @@
 #include "granular.hpp"
 #include "head_transition.hpp"
 #include "lfo_engine.hpp"
+#include "libjazz/units.hpp"
 #include "sound.hpp"
+
+using jazz::units::Samples;
 
 namespace {
 
@@ -93,7 +96,7 @@ struct Options {
   bool fridge_lfo_chart = false;
   bool fridge_lfo_chart_csv = false;
   size_t fridge_lfo_chart_index = 0;
-  float fridge_lfo_chart_duration = 48000.0f;
+  uint32_t fridge_lfo_chart_duration = 48000;
   size_t fridge_lfo_chart_points = 1000;
   size_t fridge_lfo_chart_width = 72;
   size_t fridge_lfo_chart_height = 18;
@@ -794,26 +797,26 @@ const char* FridgeTargetParameterName(fridge::config::TargetParameter param) {
 }
 
 struct FridgeLfoTracePoint {
-  float time;
+  Samples<uint32_t> time;
   float value;
 };
 
 std::vector<FridgeLfoTracePoint> CollectFridgeLfoTrace(
-    const fridge::config::LFO& lfo, float duration, size_t point_count) {
+    const fridge::config::LFO& lfo, uint32_t duration, size_t point_count) {
   point_count = std::max<size_t>(2, point_count);
-  const float dt =
-      point_count > 1 ? duration / static_cast<float>(point_count - 1) : 0.0f;
+  const Samples<uint32_t> dt = Samples(
+      point_count > 1 ? duration / static_cast<uint32_t>(point_count - 1) : 0);
 
   fridge::state::LFOEngine engine(lfo, 1234);
   engine.Reset(0.0f, fridge::state::Direction::kForwards);
 
   std::vector<FridgeLfoTracePoint> points;
   points.reserve(point_count);
-  points.push_back({.time = 0.0f, .value = engine.value()});
+  points.push_back({.time = Samples(0), .value = engine.value()});
 
   for (size_t i = 1; i < point_count; ++i) {
     points.push_back({
-        .time = dt * static_cast<float>(i),
+        .time = dt * Samples(i),
         .value = engine.Tick(dt),
     });
   }
@@ -839,13 +842,12 @@ bool PrintFridgeLfoCsv(const Options& options) {
     return false;
   }
 
-  const float duration = std::max(0.0f, options.fridge_lfo_chart_duration);
-  const std::vector<FridgeLfoTracePoint> points =
-      CollectFridgeLfoTrace(*lfo, duration, options.fridge_lfo_chart_points);
+  const std::vector<FridgeLfoTracePoint> points = CollectFridgeLfoTrace(
+      *lfo, options.fridge_lfo_chart_duration, options.fridge_lfo_chart_points);
 
   std::cout << "time,value\n";
   for (const FridgeLfoTracePoint& point : points) {
-    std::cout << std::fixed << std::setprecision(6) << point.time << ","
+    std::cout << point.time << "," << std::fixed << std::setprecision(6)
               << point.value << "\n";
   }
 
@@ -860,7 +862,7 @@ bool PrintFridgeLfoChart(const Options& options) {
 
   const size_t width = std::max<size_t>(2, options.fridge_lfo_chart_width);
   const size_t height = std::max<size_t>(2, options.fridge_lfo_chart_height);
-  const float duration = std::max(0.0f, options.fridge_lfo_chart_duration);
+  const uint32_t duration = options.fridge_lfo_chart_duration;
   const float max_value = std::max(1.0f, static_cast<float>(lfo->range));
   const std::vector<FridgeLfoTracePoint> points =
       CollectFridgeLfoTrace(*lfo, duration, width);
@@ -1235,10 +1237,11 @@ ParseResult ParseArgs(int argc, char** argv) {
       continue;
     }
     if (arg == "--fridge-lfo-chart-duration") {
-      if (!parse_next_float(&i, &options.fridge_lfo_chart_duration,
-                            "--fridge-lfo-chart-duration")) {
+      size_t v = 0;
+      if (!parse_next_size(&i, &v, "--fridge-lfo-chart-duration")) {
         return result;
       }
+      options.fridge_lfo_chart_duration = static_cast<uint32_t>(v);
       continue;
     }
     if (arg == "--fridge-lfo-chart-points") {
@@ -1483,7 +1486,7 @@ class FridgeProcessor final : public SampleProcessor {
 
   float Process(float sample) override {
     const fridge::config::Config& config =
-        transform_.Update(root_config_, 1.0f);
+        transform_.Update(root_config_, Samples(1));
     const fridge::transition::Frame& frame =
         head_transitions_.Update(config, transform_.head_transitions());
     return sound_.ProcessSample(frame, sample);

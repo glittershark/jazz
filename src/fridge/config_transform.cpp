@@ -228,7 +228,7 @@ void state::ApplyLfoDelta(config::Config& config, size_t lfo_idx, float delta) {
 }
 
 void state::Initialize(const config::Config& root_config) {
-  time_ = 0.0f;
+  time_ = Samples(0);
   initialized_ = true;
   head_transitions_ = {};
   root_config_ = SanitizeConfig(root_config);
@@ -308,7 +308,7 @@ const config::Config& state::Reset(const config::Config& root_config) {
 }
 
 const config::Config& state::Update(const config::Config& root_config,
-                                    uint32_t step) {
+                                    Samples<uint32_t> step) {
   head_transitions_ = {};
 
   if (!initialized_) {
@@ -317,7 +317,7 @@ const config::Config& state::Update(const config::Config& root_config,
     RebaseRootConfig(root_config);
   }
 
-  if (step == 0) {
+  if (step == Samples(0)) {
     return output_config_;
   }
 

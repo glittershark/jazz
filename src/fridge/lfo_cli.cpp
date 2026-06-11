@@ -8,19 +8,21 @@
 #include <vector>
 
 #include "fridge.hpp"
+#include "libjazz/units.hpp"
 
 namespace {
 
 using fridge::config::LFO;
 using fridge::state::Direction;
 using fridge::state::LFOEngine;
+using jazz::units::Samples;
 
 struct RunConfig {
   enum class OutputMode { kGraph, kCsv };
 
   LFO lfo;
-  float duration = 32.0f;
-  float dt = 1.0f;
+  Samples<uint32_t> duration = Samples(32 * 44100);
+  Samples<uint32_t> dt = Samples(1);
   uint32_t seed = 1234;
   float initial_value = 0.0f;
   Direction direction = Direction::kForwards;
@@ -31,7 +33,7 @@ struct RunConfig {
 };
 
 struct SamplePoint {
-  float time;
+  Samples<uint32_t> time;
   float value;
   float speed;
   Direction direction;
@@ -75,6 +77,11 @@ size_t ParseSize(const std::string& name, const std::string& value) {
   }
 }
 
+template <typename T = uint32_t>
+Samples<T> ParseSamples(const std::string& name, const std::string& value) {
+  return Samples(ParseSize(name, value));
+}
+
 uint32_t ParseSeed(const std::string& name, const std::string& value) {
   return static_cast<uint32_t>(ParseSize(name, value));
 }
@@ -108,9 +115,9 @@ void ApplySetting(RunConfig& config, const std::string& key,
   } else if (key == "high_octave_chance") {
     config.lfo.high_octave_chance = ParseFloat(key, value);
   } else if (key == "duration") {
-    config.duration = ParseFloat(key, value);
+    config.duration = ParseSamples(key, value);
   } else if (key == "dt") {
-    config.dt = ParseFloat(key, value);
+    config.dt = ParseSamples(key, value);
   } else if (key == "seed") {
     config.seed = ParseSeed(key, value);
   } else if (key == "initial_value") {
@@ -197,15 +204,14 @@ std::vector<SamplePoint> CollectTrace(const RunConfig& config) {
   engine.Reset(config.initial_value, config.direction);
 
   std::vector<SamplePoint> samples;
-  samples.push_back({.time = 0.0f,
+  samples.push_back({.time = Samples(0),
                      .value = engine.value(),
                      .speed = engine.speed(),
                      .direction = engine.direction(),
                      .grain_size = engine.grain_size(),
                      .grain_time_remaining = engine.grain_time_remaining()});
 
-  for (float time = config.dt; time <= config.duration + 1e-6f;
-       time += config.dt) {
+  for (auto time = config.dt; time <= config.duration; time += config.dt) {
     engine.Tick(config.dt);
     samples.push_back({.time = time,
                        .value = engine.value(),
@@ -338,9 +344,9 @@ int main(int argc, char** argv) {
       if (arg == "--config") {
         LoadConfigFile(config, require_value("--config"));
       } else if (arg == "--duration") {
-        config.duration = ParseFloat("duration", require_value("--duration"));
+        config.duration = ParseSamples("duration", require_value("--duration"));
       } else if (arg == "--dt") {
-        config.dt = ParseFloat("dt", require_value("--dt"));
+        config.dt = ParseSamples("dt", require_value("--dt"));
       } else if (arg == "--seed") {
         config.seed = ParseSeed("seed", require_value("--seed"));
       } else if (arg == "--initial-value") {
@@ -380,10 +386,10 @@ int main(int argc, char** argv) {
       }
     }
 
-    if (config.dt <= 0.0f) {
+    if (config.dt <= Samples(0)) {
       throw std::runtime_error("dt must be > 0");
     }
-    if (config.duration < 0.0f) {
+    if (config.duration < Samples(0)) {
       throw std::runtime_error("duration must be >= 0");
     }
 

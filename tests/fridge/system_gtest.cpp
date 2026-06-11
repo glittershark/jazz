@@ -3,12 +3,14 @@
 #include "config.hpp"
 #include "fridge.hpp"
 #include "gtest/gtest.h"
+#include "libjazz/units.hpp"
 
 using fridge::config::LFO;
 using fridge::config::Target;
 using fridge::config::TargetObject;
 using fridge::config::TargetParameter;
 using fridge::transform::state;
+using jazz::units::Samples;
 
 namespace {
 
@@ -41,7 +43,7 @@ TEST(FridgeLFOSystemTest, ResetStartsAtStaticKnobPositions) {
   EXPECT_EQ(output.lfos[0].max_grain_size, 4u);
   EXPECT_FLOAT_EQ(output.dry, 0.3f);
   EXPECT_FLOAT_EQ(output.wet, 0.9f);
-  EXPECT_FLOAT_EQ(system.time(), 0.0f);
+  EXPECT_EQ(system.time(), Samples(0));
 }
 
 TEST(FridgeLFOSystemTest, ResetAndUpdateReturnStableConfigReference) {
@@ -52,7 +54,8 @@ TEST(FridgeLFOSystemTest, ResetAndUpdateReturnStableConfigReference) {
 
   state system(1234);
   const fridge::config::Config* reset_output = &system.Reset(config);
-  const fridge::config::Config* paused_output = &system.Update(config, 0.0f);
+  const fridge::config::Config* paused_output =
+      &system.Update(config, Samples(0));
 
   EXPECT_EQ(reset_output, paused_output);
   EXPECT_FLOAT_EQ(paused_output->dry, 1.0f);
@@ -71,11 +74,11 @@ TEST(FridgeLFOSystemTest, UpdateCreatesVirtualHeadKnobPositions) {
 
   EXPECT_FLOAT_EQ(initial.heads[0].write_amount, 0.25f);
 
-  fridge::config::Config output = system.Update(config, 2);
+  fridge::config::Config output = system.Update(config, Samples(2));
 
   EXPECT_FLOAT_EQ(config.heads[0].write_amount, 0.25f);
   EXPECT_FLOAT_EQ(output.heads[0].write_amount, 2.25f);
-  EXPECT_FLOAT_EQ(system.time(), 2.0f);
+  EXPECT_EQ(system.time(), Samples(2));
 }
 
 TEST(FridgeLFOSystemTest, LfoCanModulateMixerKnobs) {
@@ -90,7 +93,7 @@ TEST(FridgeLFOSystemTest, LfoCanModulateMixerKnobs) {
 
   state system(1234);
   system.Reset(config);
-  fridge::config::Config output = system.Update(config, 1);
+  fridge::config::Config output = system.Update(config, Samples(1));
 
   EXPECT_FLOAT_EQ(output.dry, 1.2f);
   EXPECT_FLOAT_EQ(output.wet, 1.4f);
@@ -113,13 +116,13 @@ TEST(FridgeLFOSystemTest, LfoModulatesAnotherLfoOnTheNextTick) {
 
   EXPECT_FLOAT_EQ(initial.lfos[1].reverse_chance, 0.0f);
 
-  fridge::config::Config first_output = system.Update(config, 1.0f);
+  fridge::config::Config first_output = system.Update(config, Samples(1));
 
   EXPECT_FLOAT_EQ(first_output.lfos[1].reverse_chance, 1.0f);
   EXPECT_FLOAT_EQ(first_output.dry, 1.0f);
 
-  fridge::config::Config second_output = system.Update(config, 1.0f);
-  fridge::config::Config third_output = system.Update(config, 1.0f);
+  fridge::config::Config second_output = system.Update(config, Samples(1));
+  fridge::config::Config third_output = system.Update(config, Samples(1));
 
   EXPECT_FLOAT_EQ(second_output.dry, 2.0f);
   EXPECT_FLOAT_EQ(third_output.dry, 1.0f);
@@ -135,13 +138,13 @@ TEST(FridgeLFOSystemTest, ResetRestoresStaticVirtualState) {
 
   state system(1234);
   system.Reset(config);
-  fridge::config::Config modulated = system.Update(config, 2.0f);
+  fridge::config::Config modulated = system.Update(config, Samples(2));
   ASSERT_NE(modulated.heads[0].position, 9u);
 
   fridge::config::Config reset = system.Reset(config);
 
   EXPECT_EQ(reset.heads[0].position, 9u);
-  EXPECT_FLOAT_EQ(system.time(), 0.0f);
+  EXPECT_EQ(system.time(), Samples(0));
 }
 
 TEST(FridgeLFOSystemTest, InvalidTargetsAreIgnored) {
@@ -157,7 +160,7 @@ TEST(FridgeLFOSystemTest, InvalidTargetsAreIgnored) {
 
   state system(1234);
   system.Reset(config);
-  fridge::config::Config output = system.Update(config, 2.0f);
+  fridge::config::Config output = system.Update(config, Samples(2));
 
   EXPECT_FLOAT_EQ(output.heads[0].write_amount, 0.25f);
 }
@@ -177,10 +180,10 @@ TEST(FridgeLFOSystemTest, ModulatedLfoRangeAffectsNextTick) {
   fridge::config::Config initial = system.Reset(config);
   EXPECT_EQ(initial.lfos[1].range, 0u);
 
-  fridge::config::Config first_output = system.Update(config, 2.0f);
+  fridge::config::Config first_output = system.Update(config, Samples(2));
   EXPECT_EQ(first_output.lfos[1].range, 2u);
 
-  fridge::config::Config second_output = system.Update(config, 1.0f);
+  fridge::config::Config second_output = system.Update(config, Samples(1));
   EXPECT_FLOAT_EQ(second_output.dry, 1.0f);
 }
 
@@ -192,11 +195,11 @@ TEST(FridgeLFOSystemTest, NonPositiveDtReturnsCurrentVirtualConfig) {
 
   state system(1234);
   system.Reset(config);
-  fridge::config::Config advanced = system.Update(config, 1);
-  fridge::config::Config paused = system.Update(config, 0);
+  fridge::config::Config advanced = system.Update(config, Samples(1));
+  fridge::config::Config paused = system.Update(config, Samples(0));
 
   EXPECT_FLOAT_EQ(paused.dry, advanced.dry);
-  EXPECT_FLOAT_EQ(system.time(), 1.0f);
+  EXPECT_EQ(system.time(), Samples(1));
 }
 
 TEST(FridgeLFOSystemTest, RootConfigChangesRebaseTheCurrentVirtualConfig) {
@@ -208,14 +211,16 @@ TEST(FridgeLFOSystemTest, RootConfigChangesRebaseTheCurrentVirtualConfig) {
 
   state system(1234);
   system.Reset(config);
-  const fridge::config::Config& first_output = system.Update(config, 1);
+  const fridge::config::Config& first_output =
+      system.Update(config, Samples(1));
   EXPECT_FLOAT_EQ(first_output.dry, 1.25f);
 
   config.dry = 4.0f;
-  const fridge::config::Config& rebased_output = system.Update(config, 0);
+  const fridge::config::Config& rebased_output =
+      system.Update(config, Samples(0));
 
   EXPECT_FLOAT_EQ(rebased_output.dry, 5.0f);
-  EXPECT_FLOAT_EQ(system.time(), 1.0f);
+  EXPECT_EQ(system.time(), Samples(1));
 }
 
 TEST(FridgeLFOSystemTest, UpdateWithoutResetAutoInitializesFromRootConfig) {
@@ -227,10 +232,10 @@ TEST(FridgeLFOSystemTest, UpdateWithoutResetAutoInitializesFromRootConfig) {
                                      .object_idx = 0};
 
   state system(1234);
-  fridge::config::Config output = system.Update(config, 1.0f);
+  fridge::config::Config output = system.Update(config, Samples(1));
 
   EXPECT_FLOAT_EQ(output.heads[0].read_amount, 1.5f);
-  EXPECT_FLOAT_EQ(system.time(), 1.0f);
+  EXPECT_EQ(system.time(), Samples(1));
 }
 
 TEST(FridgeLFOSystemTest, ResetSanitizesNonFiniteTargetedFloatValues) {
@@ -276,7 +281,7 @@ TEST(FridgeLFOSystemTest, UpdateClampsNonFiniteProbabilityInputsForEngines) {
   config.lfos[0].low_octave_chance = std::numeric_limits<float>::quiet_NaN();
   config.lfos[0].high_octave_chance = std::numeric_limits<float>::infinity();
 
-  fridge::config::Config output = system.Update(config, 1.0f);
+  fridge::config::Config output = system.Update(config, Samples(1));
 
   EXPECT_FLOAT_EQ(output.lfos[0].reverse_chance, 0.0f);
   EXPECT_FLOAT_EQ(output.lfos[0].teleport_chance, 0.0f);
@@ -307,7 +312,7 @@ TEST(FridgeLFOSystemTest, LfoCanModulateRemainingHeadTargets) {
 
   state system(1234);
   system.Reset(config);
-  fridge::config::Config output = system.Update(config, 1.0f);
+  fridge::config::Config output = system.Update(config, Samples(1));
 
   EXPECT_FLOAT_EQ(output.heads[0].read_amount, 1.25f);
   EXPECT_FLOAT_EQ(output.heads[1].erase_amount, 1.5f);
@@ -359,7 +364,7 @@ TEST(FridgeLFOSystemTest, LfoCanModulateRemainingLfoTargets) {
 
   state system(1234);
   system.Reset(config);
-  fridge::config::Config output = system.Update(config, 1.0f);
+  fridge::config::Config output = system.Update(config, Samples(1));
 
   EXPECT_EQ(output.lfos[7].max_grain_size, 3u);
   EXPECT_EQ(output.lfos[7].min_grain_size, 4u);
@@ -394,7 +399,7 @@ TEST(FridgeLFOSystemTest, UnsupportedAndInvalidTargetsAreIgnored) {
 
   state system(1234);
   system.Reset(config);
-  fridge::config::Config output = system.Update(config, 1.0f);
+  fridge::config::Config output = system.Update(config, Samples(1));
 
   EXPECT_FLOAT_EQ(output.dry, 1.3f);
   EXPECT_FLOAT_EQ(output.heads[0].write_amount, 0.4f);
@@ -414,7 +419,7 @@ TEST(FridgeLFOSystemTest, HeadPositionReverseCreatesTransitionEvent) {
 
   state system(1234);
   system.Reset(config);
-  fridge::config::Config output = system.Update(config, 1.0f);
+  fridge::config::Config output = system.Update(config, Samples(1));
   const auto& transitions = system.head_transitions();
 
   ASSERT_TRUE(transitions[0].has_value());
@@ -435,7 +440,7 @@ TEST(FridgeLFOSystemTest, NonHeadPositionLfoTransitionIsNotRecorded) {
 
   state system(1234);
   system.Reset(config);
-  system.Update(config, 1.0f);
+  system.Update(config, Samples(1));
 
   for (const auto& transition : system.head_transitions()) {
     EXPECT_FALSE(transition.has_value());

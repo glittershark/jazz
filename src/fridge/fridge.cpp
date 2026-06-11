@@ -1,3 +1,4 @@
+#include "libjazz/units.hpp"
 #include "rgb_led.hpp"
 #include "value_display.hpp"
 
@@ -15,10 +16,11 @@
 using namespace jazz;
 using namespace fridge;
 using namespace daisy;
+using jazz::units::Samples;
 
 DaisySeed hw;
 
-config::Config config{
+config::Config root_config{
     .heads{
         {{.position = 0,
           .write_amount = 1.0f,
@@ -53,10 +55,12 @@ engine::Engine* engine = nullptr;
 char DSY_SDRAM_BSS sound_memory[sizeof(sound::Sound)];
 char engine_memory[sizeof(engine::Engine)];
 
+constexpr const float kAudioBlockSize = 32;
+
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
   for (size_t i = 0; i < size; ++i) {
-    auto frame = ::engine.Tick(::root_config, 1);
+    auto frame = ::engine->Tick(::root_config, Samples(1));
     auto res = ::sound->ProcessSample(frame, in[0][i]);
     out[0][i] = res;
   }
@@ -104,11 +108,6 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
   hw.PrintLine("Now refrigerating your heads...");
 
   for (;;) {
-    const uint32_t delay_ms = 10;
-    const float dt = delay_ms / 1000.f;
-
-    engine.Tick(::config, dt);
-    System::Delay(delay_ms);
   }
 }
 

@@ -1,9 +1,11 @@
 #include "fridge.hpp"
 #include "gtest/gtest.h"
+#include "libjazz/units.hpp"
 
 using fridge::config::LFO;
 using fridge::state::Direction;
 using fridge::state::LFOEngine;
+using jazz::units::Samples;
 
 namespace {
 
@@ -31,8 +33,8 @@ TEST(FridgeLFOTest, TickAdvancesAndWrapsToRange) {
   LFOEngine engine(config, 1234);
 
   // grain_size=4, range=2: two ticks of 1 advance to 1, then wrap 1+2=3→1
-  EXPECT_FLOAT_EQ(engine.Tick(1), 1.0f);
-  EXPECT_FLOAT_EQ(engine.Tick(2), 1.0f);
+  EXPECT_FLOAT_EQ(engine.Tick(Samples(1)), 1.0f);
+  EXPECT_FLOAT_EQ(engine.Tick(Samples(2)), 1.0f);
   EXPECT_FLOAT_EQ(engine.value(), 1.0f);
 }
 
@@ -42,7 +44,7 @@ TEST(FridgeLFOTest, BackwardMotionWrapsAroundRange) {
 
   engine.Reset(0.0f, Direction::kBackwards);
 
-  EXPECT_FLOAT_EQ(engine.Tick(1), 9.0f);
+  EXPECT_FLOAT_EQ(engine.Tick(Samples(1)), 9.0f);
 }
 
 TEST(FridgeLFOTest, ZeroRangeStaysAtZero) {
@@ -52,7 +54,7 @@ TEST(FridgeLFOTest, ZeroRangeStaysAtZero) {
   engine.Reset(5.0f, Direction::kForwards);
 
   EXPECT_FLOAT_EQ(engine.value(), 0.0f);
-  EXPECT_FLOAT_EQ(engine.Tick(1), 0.0f);
+  EXPECT_FLOAT_EQ(engine.Tick(Samples(1)), 0.0f);
 }
 
 TEST(FridgeLFOTest, GrainBoundaryCanReverseDirection) {
@@ -62,9 +64,9 @@ TEST(FridgeLFOTest, GrainBoundaryCanReverseDirection) {
              .reverse_chance = 1.0f};
   LFOEngine engine(config, 1234);
 
-  EXPECT_FLOAT_EQ(engine.Tick(2), 2.0f);
+  EXPECT_FLOAT_EQ(engine.Tick(Samples(2)), 2.0f);
   EXPECT_EQ(engine.direction(), Direction::kBackwards);
-  EXPECT_FLOAT_EQ(engine.Tick(1), 1.0f);
+  EXPECT_FLOAT_EQ(engine.Tick(Samples(1)), 1.0f);
 }
 
 TEST(FridgeLFOTest, GrainBoundaryCanTeleport) {
@@ -75,8 +77,8 @@ TEST(FridgeLFOTest, GrainBoundaryCanTeleport) {
   LFOEngine engine(config, 1234);
 
   // Each tick of 1 completes a grain and triggers a teleport
-  float before_boundary = engine.Tick(1);
-  float after_boundary = engine.Tick(1);
+  float before_boundary = engine.Tick(Samples(1));
+  float after_boundary = engine.Tick(Samples(1));
 
   EXPECT_GE(before_boundary, 0.0f);
   EXPECT_LE(before_boundary, 10.0f);
@@ -116,7 +118,7 @@ TEST(FridgeLFOTest, LargeDtCarriesAcrossMultipleGrains) {
   LFO config = DeterministicLfo(20, 2);
   LFOEngine engine(config, 1234);
 
-  EXPECT_FLOAT_EQ(engine.Tick(5), 5.0f);
+  EXPECT_FLOAT_EQ(engine.Tick(Samples(5)), 5.0f);
   EXPECT_EQ(engine.grain_size(), 2u);
   EXPECT_FLOAT_EQ(engine.speed(), 1.0f);
 }
@@ -136,7 +138,7 @@ TEST(FridgeLFOTest, ZeroDtDoesNotAdvanceState) {
   LFO config = DeterministicLfo(8, 3);
   LFOEngine engine(config, 1234);
 
-  EXPECT_FLOAT_EQ(engine.Tick(0), 0.0f);
+  EXPECT_FLOAT_EQ(engine.Tick(Samples(0)), 0.0f);
   EXPECT_FLOAT_EQ(engine.value(), 0.0f);
   EXPECT_FLOAT_EQ(engine.grain_time_remaining(), 3.0f);
 }
@@ -144,7 +146,7 @@ TEST(FridgeLFOTest, ZeroDtDoesNotAdvanceState) {
 TEST(FridgeLFOTest, SetConfigWrapsCurrentValueToNewRange) {
   LFO initial_config = DeterministicLfo(10, 2);
   LFOEngine engine(initial_config, 1234);
-  ASSERT_FLOAT_EQ(engine.Tick(7), 7.0f);
+  ASSERT_FLOAT_EQ(engine.Tick(Samples(7)), 7.0f);
 
   LFO smaller_range = DeterministicLfo(4, 2);
   engine.SetConfig(smaller_range);
@@ -162,7 +164,7 @@ TEST(FridgeLFOTest, ReverseFromBackwardDirectionCanFlipForwardAgain) {
 
   engine.Reset(5.0f, Direction::kBackwards);
 
-  EXPECT_FLOAT_EQ(engine.Tick(1), 4.0f);
+  EXPECT_FLOAT_EQ(engine.Tick(Samples(1)), 4.0f);
   EXPECT_EQ(engine.direction(), Direction::kForwards);
 }
 
@@ -183,7 +185,7 @@ TEST(FridgeLFOTest, TickWithEventsReportsReverseTransition) {
              .reverse_chance = 1.0f};
   LFOEngine engine(config, 1234);
 
-  fridge::state::LFOTickResult result = engine.TickWithEvents(1);
+  fridge::state::LFOTickResult result = engine.TickWithEvents(Samples(1));
 
   ASSERT_TRUE(result.transition.has_value());
   EXPECT_TRUE(result.transition->reversed);
@@ -199,7 +201,7 @@ TEST(FridgeLFOTest, TickWithEventsAccumulatesTransitionsAcrossTick) {
              .reverse_chance = 1.0f};
   LFOEngine engine(config, 1234);
 
-  fridge::state::LFOTickResult result = engine.TickWithEvents(2);
+  fridge::state::LFOTickResult result = engine.TickWithEvents(Samples(2));
 
   ASSERT_TRUE(result.transition.has_value());
   EXPECT_TRUE(result.transition->reversed);
@@ -214,7 +216,7 @@ TEST(FridgeLFOTest, TickWithEventsReportsTeleportTransition) {
              .teleport_chance = 1.0f};
   LFOEngine engine(config, 1234);
 
-  fridge::state::LFOTickResult result = engine.TickWithEvents(1);
+  fridge::state::LFOTickResult result = engine.TickWithEvents(Samples(1));
 
   ASSERT_TRUE(result.transition.has_value());
   EXPECT_FALSE(result.transition->reversed);

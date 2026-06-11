@@ -9,12 +9,15 @@
 #include "config.hpp"
 #include "head_transition.hpp"
 #include "lfo_engine.hpp"
+#include "libjazz/units.hpp"
 
 namespace fridge::transform {
 
+using namespace jazz::units;
+
 class state {
   uint32_t seed_;
-  float time_ = 0.0f;
+  Samples<uint32_t> time_ = Samples(0);
   bool initialized_ = false;
   config::Config root_config_{};
   config::Config output_config_{};
@@ -54,8 +57,9 @@ class state {
   explicit state(uint32_t seed = std::random_device{}()) : seed_(seed) {}
 
   const config::Config& Reset(const config::Config& root_config);
-  const config::Config& Update(const config::Config& root_config, uint32_t dt);
-  float time() const { return time_; }
+  const config::Config& Update(const config::Config& root_config,
+                               Samples<uint32_t> step);
+  Samples<uint32_t> time() const { return time_; }
   const std::array<std::optional<fridge::transition::HeadMotionTransition>,
                    NUM_HEADS>&
   head_transitions() const {

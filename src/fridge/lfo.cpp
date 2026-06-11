@@ -2,6 +2,7 @@
 #include <cmath>
 
 #include "lfo_engine.hpp"
+#include "libjazz/units.hpp"
 
 namespace {
 
@@ -20,7 +21,7 @@ float WrapToRange(float value, size_t range) {
     return 0.0f;
   }
 
-  const float upper_bound = static_cast<float>(range);
+  const auto upper_bound = static_cast<float>(range);
   float wrapped = std::fmod(value, upper_bound);
   if (wrapped < 0.0f) {
     wrapped += upper_bound;
@@ -44,6 +45,8 @@ fridge::state::LFOTransition ExtendTransition(
 
 namespace fridge::state {
 
+using namespace jazz::units;
+
 LFOEngine::LFOEngine(const config::LFO& config)
     : LFOEngine(config, std::random_device{}()) {}
 
@@ -63,14 +66,14 @@ void LFOEngine::Reset(float initial_value, Direction direction) {
   StartNewGrain(true);
 }
 
-float LFOEngine::Tick(uint32_t step) {
+float LFOEngine::Tick(Samples<uint32_t> step) {
   LFOTickResult result = TickWithEvents(step);
   return result.value;
 }
 
-LFOTickResult LFOEngine::TickWithEvents(uint32_t step) {
+LFOTickResult LFOEngine::TickWithEvents(Samples<uint32_t> step) {
   LFOTickResult result{.value = value_};
-  float remaining = static_cast<float>(step);
+  auto remaining = static_cast<float>(step.samples());
 
   while (remaining > 0.0f) {
     if (grain_time_remaining_ <= 0.0f) {
