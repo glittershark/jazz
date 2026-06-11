@@ -13,6 +13,7 @@ using namespace daisy;
 using namespace daisy::seed;
 using namespace fridge;
 using namespace fridge::engine;
+using jazz::units::Samples;
 
 Timer::Timer(daisy::TimerHandle::Config::Peripheral timer, Callback<> callback,
              std::chrono::microseconds period)
@@ -144,11 +145,11 @@ Engine::Engine()
   timer_.Start();
 }
 
-const fridge::transition::Frame& Engine::Tick(config::Config& config,
+const fridge::transition::Frame& Engine::Tick(const config::Config& config,
                                               Samples<uint32_t> dt) {
   // ui_.UpdateConfig(config);
-  config = transform_.Update(config, dt);
-  return head_transitions_.Update(config, transform_.head_transitions());
+  const auto output = transform_.Update(config, dt);
+  return head_transitions_.Update(output, transform_.head_transitions());
 }
 
 #endif  // UNIT_TEST

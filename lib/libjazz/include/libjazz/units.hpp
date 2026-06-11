@@ -12,7 +12,7 @@ namespace jazz::units {
     ty inner_;                                                  \
                                                                 \
    public:                                                      \
-    explicit cls(ty inner) : inner_(inner) {}                   \
+    constexpr explicit cls(ty inner) : inner_(inner) {}         \
     ty& meth() { return inner_; }                               \
     const ty& meth() const { return inner_; }                   \
     cls operator+(const cls& other) const {                     \

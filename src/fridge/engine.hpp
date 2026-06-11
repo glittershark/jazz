@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "libjazz/units.hpp"
+
 #ifndef UNIT_TEST
 
 #include <array>
@@ -102,7 +103,8 @@ class Engine {
  public:
   Engine();
 
-  const transition::Frame& Tick(config::Config& config, Samples<uint32_t> dt);
+  const transition::Frame& Tick(const config::Config& config,
+                                Samples<uint32_t> dt);
 };
 
 }  // namespace fridge::engine

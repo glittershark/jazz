@@ -1,3 +1,5 @@
+#include <cstdint>
+
 #include "libjazz/units.hpp"
 #include "rgb_led.hpp"
 #include "value_display.hpp"
@@ -14,6 +16,8 @@
 #include "sound.hpp"
 
 using namespace jazz;
+using jazz::units::Samples;
+
 using namespace fridge;
 using namespace daisy;
 using jazz::units::Samples;
@@ -45,8 +49,8 @@ config::Config root_config{
             .object_idx = 0,
         }}}},
     }}},
-    .dry = 0.0f,
-    .wet = 1.0f,
+    .dry = 0.5f,
+    .wet = 0.5f,
 };
 
 sound::Sound* sound;
@@ -55,7 +59,7 @@ engine::Engine* engine = nullptr;
 char DSY_SDRAM_BSS sound_memory[sizeof(sound::Sound)];
 char engine_memory[sizeof(engine::Engine)];
 
-constexpr const float kAudioBlockSize = 32;
+constexpr const Samples<uint32_t> kAudioBlockSize = Samples(32);
 
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
@@ -113,7 +117,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 
 [[noreturn]] int main() {
   hw.Init();
-  hw.SetAudioBlockSize(8);
+  hw.SetAudioBlockSize(kAudioBlockSize.samples());
   hw.StartLog(false);
 
   ActualFridge();
