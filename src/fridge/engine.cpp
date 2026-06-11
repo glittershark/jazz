@@ -145,7 +145,7 @@ Engine::Engine()
 }
 
 const fridge::transition::Frame& Engine::Tick(config::Config& config,
-                                              float dt) {
+                                              uint32_t dt) {
   // ui_.UpdateConfig(config);
   config = transform_.Update(config, dt);
   return head_transitions_.Update(config, transform_.head_transitions());

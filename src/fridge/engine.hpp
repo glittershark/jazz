@@ -1,6 +1,7 @@
 #ifndef ENGINE_H_
 #define ENGINE_H_
 
+#include <cstdint>
 #ifndef UNIT_TEST
 
 #include <array>
@@ -98,7 +99,7 @@ class Engine {
  public:
   Engine();
 
-  const transition::Frame& Tick(config::Config& config, float dt);
+  const transition::Frame& Tick(config::Config& config, uint32_t dt);
 };
 
 }  // namespace fridge::engine

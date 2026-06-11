@@ -63,14 +63,14 @@ void LFOEngine::Reset(float initial_value, Direction direction) {
   StartNewGrain(true);
 }
 
-float LFOEngine::Tick(float dt) {
-  LFOTickResult result = TickWithEvents(dt);
+float LFOEngine::Tick(uint32_t step) {
+  LFOTickResult result = TickWithEvents(step);
   return result.value;
 }
 
-LFOTickResult LFOEngine::TickWithEvents(float dt) {
+LFOTickResult LFOEngine::TickWithEvents(uint32_t step) {
   LFOTickResult result{.value = value_};
-  float remaining = std::max(0.0f, dt);
+  float remaining = static_cast<float>(step);
 
   while (remaining > 0.0f) {
     if (grain_time_remaining_ <= 0.0f) {

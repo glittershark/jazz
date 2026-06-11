@@ -50,8 +50,8 @@ class LFOEngine {
   void SetConfig(const config::LFO& config);
   void Reset(float initial_value = 0.0f,
              Direction direction = Direction::kForwards);
-  float Tick(float dt);
-  LFOTickResult TickWithEvents(float dt);
+  float Tick(uint32_t step);
+  LFOTickResult TickWithEvents(uint32_t step);
 
   const config::LFO& config() const { return config_; }
   float value() const { return value_; }

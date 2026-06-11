@@ -308,7 +308,7 @@ const config::Config& state::Reset(const config::Config& root_config) {
 }
 
 const config::Config& state::Update(const config::Config& root_config,
-                                    float dt) {
+                                    uint32_t step) {
   head_transitions_ = {};
 
   if (!initialized_) {
@@ -317,8 +317,7 @@ const config::Config& state::Update(const config::Config& root_config,
     RebaseRootConfig(root_config);
   }
 
-  float step = std::max(0.0f, dt);
-  if (step <= 0.0f) {
+  if (step == 0) {
     return output_config_;
   }
 

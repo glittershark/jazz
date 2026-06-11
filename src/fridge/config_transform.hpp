@@ -54,7 +54,7 @@ class state {
   explicit state(uint32_t seed = std::random_device{}()) : seed_(seed) {}
 
   const config::Config& Reset(const config::Config& root_config);
-  const config::Config& Update(const config::Config& root_config, float dt);
+  const config::Config& Update(const config::Config& root_config, uint32_t dt);
   float time() const { return time_; }
   const std::array<std::optional<fridge::transition::HeadMotionTransition>,
                    NUM_HEADS>&

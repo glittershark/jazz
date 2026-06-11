@@ -71,11 +71,11 @@ TEST(FridgeLFOSystemTest, UpdateCreatesVirtualHeadKnobPositions) {
 
   EXPECT_FLOAT_EQ(initial.heads[0].write_amount, 0.25f);
 
-  fridge::config::Config output = system.Update(config, 1.5f);
+  fridge::config::Config output = system.Update(config, 2);
 
   EXPECT_FLOAT_EQ(config.heads[0].write_amount, 0.25f);
-  EXPECT_FLOAT_EQ(output.heads[0].write_amount, 1.75f);
-  EXPECT_FLOAT_EQ(system.time(), 1.5f);
+  EXPECT_FLOAT_EQ(output.heads[0].write_amount, 2.25f);
+  EXPECT_FLOAT_EQ(system.time(), 2.0f);
 }
 
 TEST(FridgeLFOSystemTest, LfoCanModulateMixerKnobs) {
@@ -90,10 +90,10 @@ TEST(FridgeLFOSystemTest, LfoCanModulateMixerKnobs) {
 
   state system(1234);
   system.Reset(config);
-  fridge::config::Config output = system.Update(config, 1.25f);
+  fridge::config::Config output = system.Update(config, 1);
 
-  EXPECT_FLOAT_EQ(output.dry, 1.45f);
-  EXPECT_FLOAT_EQ(output.wet, 1.65f);
+  EXPECT_FLOAT_EQ(output.dry, 1.2f);
+  EXPECT_FLOAT_EQ(output.wet, 1.4f);
 }
 
 TEST(FridgeLFOSystemTest, LfoModulatesAnotherLfoOnTheNextTick) {
@@ -192,11 +192,11 @@ TEST(FridgeLFOSystemTest, NonPositiveDtReturnsCurrentVirtualConfig) {
 
   state system(1234);
   system.Reset(config);
-  fridge::config::Config advanced = system.Update(config, 1.5f);
-  fridge::config::Config paused = system.Update(config, 0.0f);
+  fridge::config::Config advanced = system.Update(config, 1);
+  fridge::config::Config paused = system.Update(config, 0);
 
   EXPECT_FLOAT_EQ(paused.dry, advanced.dry);
-  EXPECT_FLOAT_EQ(system.time(), 1.5f);
+  EXPECT_FLOAT_EQ(system.time(), 1.0f);
 }
 
 TEST(FridgeLFOSystemTest, RootConfigChangesRebaseTheCurrentVirtualConfig) {
@@ -208,14 +208,14 @@ TEST(FridgeLFOSystemTest, RootConfigChangesRebaseTheCurrentVirtualConfig) {
 
   state system(1234);
   system.Reset(config);
-  const fridge::config::Config& first_output = system.Update(config, 1.5f);
-  EXPECT_FLOAT_EQ(first_output.dry, 1.75f);
+  const fridge::config::Config& first_output = system.Update(config, 1);
+  EXPECT_FLOAT_EQ(first_output.dry, 1.25f);
 
   config.dry = 4.0f;
-  const fridge::config::Config& rebased_output = system.Update(config, 0.0f);
+  const fridge::config::Config& rebased_output = system.Update(config, 0);
 
-  EXPECT_FLOAT_EQ(rebased_output.dry, 5.5f);
-  EXPECT_FLOAT_EQ(system.time(), 1.5f);
+  EXPECT_FLOAT_EQ(rebased_output.dry, 5.0f);
+  EXPECT_FLOAT_EQ(system.time(), 1.0f);
 }
 
 TEST(FridgeLFOSystemTest, UpdateWithoutResetAutoInitializesFromRootConfig) {
