@@ -7,8 +7,6 @@
 
 #include "constants.hpp"
 
-// TODO(aspen): Remove once this is all actually used
-// NOLINTBEGIN(clang-diagnostic-unused-*)
 namespace fridge::config {
 
 struct Feedback {
