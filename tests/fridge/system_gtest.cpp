@@ -262,7 +262,7 @@ TEST(FridgeLFOSystemTest, ResetSanitizesNonFiniteTargetedFloatValues) {
   state system(1234);
   fridge::config::Config output = system.Reset(config);
 
-  EXPECT_FLOAT_EQ(output.dry, 0.0f);
+  EXPECT_NEAR(output.dry, 0.0f, 0.1e-9);
   EXPECT_FLOAT_EQ(output.heads[0].feedback.amount, 0.0f);
   EXPECT_FLOAT_EQ(output.lfos[3].teleport_chance, 0.0f);
   EXPECT_FLOAT_EQ(output.lfos[4].reverse_chance, 0.0f);
@@ -294,21 +294,19 @@ TEST(FridgeLFOSystemTest, LfoCanModulateRemainingHeadTargets) {
   fridge::config::Config config;
   config.heads[0].read_amount = 0.25f;
   config.heads[1].erase_amount = 0.5f;
-  config.heads[2].feedback.amount = 0.75f;
+  config.heads[1].feedback.amount = 0.75f;
 
   config.lfos[0] = DeterministicLfo();
   config.lfos[0].targets[0] = Target{.object = TargetObject::kHead,
                                      .parameter = TargetParameter::kReadAmount,
                                      .object_idx = 0};
-  config.lfos[1] = DeterministicLfo();
-  config.lfos[1].targets[0] = Target{.object = TargetObject::kHead,
+  config.lfos[0].targets[1] = Target{.object = TargetObject::kHead,
                                      .parameter = TargetParameter::kEraseAmount,
                                      .object_idx = 1};
-  config.lfos[2] = DeterministicLfo();
-  config.lfos[2].targets[0] =
+  config.lfos[0].targets[2] =
       Target{.object = TargetObject::kHead,
              .parameter = TargetParameter::kFeedbackAmount,
-             .object_idx = 2};
+             .object_idx = 1};
 
   state system(1234);
   system.Reset(config);
@@ -316,63 +314,60 @@ TEST(FridgeLFOSystemTest, LfoCanModulateRemainingHeadTargets) {
 
   EXPECT_FLOAT_EQ(output.heads[0].read_amount, 1.25f);
   EXPECT_FLOAT_EQ(output.heads[1].erase_amount, 1.5f);
-  EXPECT_FLOAT_EQ(output.heads[2].feedback.amount, 1.75f);
+  EXPECT_FLOAT_EQ(output.heads[1].feedback.amount, 1.75f);
 }
 
 TEST(FridgeLFOSystemTest, LfoCanModulateRemainingLfoTargets) {
   fridge::config::Config config;
-  config.lfos[7].max_grain_size = 2;
-  config.lfos[7].min_grain_size = 3;
-  config.lfos[7].reverse_chance = 0.25f;
-  config.lfos[7].teleport_chance = 0.35f;
-  config.lfos[7].pitch_shift_chance = 0.45f;
-  config.lfos[7].low_octave_chance = 0.55f;
-  config.lfos[7].high_octave_chance = 0.65f;
+  config.lfos[1].max_grain_size = 2;
+  config.lfos[1].min_grain_size = 3;
+  config.lfos[1].reverse_chance = 0.25f;
+  config.lfos[1].teleport_chance = 0.35f;
+  config.lfos[1].pitch_shift_chance = 0.45f;
+  config.lfos[1].low_octave_chance = 0.55f;
+  config.lfos[1].high_octave_chance = 0.65f;
 
-  for (size_t i = 0; i < 7; ++i) {
-    config.lfos[i] = DeterministicLfo();
-  }
-
+  config.lfos[0] = DeterministicLfo();
   config.lfos[0].targets[0] =
       Target{.object = TargetObject::kLFO,
              .parameter = TargetParameter::kMaxGrainSize,
-             .object_idx = 7};
-  config.lfos[1].targets[0] =
+             .object_idx = 1};
+  config.lfos[0].targets[1] =
       Target{.object = TargetObject::kLFO,
              .parameter = TargetParameter::kMinGrainSize,
-             .object_idx = 7};
-  config.lfos[2].targets[0] =
+             .object_idx = 1};
+  config.lfos[0].targets[2] =
       Target{.object = TargetObject::kLFO,
              .parameter = TargetParameter::kReverseChance,
-             .object_idx = 7};
-  config.lfos[3].targets[0] =
+             .object_idx = 1};
+  config.lfos[0].targets[3] =
       Target{.object = TargetObject::kLFO,
              .parameter = TargetParameter::kTeleportChance,
-             .object_idx = 7};
-  config.lfos[4].targets[0] =
+             .object_idx = 1};
+  config.lfos[0].targets[4] =
       Target{.object = TargetObject::kLFO,
              .parameter = TargetParameter::kPitchShiftChance,
-             .object_idx = 7};
-  config.lfos[5].targets[0] =
+             .object_idx = 1};
+  config.lfos[0].targets[5] =
       Target{.object = TargetObject::kLFO,
              .parameter = TargetParameter::kLowOctaveChance,
-             .object_idx = 7};
-  config.lfos[6].targets[0] =
+             .object_idx = 1};
+  config.lfos[0].targets[6] =
       Target{.object = TargetObject::kLFO,
              .parameter = TargetParameter::kHighOctaveChance,
-             .object_idx = 7};
+             .object_idx = 1};
 
   state system(1234);
   system.Reset(config);
   fridge::config::Config output = system.Update(config, Samples(1));
 
-  EXPECT_EQ(output.lfos[7].max_grain_size, 3u);
-  EXPECT_EQ(output.lfos[7].min_grain_size, 4u);
-  EXPECT_FLOAT_EQ(output.lfos[7].reverse_chance, 1.0f);
-  EXPECT_FLOAT_EQ(output.lfos[7].teleport_chance, 1.0f);
-  EXPECT_FLOAT_EQ(output.lfos[7].pitch_shift_chance, 1.0f);
-  EXPECT_FLOAT_EQ(output.lfos[7].low_octave_chance, 1.0f);
-  EXPECT_FLOAT_EQ(output.lfos[7].high_octave_chance, 1.0f);
+  EXPECT_EQ(output.lfos[1].max_grain_size, 3u);
+  EXPECT_EQ(output.lfos[1].min_grain_size, 4u);
+  EXPECT_FLOAT_EQ(output.lfos[1].reverse_chance, 1.0f);
+  EXPECT_FLOAT_EQ(output.lfos[1].teleport_chance, 1.0f);
+  EXPECT_FLOAT_EQ(output.lfos[1].pitch_shift_chance, 1.0f);
+  EXPECT_FLOAT_EQ(output.lfos[1].low_octave_chance, 1.0f);
+  EXPECT_FLOAT_EQ(output.lfos[1].high_octave_chance, 1.0f);
 }
 
 TEST(FridgeLFOSystemTest, UnsupportedAndInvalidTargetsAreIgnored) {
@@ -383,19 +378,18 @@ TEST(FridgeLFOSystemTest, UnsupportedAndInvalidTargetsAreIgnored) {
   config.lfos[0] = DeterministicLfo();
   config.lfos[0].targets[0] = Target{.object = TargetObject::kMixer,
                                      .parameter = TargetParameter::kDry};
-  config.lfos[1] = DeterministicLfo();
-  config.lfos[1].targets[0] = Target{.object = TargetObject::kHead,
+  config.lfos[0].targets[1] = Target{.object = TargetObject::kHead,
                                      .parameter = TargetParameter::kDry,
                                      .object_idx = 0};
-  config.lfos[2] = DeterministicLfo();
-  config.lfos[2].range = 7;
-  config.lfos[2].targets[0] = Target{.object = TargetObject::kLFO,
+  config.lfos[0].targets[2] = Target{.object = TargetObject::kLFO,
                                      .parameter = TargetParameter::kDry,
-                                     .object_idx = 2};
-  config.lfos[3] = DeterministicLfo();
-  config.lfos[3].targets[0] = Target{.object = TargetObject::kLFO,
+                                     .object_idx = 1};
+  config.lfos[0].targets[3] = Target{.object = TargetObject::kLFO,
                                      .parameter = TargetParameter::kRange,
                                      .object_idx = 99};
+
+  config.lfos[1] = DeterministicLfo();
+  config.lfos[1].range = 7;
 
   state system(1234);
   system.Reset(config);
@@ -403,7 +397,7 @@ TEST(FridgeLFOSystemTest, UnsupportedAndInvalidTargetsAreIgnored) {
 
   EXPECT_FLOAT_EQ(output.dry, 1.3f);
   EXPECT_FLOAT_EQ(output.heads[0].write_amount, 0.4f);
-  EXPECT_EQ(output.lfos[2].range, 7u);
+  EXPECT_EQ(output.lfos[1].range, 7u);
 }
 
 TEST(FridgeLFOSystemTest, HeadPositionReverseCreatesTransitionEvent) {

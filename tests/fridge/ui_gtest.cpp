@@ -17,7 +17,7 @@ TEST_F(UITest, UI_can_be_constructed) {
 
 TEST_F(UITest, update_head_knobs_via_callbacks) {
   const unsigned garbage = 21307;
-  const size_t selected_head = 5;
+  const size_t selected_head = 1;
 
   ui::UI ui(leds);
   ui.selected_head = selected_head;
@@ -73,7 +73,7 @@ TEST_F(UITest, update_head_knobs_via_callbacks) {
 
 TEST_F(UITest, update_lfo_knobs_via_callbacks) {
   const unsigned garbage = 21307;
-  const size_t selected_lfo = 6;
+  const size_t selected_lfo = 1;
 
   ui::UI ui(leds);
   ui.selected_lfo = selected_lfo;
