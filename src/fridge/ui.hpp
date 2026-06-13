@@ -37,6 +37,11 @@ concept BackingValue =
       { v1 += v2 } -> std::same_as<V&>;
     };
 
+template <typename V>
+concept DisplayableBackingValue = BackingValue<V> && requires(const V& v) {
+  { v.GetDisplay() } -> std::convertible_to<uint8_t>;
+};
+
 template <BackingValue V>
 class Knob {
   static void callback(Knob* this_, int ticks, float turns) {
@@ -58,7 +63,7 @@ class Knob {
     };
   }
 
-  V::Raw_type Get() const { return value_; };
+  V Get() const { return value_; };
   void Set(const V& rhs) { value_ = rhs; }
 
   V& Increment(int ticks, float turns) {
@@ -66,14 +71,14 @@ class Knob {
   }
 };
 
-template <BackingValue V, ValueDisplay VD>
+template <DisplayableBackingValue V, ValueDisplay VD>
 class KnobWithDisplay : public Knob<V> {
   RgbLedValueDisplay<VD> value_display_;
   void UpdateDisplay() {
     // TODO(aspen): We may want to turn the LEDs on higher up an abstraction
     // level at some point. For now, this should suffice.
     value_display_.SetOn(true);
-    value_display_.SetValue(this->Get());
+    value_display_.SetValue(this->Get().GetDisplay());
   }
 
  public:
@@ -144,7 +149,7 @@ class Bounded {
     return *this;
   }
 
-  operator Raw_type() const { return value_; }
+  constexpr operator Raw_type() const { return value_; }
 
   Bounded operator+(const Bounded& rhs) const {
     return Bounded(value_ + rhs.value_);
@@ -155,6 +160,12 @@ class Bounded {
   Bounded& operator+=(const Bounded& rhs) {
     *this = *this + rhs;
     return *this;
+  }
+
+  uint8_t GetDisplay() const {
+    return static_cast<uint8_t>(
+        (static_cast<float>(value_ - min) / static_cast<float>(max - min)) *
+        255.f);
   }
 };
 
@@ -271,6 +282,11 @@ class Feedback {
     value_ = rhs;
     return *this;
   }
+
+  uint8_t GetDisplay() const {
+    return static_cast<uint8_t>(((static_cast<float>(value_) + 1.0f) / 2.0f) *
+                                255.f);
+  }
 };
 
 using SingleTurn = Bounded<Turns, 0.0f, 1.0f>;
@@ -331,7 +347,7 @@ struct Head {
   Knob<SingleTurn> write_amount;
   Knob<SingleTurn> read_amount;
   Knob<SingleTurn> erase_amount;
-  Knob<Feedback> feedback;
+  KnobWithDisplay<Feedback, value_display::CieInterp> feedback;
 
   void Select(const config::Head& head);
   config::Head Config() const;
@@ -341,7 +357,7 @@ struct LFO {
   Knob<Size> range;
   Knob<Size> max_grain_size;
   Knob<Size> min_grain_size;
-  KnobWithDisplay<SingleTurn, value_display::CieInterp> reverse_chance;
+  Knob<SingleTurn> reverse_chance;
   Knob<SingleTurn> teleport_chance;
   Knob<SingleTurn> pitch_shift_chance;
   Knob<SingleTurn> low_octave_chance;
@@ -398,7 +414,7 @@ struct UI {
   LFO lfo;
 
   Knob<SingleTurn> dry;
-  Knob<SingleTurn> wet;
+  KnobWithDisplay<SingleTurn, value_display::CieInterp> wet;
   TempoButton tempo;
 
   RadioButtons<NUM_HEADS> head_select;

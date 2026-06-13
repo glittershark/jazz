@@ -67,13 +67,11 @@ constexpr const value_display::CieInterp kBlueToGreen = {
 };
 
 ui::UI::UI(io::led::Controller& leds)
-    : lfo{.reverse_chance =
-              KnobWithDisplay<SingleTurn, value_display::CieInterp>(
-                  RgbLedValueDisplay(
-                      kBlueToGreen,
-                      RgbLed(leds.B(0, 1), leds.B(1, 1), leds.B(2, 1))))
+    : head{.feedback = {RgbLedValueDisplay(
+               kBlueToGreen, RgbLed(leds.B(0, 1), leds.B(1, 1), leds.B(2, 1)))}
 
-      } {}
+      },
+      wet({kBlueToGreen, RgbLed(leds.B(4, 5), leds.B(5, 5), leds.B(6, 5))}) {}
 
 #ifndef UNIT_TEST
 
