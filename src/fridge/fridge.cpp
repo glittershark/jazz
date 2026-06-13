@@ -48,13 +48,17 @@ config::Config config{
 };
 
 sound::Sound* sound;
+engine::Engine* engine = nullptr;
 
 char DSY_SDRAM_BSS sound_memory[sizeof(sound::Sound)];
+char engine_memory[sizeof(engine::Engine)];
 
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
   for (size_t i = 0; i < size; ++i) {
-    out[0][i] = ::sound->ProcessSample(::config, in[0][i]);
+    auto frame = ::engine.Tick(::root_config, 1);
+    auto res = ::sound->ProcessSample(frame, in[0][i]);
+    out[0][i] = res;
   }
 }
 
@@ -91,6 +95,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 [[noreturn]] void ActualFridge() {
   // XXX: construct this thing BEFORE starting the audio callback!
   ::sound = new (sound_memory) sound::Sound();
+  ::engine = new (engine_memory) engine::Engine();
 
   hw.StartAudio(AudioCallback);
 
