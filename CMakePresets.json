@@ -7,7 +7,8 @@
       "binaryDir": "${sourceDir}/build",
       "toolchainFile": "${sourceDir}/cmake/arm-none-eabi-toolchain.cmake",
       "cacheVariables": {
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
@@ -16,12 +17,27 @@
       "binaryDir": "${sourceDir}/build-test",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "BUILD_TESTING": "ON"
+        "BUILD_TESTING": "ON",
+        "CMAKE_BUILD_TYPE": "RelWithDebug"
+      }
+    },
+    {
+      "name": "fuzz",
+      "displayName": "Fuzz (Clang + FuzzTest)",
+      "binaryDir": "${sourceDir}/build-fuzz",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "BUILD_TESTING": "ON",
+        "FUZZTEST_FUZZING_MODE": "ON",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_BUILD_TYPE": "RelWithDebug"
       }
     }
   ],
   "buildPresets": [
     { "name": "arm", "configurePreset": "arm" },
-    { "name": "host", "configurePreset": "host" }
+    { "name": "host", "configurePreset": "host" },
+    { "name": "fuzz", "configurePreset": "fuzz" }
   ]
 }

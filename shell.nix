@@ -23,6 +23,7 @@ pkgs.mkShell {
           cp -r "$out/share" $dev
         '';
       })).dev
+      pkgs.llvmPackages.compiler-rt.dev
       pkgs.screen
       pkgs.niv
     ]

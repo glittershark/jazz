@@ -8,3 +8,6 @@
 [submodule "libDaisy"]
 	path = vendor/libDaisy
 	url = https://github.com/electro-smith/libDaisy.git
+[submodule "vendor/fuzztest"]
+	path = vendor/fuzztest
+	url = https://github.com/google/fuzztest

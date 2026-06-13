@@ -1,31 +1,36 @@
-.PHONY: all test console flash st-flash logs debug clean compile-commands lint fmt fmt-check
+.PHONY: all test fuzz console flash st-flash logs debug clean compile-commands lint fmt fmt-check
 
 SOURCES := $(shell find src lib tests -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | grep -v -e vendor -e CMakeFiles)
 
 # Build for ARM
 all:
 	cmake --preset arm
-	cmake --build --preset arm
+	cmake --build --preset arm -j
 	$(MAKE) compile-commands
 
 # Build and run tests
 test:
 	cmake --preset host
-	cmake --build --preset host
+	cmake --build --preset host -j
 	ctest --test-dir build-test --output-on-failure
 	$(MAKE) compile-commands
+
+# Build fuzz test binaries (use: build-fuzz/bin/<test> --fuzz=Suite.Test)
+fuzz:
+	cmake --preset fuzz
+	cmake --build --preset fuzz -j
 
 # Build the host-side audio CLI
 console:
 	cmake --preset host
-	cmake --build --preset host --target jazz-console
+	cmake --build --preset host --target jazz-console -j
 	$(MAKE) compile-commands
 
 # Flash via ST-Link
 flash:
 	@test -n "$(DIR)" || (echo "Usage: make flash DIR=fridge"; exit 1)
 	cmake --preset arm
-	cmake --build --preset arm --target $(DIR)
+	cmake --build --preset arm --target $(DIR) -j
 	st-flash write build/src/$(DIR)/$(DIR).bin 0x08000000
 	st-flash reset
 
@@ -73,4 +78,4 @@ fmt-check:
 	clang-format --dry-run --Werror $(SOURCES)
 
 clean:
-	rm -rf build build-test compile_commands.json
+	rm -rf build build-test build-fuzz compile_commands.json

@@ -26,7 +26,6 @@ namespace jazz::units {
       return cls(other.meth() * meth());                        \
     }                                                           \
     auto operator<=>(const cls& other) const = default;         \
-    static constexpr const cls kZero = cls(0);                  \
   };                                                            \
   template <typename T = ty>                                    \
   std::ostream& operator<<(std::ostream& os, const cls<T>& x) { \
