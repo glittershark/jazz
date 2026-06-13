@@ -100,7 +100,8 @@ void QuadratureEncoder::OnChange(Callback<int, float> on_change) {
 
 Button::Button(mux::GpioInMux::Channel c) : c_(c) {
   c_.OnChange({
-      .callback = +[](void* self, bool v) { static_cast<Button*>(self)->Changed(v); },
+      .callback =
+          +[](void* self, bool v) { static_cast<Button*>(self)->Changed(v); },
       .data = this,
   });
 }

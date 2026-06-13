@@ -61,9 +61,10 @@ class ChannelScan {
 
   Callback<> GetCallback() {
     return {
-        .callback = +[](void* self) {
-          static_cast<ChannelScan*>(self)->TimerCallback();
-        },
+        .callback =
+            +[](void* self) {
+              static_cast<ChannelScan*>(self)->TimerCallback();
+            },
         .data = this,
     };
   }

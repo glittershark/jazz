@@ -317,9 +317,8 @@ class RadioButtons {
 
     Callback<bool> GetCallback() {
       return {
-          .callback = +[](void* self, bool v) {
-            static_cast<Selector*>(self)->Select(v);
-          },
+          .callback = +[](void* self,
+                          bool v) { static_cast<Selector*>(self)->Select(v); },
           .data = this,
       };
     }
@@ -385,9 +384,8 @@ class TempoButton {
 
   Callback<bool> GetCallback() {
     return {
-        .callback = +[](void* self, bool v) {
-          static_cast<TempoButton*>(self)->Tick(v);
-        },
+        .callback = +[](void* self,
+                        bool v) { static_cast<TempoButton*>(self)->Tick(v); },
         .data = this,
     };
   }
@@ -401,9 +399,8 @@ struct TempoButton {
 
   Callback<bool> GetCallback() {
     return {
-        .callback = +[](void* self, bool v) {
-          static_cast<TempoButton*>(self)->Tick(v);
-        },
+        .callback = +[](void* self,
+                        bool v) { static_cast<TempoButton*>(self)->Tick(v); },
         .data = this,
     };
   }

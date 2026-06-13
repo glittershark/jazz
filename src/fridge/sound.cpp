@@ -39,7 +39,8 @@ Update* BufferValue::PushBack(Update&& update) {
         SAMPLES.AllocPtr<&SAMPLES>(sample, upd);
     new (this) BufferValue(head);
     auto h = asSampleWithUpdates();
-    // last_update is set by the SampleWithUpdates constructor; set erase_update.
+    // last_update is set by the SampleWithUpdates constructor; set
+    // erase_update.
     if (update.kind == Update::Kind::kErase) {
       h->erase_update = upd;
     }
