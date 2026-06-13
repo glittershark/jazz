@@ -17,7 +17,36 @@ using namespace fridge;
 using namespace daisy;
 
 DaisySeed hw;
-config::Config config;
+
+config::Config config{
+    .heads{
+        {{.position = 0,
+          .write_amount = 1.0f,
+          .read_amount = 1.0f,
+          .erase_amount = 0.0001f,
+          .feedback =
+              {
+                  .kind = config::Feedback::Kind::kRead,
+                  .amount = 0.0f,
+              }}},
+    },
+    .lfos{{{
+        .range = 24000,
+        .max_grain_size = 12000,
+        .min_grain_size = 12000,
+        .reverse_chance = 1.0f,
+        .teleport_chance = 0.0f,
+        .pitch_shift_chance = 0.0f,
+        .targets{{{{
+            .object = config::TargetObject::kHead,
+            .parameter = config::TargetParameter::kPosition,
+            .object_idx = 0,
+        }}}},
+    }}},
+    .dry = 0.0f,
+    .wet = 1.0f,
+};
+
 sound::Sound* sound;
 
 char DSY_SDRAM_BSS sound_memory[sizeof(sound::Sound)];
@@ -62,11 +91,6 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 [[noreturn]] void ActualFridge() {
   // XXX: construct this thing BEFORE starting the audio callback!
   ::sound = new (sound_memory) sound::Sound();
-
-  AdcChannelConfig adcConfig;
-  adcConfig.InitSingle(hw.GetPin(21));
-  hw.adc.Init(&adcConfig, 1);
-  hw.adc.Start();
 
   hw.StartAudio(AudioCallback);
 
