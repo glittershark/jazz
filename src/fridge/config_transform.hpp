@@ -15,7 +15,7 @@ namespace fridge::transform {
 
 using namespace jazz::units;
 
-class state {
+class State {
   uint32_t seed_;
   Samples<uint32_t> time_ = Samples(0);
   bool initialized_ = false;
@@ -54,7 +54,7 @@ class state {
                             float delta);
 
  public:
-  explicit state(uint32_t seed = std::random_device{}()) : seed_(seed) {}
+  explicit State(uint32_t seed = std::random_device{}()) : seed_(seed) {}
 
   const config::Config& Reset(const config::Config& root_config);
   const config::Config& Update(const config::Config& root_config,

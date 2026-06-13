@@ -97,7 +97,7 @@ class Engine {
 
   ui::UI ui_;
   io::led::Controller leds_;
-  transform::state transform_;
+  transform::State transform_;
   transition::HeadTransitionMixer head_transitions_;
 
  public:

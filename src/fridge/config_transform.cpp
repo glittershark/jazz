@@ -7,11 +7,11 @@ namespace fridge::transform {
 
 // ----- Validation
 
-float state::ClampFinite(float value, float fallback) {
+float State::ClampFinite(float value, float fallback) {
   return std::isfinite(value) ? value : fallback;
 }
 
-float state::ClampChance(float value) {
+float State::ClampChance(float value) {
   if (!std::isfinite(value)) {
     return 0.0f;
   }
@@ -19,7 +19,7 @@ float state::ClampChance(float value) {
   return std::clamp(value, 0.0f, 1.0f);
 }
 
-size_t state::ClampSize(float value, size_t minimum) {
+size_t State::ClampSize(float value, size_t minimum) {
   if (!std::isfinite(value)) {
     return minimum;
   }
@@ -28,7 +28,7 @@ size_t state::ClampSize(float value, size_t minimum) {
       std::max<float>(static_cast<float>(minimum), std::lround(value)));
 }
 
-config::LFO state::SanitizeLfo(const config::LFO& lfo) {
+config::LFO State::SanitizeLfo(const config::LFO& lfo) {
   config::LFO sanitized{
       .range = ClampSize(static_cast<float>(lfo.range), 0),
       .max_grain_size = ClampSize(static_cast<float>(lfo.max_grain_size), 1),
@@ -43,7 +43,7 @@ config::LFO state::SanitizeLfo(const config::LFO& lfo) {
   return sanitized;
 }
 
-config::Config state::SanitizeConfig(const config::Config& root_config) {
+config::Config State::SanitizeConfig(const config::Config& root_config) {
   config::Config sanitized = root_config;
 
   for (auto& head : sanitized.heads) {
@@ -62,7 +62,7 @@ config::Config state::SanitizeConfig(const config::Config& root_config) {
   return sanitized;
 }
 
-bool state::MatchesSanitizedTarget(
+bool State::MatchesSanitizedTarget(
     const std::optional<config::Target>& input,
     const std::optional<config::Target>& sanitized) {
   if (input.has_value() != sanitized.has_value()) {
@@ -78,7 +78,7 @@ bool state::MatchesSanitizedTarget(
          input->object_idx == sanitized->object_idx;
 }
 
-bool state::MatchesSanitizedLfo(const config::LFO& input,
+bool State::MatchesSanitizedLfo(const config::LFO& input,
                                 const config::LFO& sanitized) {
   if (ClampSize(static_cast<float>(input.range), 0) != sanitized.range ||
       ClampSize(static_cast<float>(input.max_grain_size), 1) !=
@@ -102,7 +102,7 @@ bool state::MatchesSanitizedLfo(const config::LFO& input,
   return true;
 }
 
-bool state::MatchesSanitizedConfig(const config::Config& input,
+bool State::MatchesSanitizedConfig(const config::Config& input,
                                    const config::Config& sanitized) {
   for (size_t i = 0; i < NUM_HEADS; ++i) {
     const config::Head& input_head = input.heads[i];
@@ -128,7 +128,7 @@ bool state::MatchesSanitizedConfig(const config::Config& input,
          ClampFinite(input.wet) == sanitized.wet;
 }
 
-void state::ApplyTargetDelta(config::Config& config,
+void State::ApplyTargetDelta(config::Config& config,
                              const config::Target& target, float delta) {
   using config::TargetObject;
   using config::TargetParameter;
@@ -214,7 +214,7 @@ void state::ApplyTargetDelta(config::Config& config,
   }
 }
 
-void state::ApplyLfoDelta(config::Config& config, size_t lfo_idx, float delta) {
+void State::ApplyLfoDelta(config::Config& config, size_t lfo_idx, float delta) {
   if (lfo_idx >= NUM_LFOS || delta == 0.0f) {
     return;
   }
@@ -227,7 +227,7 @@ void state::ApplyLfoDelta(config::Config& config, size_t lfo_idx, float delta) {
   }
 }
 
-void state::Initialize(const config::Config& root_config) {
+void State::Initialize(const config::Config& root_config) {
   time_ = Samples(0);
   initialized_ = true;
   head_transitions_ = {};
@@ -243,13 +243,13 @@ void state::Initialize(const config::Config& root_config) {
   }
 }
 
-void state::ApplyCurrentDeltas(config::Config& config) const {
+void State::ApplyCurrentDeltas(config::Config& config) const {
   for (size_t i = 0; i < NUM_LFOS; ++i) {
     ApplyLfoDelta(config, i, CurrentDelta(i));
   }
 }
 
-void state::RecordHeadTransitions(
+void State::RecordHeadTransitions(
     size_t lfo_idx, const fridge::state::LFOTransition& transition,
     const config::Config& previous_output) {
   // Invalid LFO indexes cannot produce a meaningful transition record.
@@ -292,22 +292,22 @@ void state::RecordHeadTransitions(
   }
 }
 
-void state::RebaseRootConfig(const config::Config& root_config) {
+void State::RebaseRootConfig(const config::Config& root_config) {
   root_config_ = SanitizeConfig(root_config);
   output_config_ = root_config_;
   ApplyCurrentDeltas(output_config_);
 }
 
-float state::CurrentDelta(size_t lfo_idx) const {
+float State::CurrentDelta(size_t lfo_idx) const {
   return lfo_engines_[lfo_idx].value() - lfo_initial_values_[lfo_idx];
 }
 
-const config::Config& state::Reset(const config::Config& root_config) {
+const config::Config& State::Reset(const config::Config& root_config) {
   Initialize(root_config);
   return output_config_;
 }
 
-const config::Config& state::Update(const config::Config& root_config,
+const config::Config& State::Update(const config::Config& root_config,
                                     Samples<uint32_t> step) {
   head_transitions_ = {};
 

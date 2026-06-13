@@ -1494,7 +1494,7 @@ class FridgeProcessor final : public SampleProcessor {
 
  private:
   fridge::config::Config root_config_;
-  fridge::transform::state transform_;
+  fridge::transform::State transform_;
   fridge::transition::HeadTransitionMixer head_transitions_;
   fridge::sound::Sound sound_;
 };

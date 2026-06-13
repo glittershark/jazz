@@ -9,7 +9,7 @@ using fridge::config::LFO;
 using fridge::config::Target;
 using fridge::config::TargetObject;
 using fridge::config::TargetParameter;
-using fridge::transform::state;
+using fridge::transform::State;
 using jazz::units::Samples;
 
 namespace {
@@ -33,7 +33,7 @@ TEST(FridgeLFOSystemTest, ResetStartsAtStaticKnobPositions) {
   config.dry = 0.3f;
   config.wet = 0.9f;
 
-  state system(1234);
+  State system(1234);
   fridge::config::Config output = system.Reset(config);
 
   EXPECT_EQ(output.heads[0].position, 12u);
@@ -52,7 +52,7 @@ TEST(FridgeLFOSystemTest, ResetAndUpdateReturnStableConfigReference) {
   config.lfos[0].targets[0] = Target{.object = TargetObject::kMixer,
                                      .parameter = TargetParameter::kDry};
 
-  state system(1234);
+  State system(1234);
   const fridge::config::Config* reset_output = &system.Reset(config);
   const fridge::config::Config* paused_output =
       &system.Update(config, Samples(0));
@@ -69,7 +69,7 @@ TEST(FridgeLFOSystemTest, UpdateCreatesVirtualHeadKnobPositions) {
                                      .parameter = TargetParameter::kWriteAmount,
                                      .object_idx = 0};
 
-  state system(1234);
+  State system(1234);
   fridge::config::Config initial = system.Reset(config);
 
   EXPECT_FLOAT_EQ(initial.heads[0].write_amount, 0.25f);
@@ -91,7 +91,7 @@ TEST(FridgeLFOSystemTest, LfoCanModulateMixerKnobs) {
   config.lfos[0].targets[1] = Target{.object = TargetObject::kMixer,
                                      .parameter = TargetParameter::kWet};
 
-  state system(1234);
+  State system(1234);
   system.Reset(config);
   fridge::config::Config output = system.Update(config, Samples(1));
 
@@ -111,7 +111,7 @@ TEST(FridgeLFOSystemTest, LfoModulatesAnotherLfoOnTheNextTick) {
   config.lfos[1].targets[0] = Target{.object = TargetObject::kMixer,
                                      .parameter = TargetParameter::kDry};
 
-  state system(1234);
+  State system(1234);
   fridge::config::Config initial = system.Reset(config);
 
   EXPECT_FLOAT_EQ(initial.lfos[1].reverse_chance, 0.0f);
@@ -136,7 +136,7 @@ TEST(FridgeLFOSystemTest, ResetRestoresStaticVirtualState) {
                                      .parameter = TargetParameter::kPosition,
                                      .object_idx = 0};
 
-  state system(1234);
+  State system(1234);
   system.Reset(config);
   fridge::config::Config modulated = system.Update(config, Samples(2));
   ASSERT_NE(modulated.heads[0].position, 9u);
@@ -158,7 +158,7 @@ TEST(FridgeLFOSystemTest, InvalidTargetsAreIgnored) {
       Target{.object = TargetObject::kMixer,
              .parameter = TargetParameter::kWriteAmount};
 
-  state system(1234);
+  State system(1234);
   system.Reset(config);
   fridge::config::Config output = system.Update(config, Samples(2));
 
@@ -176,7 +176,7 @@ TEST(FridgeLFOSystemTest, ModulatedLfoRangeAffectsNextTick) {
   config.lfos[1].targets[0] = Target{.object = TargetObject::kMixer,
                                      .parameter = TargetParameter::kDry};
 
-  state system(1234);
+  State system(1234);
   fridge::config::Config initial = system.Reset(config);
   EXPECT_EQ(initial.lfos[1].range, 0u);
 
@@ -193,7 +193,7 @@ TEST(FridgeLFOSystemTest, NonPositiveDtReturnsCurrentVirtualConfig) {
   config.lfos[0].targets[0] = Target{.object = TargetObject::kMixer,
                                      .parameter = TargetParameter::kDry};
 
-  state system(1234);
+  State system(1234);
   system.Reset(config);
   fridge::config::Config advanced = system.Update(config, Samples(1));
   fridge::config::Config paused = system.Update(config, Samples(0));
@@ -209,7 +209,7 @@ TEST(FridgeLFOSystemTest, RootConfigChangesRebaseTheCurrentVirtualConfig) {
   config.lfos[0].targets[0] = Target{.object = TargetObject::kMixer,
                                      .parameter = TargetParameter::kDry};
 
-  state system(1234);
+  State system(1234);
   system.Reset(config);
   const fridge::config::Config& first_output =
       system.Update(config, Samples(1));
@@ -231,7 +231,7 @@ TEST(FridgeLFOSystemTest, UpdateWithoutResetAutoInitializesFromRootConfig) {
                                      .parameter = TargetParameter::kReadAmount,
                                      .object_idx = 0};
 
-  state system(1234);
+  State system(1234);
   fridge::config::Config output = system.Update(config, Samples(1));
 
   EXPECT_FLOAT_EQ(output.heads[0].read_amount, 1.5f);
@@ -259,7 +259,7 @@ TEST(FridgeLFOSystemTest, ResetSanitizesNonFiniteTargetedFloatValues) {
              .parameter = TargetParameter::kTeleportChance,
              .object_idx = 3};
 
-  state system(1234);
+  State system(1234);
   fridge::config::Config output = system.Reset(config);
 
   EXPECT_NEAR(output.dry, 0.0f, 0.1e-9);
@@ -272,7 +272,7 @@ TEST(FridgeLFOSystemTest, UpdateClampsNonFiniteProbabilityInputsForEngines) {
   fridge::config::Config config;
   config.lfos[0] = DeterministicLfo();
 
-  state system(1234);
+  State system(1234);
   system.Reset(config);
 
   config.lfos[0].reverse_chance = std::numeric_limits<float>::quiet_NaN();
@@ -308,7 +308,7 @@ TEST(FridgeLFOSystemTest, LfoCanModulateRemainingHeadTargets) {
              .parameter = TargetParameter::kFeedbackAmount,
              .object_idx = 1};
 
-  state system(1234);
+  State system(1234);
   system.Reset(config);
   fridge::config::Config output = system.Update(config, Samples(1));
 
@@ -357,7 +357,7 @@ TEST(FridgeLFOSystemTest, LfoCanModulateRemainingLfoTargets) {
              .parameter = TargetParameter::kHighOctaveChance,
              .object_idx = 1};
 
-  state system(1234);
+  State system(1234);
   system.Reset(config);
   fridge::config::Config output = system.Update(config, Samples(1));
 
@@ -391,7 +391,7 @@ TEST(FridgeLFOSystemTest, UnsupportedAndInvalidTargetsAreIgnored) {
   config.lfos[1] = DeterministicLfo();
   config.lfos[1].range = 7;
 
-  state system(1234);
+  State system(1234);
   system.Reset(config);
   fridge::config::Config output = system.Update(config, Samples(1));
 
@@ -411,7 +411,7 @@ TEST(FridgeLFOSystemTest, HeadPositionReverseCreatesTransitionEvent) {
                                      .parameter = TargetParameter::kPosition,
                                      .object_idx = 0};
 
-  state system(1234);
+  State system(1234);
   system.Reset(config);
   fridge::config::Config output = system.Update(config, Samples(1));
   const auto& transitions = system.head_transitions();
@@ -432,7 +432,7 @@ TEST(FridgeLFOSystemTest, NonHeadPositionLfoTransitionIsNotRecorded) {
   config.lfos[0].targets[0] = Target{.object = TargetObject::kMixer,
                                      .parameter = TargetParameter::kDry};
 
-  state system(1234);
+  State system(1234);
   system.Reset(config);
   system.Update(config, Samples(1));
 
