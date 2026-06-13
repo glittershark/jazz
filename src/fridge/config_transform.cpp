@@ -2,16 +2,20 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
+#include <optional>
+
+#include "constants.hpp"
 
 namespace fridge::transform {
 
 // ----- Validation
 
-float State::ClampFinite(float value, float fallback) {
+float ClampFinite(float value, float fallback = 0.0f) {
   return std::isfinite(value) ? value : fallback;
 }
 
-float State::ClampChance(float value) {
+float ClampChance(float value) {
   if (!std::isfinite(value)) {
     return 0.0f;
   }
@@ -19,20 +23,11 @@ float State::ClampChance(float value) {
   return std::clamp(value, 0.0f, 1.0f);
 }
 
-size_t State::ClampSize(float value, size_t minimum) {
-  if (!std::isfinite(value)) {
-    return minimum;
-  }
-
-  return static_cast<size_t>(
-      std::max<float>(static_cast<float>(minimum), std::lround(value)));
-}
-
 config::LFO State::SanitizeLfo(const config::LFO& lfo) {
   config::LFO sanitized{
-      .range = ClampSize(static_cast<float>(lfo.range), 0),
-      .max_grain_size = ClampSize(static_cast<float>(lfo.max_grain_size), 1),
-      .min_grain_size = ClampSize(static_cast<float>(lfo.min_grain_size), 1),
+      .range = std::max<size_t>(lfo.range, 0),
+      .max_grain_size = std::max<size_t>(lfo.max_grain_size, 1),
+      .min_grain_size = std::max<size_t>(lfo.min_grain_size, 1),
       .reverse_chance = ClampChance(lfo.reverse_chance),
       .teleport_chance = ClampChance(lfo.teleport_chance),
       .pitch_shift_chance = ClampChance(lfo.pitch_shift_chance),
@@ -80,11 +75,9 @@ bool State::MatchesSanitizedTarget(
 
 bool State::MatchesSanitizedLfo(const config::LFO& input,
                                 const config::LFO& sanitized) {
-  if (ClampSize(static_cast<float>(input.range), 0) != sanitized.range ||
-      ClampSize(static_cast<float>(input.max_grain_size), 1) !=
-          sanitized.max_grain_size ||
-      ClampSize(static_cast<float>(input.min_grain_size), 1) !=
-          sanitized.min_grain_size ||
+  if (std::max<size_t>(input.range, 0) != sanitized.range ||
+      std::max<size_t>(input.max_grain_size, 1) != sanitized.max_grain_size ||
+      std::max<size_t>(input.min_grain_size, 1) != sanitized.min_grain_size ||
       ClampChance(input.reverse_chance) != sanitized.reverse_chance ||
       ClampChance(input.teleport_chance) != sanitized.teleport_chance ||
       ClampChance(input.pitch_shift_chance) != sanitized.pitch_shift_chance ||
@@ -141,7 +134,8 @@ void State::ApplyTargetDelta(config::Config& config,
     config::Head& head = config.heads[target.object_idx];
     switch (target.parameter) {
     case TargetParameter::kPosition:
-      head.position = ClampSize(static_cast<float>(head.position) + delta, 0);
+      head.position =
+          std::max<size_t>(head.position + delta + BUFFER_LEN, 0) % BUFFER_LEN;
       return;
     case TargetParameter::kWriteAmount:
       head.write_amount = ClampFinite(head.write_amount + delta);
@@ -168,15 +162,13 @@ void State::ApplyTargetDelta(config::Config& config,
     config::LFO& lfo = config.lfos[target.object_idx];
     switch (target.parameter) {
     case TargetParameter::kRange:
-      lfo.range = ClampSize(static_cast<float>(lfo.range) + delta, 0);
+      lfo.range = std::max<size_t>(lfo.range + delta, 0);
       return;
     case TargetParameter::kMaxGrainSize:
-      lfo.max_grain_size =
-          ClampSize(static_cast<float>(lfo.max_grain_size) + delta, 1);
+      lfo.max_grain_size = std::max<size_t>(lfo.max_grain_size + delta, 1);
       return;
     case TargetParameter::kMinGrainSize:
-      lfo.min_grain_size =
-          ClampSize(static_cast<float>(lfo.min_grain_size) + delta, 1);
+      lfo.min_grain_size = std::max<size_t>(lfo.min_grain_size + delta, 1);
       return;
     case TargetParameter::kReverseChance:
       lfo.reverse_chance = ClampChance(lfo.reverse_chance + delta);

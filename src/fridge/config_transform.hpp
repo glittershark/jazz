@@ -36,9 +36,6 @@ class State {
 
   // ----- Validation
 
-  static float ClampFinite(float value, float fallback = 0.0f);
-  static float ClampChance(float value);
-  static size_t ClampSize(float value, size_t minimum);
   static config::LFO SanitizeLfo(const config::LFO& lfo);
   static config::Config SanitizeConfig(const config::Config& root_config);
   static bool MatchesSanitizedTarget(
@@ -55,7 +52,6 @@ class State {
 
  public:
   explicit State(uint32_t seed = std::random_device{}()) : seed_(seed) {}
-
   const config::Config& Reset(const config::Config& root_config);
   const config::Config& Update(const config::Config& root_config,
                                Samples<uint32_t> step);
