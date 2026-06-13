@@ -59,10 +59,12 @@ class ChannelScan {
   ChannelScan(Address address, CB& callback)
       : address_(std::move(address)), callback_(callback) {};
 
-  MemberCallback<ChannelScan> GetCallback() {
+  Callback<> GetCallback() {
     return {
-        .this_ = this,
-        .callback = &ChannelScan::TimerCallback,
+        .callback = +[](void* self) {
+          static_cast<ChannelScan*>(self)->TimerCallback();
+        },
+        .data = this,
     };
   }
 };
