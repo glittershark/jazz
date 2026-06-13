@@ -126,9 +126,14 @@ class BufferValue {
   struct SampleWithUpdates {
     float sample;
     Update* first_update;
+    Update* last_update;   // tail pointer for O(1) append
+    Update* erase_update;  // pointer to the single pending erase, or nullptr
 
     SampleWithUpdates(float sample = 0.0f, Update* first_update = nullptr)
-        : sample(sample), first_update(first_update) {}
+        : sample(sample),
+          first_update(first_update),
+          last_update(first_update),
+          erase_update(nullptr) {}
   };
   static Slab<SampleWithUpdates, UPDATE_CAP> SAMPLES;
   using SlabPtr = decltype(SAMPLES)::Ptr<&SAMPLES>;
@@ -187,6 +192,9 @@ class BufferValue {
   Update** FirstUpdate();
 
   void Housekeep();
+
+  /** Call before freeing a node that has been unlinked from the list */
+  void OnUpdateFreed(Update* freed_update);
 
   class DrainingIterator {
     enum { kHead, kUpdate } kind_;
