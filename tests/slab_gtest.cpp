@@ -115,6 +115,35 @@ TEST(SlabTest, Indexes) {
   EXPECT_EQ(x_new.AsInt(), x.AsInt());
 }
 
+TEST(SlabTest, IsFull) {
+  constexpr const size_t kCap = 5;
+  static Slab<int64_t, kCap> slab;
+
+  ASSERT_FALSE(slab.IsFull());
+  auto x1 = slab.AllocPtr<&slab>(1);
+
+  ASSERT_FALSE(slab.IsFull());
+  auto x2 = slab.AllocPtr<&slab>(2);
+
+  ASSERT_FALSE(slab.IsFull());
+  auto x3 = slab.AllocPtr<&slab>(1);
+
+  ASSERT_FALSE(slab.IsFull());
+  auto x4 = slab.AllocPtr<&slab>(1);
+
+  ASSERT_FALSE(slab.IsFull());
+  auto x5 = slab.AllocPtr<&slab>(1);
+
+  ASSERT_TRUE(slab.IsFull());
+  slab.FreePtr(x1);
+
+  ASSERT_FALSE(slab.IsFull());
+  slab.FreePtr(x2);
+  slab.FreePtr(x3);
+  slab.FreePtr(x4);
+  slab.FreePtr(x5);
+}
+
 // TEST(SlabTest, CstrDestrIndexes) {
 //   static Slab<CstrDestr, 10> slab;
 

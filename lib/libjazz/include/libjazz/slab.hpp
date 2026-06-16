@@ -30,9 +30,11 @@ class Slab {
   // bubble-sorting the freelist. Let's worry about this later, as we don't
   // currently put anything in here that's non-trivial.
 
+  bool IsFull() const { return (next_ >= CAP); }
+
   template <class... Args>
   T* Alloc(Args&&... args) {
-    assert(next_ < CAP);
+    assert(!IsFull());
     auto res = &entries_[next_];
     if (next_ == len_) {
       len_++;
