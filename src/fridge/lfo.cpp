@@ -77,7 +77,8 @@ LFOTickResult LFOEngine::TickWithEvents(Samples<uint32_t> step) {
 
   while (remaining > 0.0f) {
     if (grain_time_remaining_ <= 0.0f) {
-      std::optional<LFOTransition> transition = StartNewGrain(false);
+      std::optional<LFOTransition> transition =
+          StartNewGrain(/*initial_grain=*/false);
       if (transition.has_value()) {
         result.transition = transition;
       }
@@ -91,7 +92,8 @@ LFOTickResult LFOEngine::TickWithEvents(Samples<uint32_t> step) {
     remaining -= slice;
 
     if (grain_time_remaining_ <= 0.0f) {
-      std::optional<LFOTransition> transition = StartNewGrain(false);
+      std::optional<LFOTransition> transition =
+          StartNewGrain(/*initial_grain=*/false);
       if (transition.has_value()) {
         if (result.transition.has_value()) {
           result.transition = ExtendTransition(*result.transition, *transition);
