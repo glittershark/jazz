@@ -1,13 +1,14 @@
 #include <algorithm>
 #include <cstdint>
+#include <cstdio>
 #include <memory>
+#include <optional>
 
 #include "config.hpp"
 #include "config_transform.hpp"
 #include "constants.hpp"
 #include "fuzztest/fuzztest.h"
 #include "fuzztest/fuzztest_macros.h"
-#include "gtest/gtest.h"
 #include "libjazz/units.hpp"
 #include "sound.hpp"
 
@@ -172,4 +173,31 @@ void StaticConfigNeverCrashes(Config root_config,
 FUZZ_TEST(FridgeSoundFuzzTest, StaticConfigNeverCrashes)
     .WithDomains(fridge::config::ValidConfig(),
                  fuzztest::VectorOf(fuzztest::InRange<float>(-1.0f, 1.0f)),
+                 fuzztest::Arbitrary<uint32_t>());
+
+struct Event {
+  float sample;
+  std::optional<Config> new_config;
+};
+
+void DynamicConfigNeverCrashes(Config initial_config,
+                               const std::vector<Event>& events,
+                               uint32_t seed) {
+  auto transform = std::make_unique<fridge::transform::State>(seed);
+  auto sound = std::make_unique<Sound>();
+  Config config = initial_config;
+  for (auto&& event : events) {
+    if (event.new_config.has_value()) {
+      config = *event.new_config;
+    }
+    auto frame = transform->Update(config, Samples(1));
+    auto res = sound->ProcessSample(frame, event.sample);
+  }
+}
+
+FUZZ_TEST(FridgeSoundFuzzTest, DynamicConfigNeverCrashes)
+    .WithDomains(fridge::config::ValidConfig(),
+                 fuzztest::VectorOf(fuzztest::StructOf<Event>(
+                     fuzztest::InRange<float>(-1.0f, 1.0f),
+                     fuzztest::OptionalOf(fridge::config::ValidConfig()))),
                  fuzztest::Arbitrary<uint32_t>());
