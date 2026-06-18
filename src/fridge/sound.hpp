@@ -161,11 +161,7 @@ class BufferValue {
   }
   BufferValue() : BufferValue(0.0f) {}
 
-  ~BufferValue() {
-    if (isSampleWithUpdates()) {
-      SAMPLES.FreePtr(asSampleWithUpdates());
-    }
-  }
+  ~BufferValue();
 
   inline bool isSampleWithUpdates() const { return (pd_ & INT_TAG) == INT_TAG; }
   inline bool isSample() const { return !isSampleWithUpdates(); }
@@ -253,6 +249,10 @@ class Sound {
   /** Perform pre-tick housekeeping */
   void PreHousekeeping(size_t clock_time);
 
+ public:
+  ~Sound();
+
+ private:
   /** Apply finished updates to a buffer index */
   void DoUpdate(size_t index);
 

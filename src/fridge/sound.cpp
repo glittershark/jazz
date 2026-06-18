@@ -8,6 +8,19 @@ namespace fridge::sound {
 Slab<BufferValue::SampleWithUpdates, UPDATE_CAP> BufferValue::SAMPLES;
 Slab<IndicesToUpdate, UPDATE_CAP> IndicesToUpdate::SLAB;
 
+BufferValue::~BufferValue() {
+  if (isSampleWithUpdates()) {
+    auto head = asSampleWithUpdates();
+    auto cur = head->first_update;
+    while (cur != nullptr) {
+      auto next = cur->next_;
+      UPDATES.Free(cur);
+      cur = next;
+    }
+    SAMPLES.FreePtr(asSampleWithUpdates());
+  }
+}
+
 Update* BufferValue::PushBack(Update&& update) {
   if (isSampleWithUpdates()) {
     auto head = asSampleWithUpdates();
@@ -88,6 +101,15 @@ void BufferValue::Housekeep() {
 }
 
 // class Sound
+
+Sound::~Sound() {
+  for (auto& ptr : indices_to_update_) {
+    if (ptr != nullptr) {
+      for (auto&& _ : ptr->drain()) {
+      }
+    }
+  }
+}
 
 void Sound::DoUpdate(size_t index) {
   auto content = &buffer_[index];

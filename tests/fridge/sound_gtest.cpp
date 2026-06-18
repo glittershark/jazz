@@ -1,6 +1,9 @@
 #include <cstddef>
+#include <memory>
+#include <vector>
 
 #include "config.hpp"
+#include "constants.hpp"
 #include "gtest/gtest.h"
 #include "sound.hpp"
 
@@ -207,6 +210,32 @@ TEST_F(FridgeSoundTest, EraseReducesSignal) {
   config.heads[0].read_amount = 1.0f;
   float output = sound.ProcessSample(config, 0.0f);
   EXPECT_NEAR(output, 0.5f, 0.01f);
+}
+
+// Verify that Sound's destructor properly frees all slab entries, by allocating
+// a bunch of Sound instances and freeing them
+TEST_F(FridgeSoundTest, DestructorCleansUpSlabs) {
+  fridge::config::Config config;
+
+  // Collect reference outputs from the first Sound instance.
+  std::vector<float> reference;
+  reference.reserve(FADE_TIME + 1);
+  {
+    auto sound = std::make_unique<Sound>();
+    for (size_t i = 0; i <= FADE_TIME; ++i) {
+      reference.push_back(sound->ProcessSample(config, 1.0f));
+    }
+  }
+
+  // Each subsequent instance must produce identical output. 20 iterations is
+  // well past the ~6 needed to overflow either slab without the fix.
+  for (int j = 0; j < 20; ++j) {
+    auto sound = std::make_unique<Sound>();
+    for (size_t i = 0; i <= FADE_TIME; ++i) {
+      ASSERT_EQ(sound->ProcessSample(config, 1.0f), reference[i])
+          << "output mismatch at iteration " << j << ", sample " << i;
+    }
+  }
 }
 
 TEST_F(FridgeSoundTest, ZeroEraseAmountClearsSignal) {
