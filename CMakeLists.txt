@@ -18,6 +18,7 @@ add_subdirectory(src/reverse)
 add_subdirectory(src/granular)
 add_subdirectory(src/fridge)
 add_subdirectory(src/rachel)
+add_subdirectory(src/touch)
 
 # ARM-only projects
 add_subdirectory(src/identity)
