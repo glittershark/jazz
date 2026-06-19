@@ -8,7 +8,9 @@
       "toolchainFile": "${sourceDir}/cmake/arm-none-eabi-toolchain.cmake",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER_LAUNCHER": "sccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "sccache"
       }
     },
     {
@@ -18,7 +20,9 @@
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "BUILD_TESTING": "ON",
-        "CMAKE_BUILD_TYPE": "RelWithDebug"
+        "CMAKE_BUILD_TYPE": "RelWithDebug",
+        "CMAKE_C_COMPILER_LAUNCHER": "sccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "sccache"
       }
     },
     {
