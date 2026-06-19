@@ -10,6 +10,7 @@ add_library(libjazz STATIC
     src/slab.cpp
     src/buffer.cpp
     src/color.cpp
+    src/filter.cpp
 )
 
 # Set include directories
