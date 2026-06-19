@@ -27,6 +27,7 @@
 #include "lfo_engine.hpp"
 #include "libjazz/units.hpp"
 #include "sound.hpp"
+#include "touch_processor.hpp"
 
 using jazz::units::Samples;
 
@@ -112,6 +113,7 @@ enum class EffectKind {
   kCursedLowPass,
   kCursedHighPass,
   kLaSort,
+  kTouch,
   kFridge,
 };
 
@@ -124,7 +126,7 @@ struct ParseResult {
 
 const char* EffectListText() {
   return "bypass, granular, clip, anticlip, lowpass, highpass, "
-         "cursed_lowpass, cursed_highpass, la_sort, fridge";
+         "cursed_lowpass, cursed_highpass, la_sort, touch, fridge";
 }
 
 std::string ToLower(std::string value) {
@@ -243,6 +245,9 @@ std::optional<EffectKind> ParseEffect(const std::string& name) {
   }
   if (effect == "la_sort") {
     return EffectKind::kLaSort;
+  }
+  if (effect == "touch") {
+    return EffectKind::kTouch;
   }
   if (effect == "fridge") {
     return EffectKind::kFridge;
@@ -1617,6 +1622,14 @@ class CursedHighPassProcessor final : public SampleProcessor {
   float last_input_ = 1.0f;
 };
 
+class TouchProcessor final : public SampleProcessor {
+ public:
+  float Process(float sample) override { return processor_.Process(sample); }
+
+ private:
+  touch::Processor processor_;
+};
+
 class LaSortProcessor final : public SampleProcessor {
  public:
   LaSortProcessor(float weight_center, float weight_sharpness)
@@ -1739,6 +1752,8 @@ std::unique_ptr<SampleProcessor> MakeProcessor(EffectKind effect,
   case EffectKind::kLaSort:
     return std::make_unique<LaSortProcessor>(params.la_sort_weight_center,
                                              params.la_sort_weight_sharpness);
+  case EffectKind::kTouch:
+    return std::make_unique<TouchProcessor>();
   case EffectKind::kFridge:
     return std::make_unique<FridgeProcessor>(params.fridge_config);
   }
