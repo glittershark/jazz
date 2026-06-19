@@ -9,8 +9,7 @@
 
 namespace jazz::filter {
 
-template <size_t Numerator, size_t Denominator, typename Coeff = float,
-          typename Sample = Coeff>
+template <size_t Order, typename Coeff = float, typename Sample = Coeff>
 class InfiniteImpulse {
  public:
   /**
@@ -19,31 +18,25 @@ class InfiniteImpulse {
    * ----------------------------------
    *    Σ (1 + denom) * output_history
    */
-  InfiniteImpulse(std::array<Coeff, Numerator> num,
-                  std::array<Coeff, Denominator> denom)
+  InfiniteImpulse(std::array<Coeff, Order + 1> num,
+                  std::array<Coeff, Order> denom)
       : num_(num), denom_(denom) {}
 
   /**
    * Filter a single Sample, returning the result of the filter and updating our
    * internal state accordingly.
    */
-  Sample Filter(const Sample s) {
-    // direct form I IIR filter implementation, free from overflow but not
-    // necessarily the most efficient
-    Sample accum = 0;
+  Sample Filter(const Sample input) {
+    // direct form II transpose IIR filter implementation, pretty efficient and
+    // shouldn't have internal overflow issues
 
-    input_history_.Push(s);
+    Sample output = history_.PushBack(Sample{0}) + num_[0] * input;
 
-    for (size_t i = 0; i < num_.size(); ++i) {
-      accum += num_[i] * input_history_[i];
+    for (size_t i = 0; i < Order; ++i) {
+      history_[i] += num_[i + 1] * input - denom_[i] * output;
     }
 
-    for (size_t i = 0; i < denom_.size(); ++i) {
-      accum -= denom_[i] * output_history_[i];
-    }
-
-    output_history_.Push(accum);
-    return accum;
+    return output;
   }
 
   /**
@@ -59,11 +52,10 @@ class InfiniteImpulse {
   }
 
  private:
-  std::array<Coeff, Numerator> num_;
-  std::array<Coeff, Denominator> denom_;
+  std::array<Coeff, Order + 1> num_;
+  std::array<Coeff, Order> denom_;
 
-  buffer::CircularArray<Sample, Numerator> input_history_;
-  buffer::CircularArray<Sample, Denominator> output_history_;
+  buffer::CircularArray<Sample, Order> history_;
 };
 
 }  // namespace jazz::filter

@@ -6,7 +6,7 @@
 
 using namespace jazz::filter;
 
-static InfiniteImpulse<5, 4> demo_filter() {
+static InfiniteImpulse<4> demo_filter() {
   /*
     IIR elliptic filter generated with the following octave code:
 
@@ -30,7 +30,7 @@ static InfiniteImpulse<5, 4> demo_filter() {
        1.0000  -3.7756   5.3889  -3.4445   0.8316
 
   */
-  return InfiniteImpulse<5, 4>(
+  return InfiniteImpulse<4>(
       {
           1.036797740838754e-02,
           -3.599350201178753e-02,
