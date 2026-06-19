@@ -1,28 +1,39 @@
 #pragma once
 
 #include "libjazz/buffer.hpp"
+#include "libjazz/filter.hpp"
 
 namespace touch {
 
 enum class Feature {
   None,
+  ZeroCrossing,
   Peak,
   Trough,
-  ZeroCrossing,
+  Inflection,
 };
 
 class Processor {
  public:
   static constexpr size_t SAMPLE_RATE = 48000;
-  static constexpr size_t BUFFER_SIZE = SAMPLE_RATE / 1000;  // 1 ms of audio
+  static constexpr size_t HISTORY_SIZE = 2;
 
+  using HistoryBuffer = jazz::buffer::CircularArray<float, HISTORY_SIZE>;
+
+  Processor();
   float Process(float sample);
 
  private:
-  float ddt;
-  float ddt2;
+  jazz::filter::InfiniteImpulse<4> filter_;
 
-  jazz::buffer::CircularArray<float, BUFFER_SIZE> buffer_;
+  HistoryBuffer history_;
+  HistoryBuffer velocity_;
+  HistoryBuffer acceleration_;
+
+  float zero_crossings_;
+  float spikes_;
+
+  Feature LatestFeature();
 };
 
 }  // namespace touch
