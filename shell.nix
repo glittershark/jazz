@@ -24,6 +24,7 @@ pkgs.mkShell {
         '';
       })).dev
       pkgs.llvmPackages.compiler-rt.dev
+      pkgs.sccache
       pkgs.screen
       pkgs.niv
     ]
