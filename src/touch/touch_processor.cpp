@@ -7,7 +7,7 @@ namespace touch {
 Processor::Processor()
     // TODO(nausicaa): make this thing a bit more principled, since these
     // coefficients really depend on the sample rate
-    : filter_(
+    : history_filter_(
           {
               1.036797740838754e-02,
               -3.599350201178753e-02,
@@ -21,11 +21,27 @@ Processor::Processor()
               -3.444450284468981,
               0.831645207796911,
           }),
+      output_filter_(
+          {
+              1.6411e-04,
+              8.2056e-04,
+              1.6411e-03,
+              1.6411e-03,
+              8.2056e-04,
+              1.6411e-04,
+          },
+          {
+              -3.7315,
+              5.6939,
+              -4.4205,
+              1.7411,
+              -0.2778,
+          }),
       spikes_(1),
       zero_crossings_(1) {}
 
 float Processor::Process(float sample) {
-  history_.Push(filter_.Filter(sample));
+  history_.Push(history_filter_.Filter(sample));
   velocity_.Push((history_[0] - history_[1]) * SAMPLE_RATE);
   acceleration_.Push((velocity_[0] - velocity_[1]) * SAMPLE_RATE);
 
@@ -36,10 +52,13 @@ float Processor::Process(float sample) {
     break;
   case Feature::ZeroCrossing:
     zero_crossings_ += 1;
+    break;
   }
 
-  return std::copysign(std::pow(sample, 2 * (spikes_ / zero_crossings_)),
-                       sample);
+  float affected = std::copysign(
+      std::pow(std::abs(sample), 2 * (spikes_ / zero_crossings_)), sample);
+
+  return output_filter_.Filter(affected);
 }
 
 static bool HasZeroCrossing(const Processor::HistoryBuffer& buf) {

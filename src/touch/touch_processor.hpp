@@ -24,7 +24,8 @@ class Processor {
   float Process(float sample);
 
  private:
-  jazz::filter::InfiniteImpulse<4> filter_;
+  jazz::filter::InfiniteImpulse<4> history_filter_;
+  jazz::filter::InfiniteImpulse<5> output_filter_;
 
   HistoryBuffer history_;
   HistoryBuffer velocity_;
