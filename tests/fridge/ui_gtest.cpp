@@ -90,7 +90,18 @@ TEST_F(UITest, update_lfo_knobs_via_callbacks) {
     EXPECT_EQ(target, increment);
   };
 
-  test_size_knob(ui.lfo.range, config.lfos[selected_lfo].range, 9);
+  auto test_position_knob = [&](ui::Knob<ui::Position>& knob,
+                                const size_t& target, size_t increment) {
+    ASSERT_EQ(target, 0);
+
+    auto callback = knob.GetCallback();
+    callback(increment, garbage);
+    ui.UpdateConfig(config);
+
+    EXPECT_EQ(target, increment);
+  };
+
+  test_position_knob(ui.lfo.range, config.lfos[selected_lfo].range, 9);
   test_size_knob(ui.lfo.max_grain_size,
                  config.lfos[selected_lfo].max_grain_size, 17);
   test_size_knob(ui.lfo.min_grain_size,

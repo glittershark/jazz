@@ -355,7 +355,7 @@ struct Head {
 };
 
 struct LFO {
-  Knob<Size> range;
+  Knob<Position> range;
   Knob<Size> max_grain_size;
   Knob<Size> min_grain_size;
   Knob<SingleTurn> reverse_chance;

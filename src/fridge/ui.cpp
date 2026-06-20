@@ -5,7 +5,6 @@
 #include "value_display.hpp"
 
 #ifndef UNIT_TEST
-#include "daisy_seed.h"
 using namespace daisy;
 #endif  // UNIT_TEST
 
