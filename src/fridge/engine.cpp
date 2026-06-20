@@ -63,12 +63,12 @@ void BreadboardEngine::Tick() {
 Engine::Engine()
     // TODO: assign the right pins in here
     : mux_({
-          io::mux::GpioInMux(D1),
-          io::mux::GpioInMux(D2),
-          io::mux::GpioInMux(D3),
-          io::mux::GpioInMux(D4),
-          io::mux::GpioInMux(D5),
-          io::mux::GpioInMux(D6),
+          io::mux::GpioInMux(D20),
+          io::mux::GpioInMux(D19),
+          io::mux::GpioInMux(D18),
+          io::mux::GpioInMux(D17),
+          io::mux::GpioInMux(D16),
+          io::mux::GpioInMux(D15),
       }),
 
       scan_(io::mux::Address(D7, D8, D9), mux_),
@@ -76,31 +76,32 @@ Engine::Engine()
       timer_(TimerHandle::Config::Peripheral::TIM_3, scan_.GetCallback()),
 
       // head knobs are on mux 0 & 1
-      head_({
-          {mux_.channel(0, 0), mux_.channel(1, 0)},
-          {mux_.channel(0, 1), mux_.channel(1, 1)},
-          {mux_.channel(0, 2), mux_.channel(1, 2)},
-          {mux_.channel(0, 3), mux_.channel(1, 3)},
-          // feedback =
-          {mux_.channel(3, 2), mux_.channel(2, 2)},
-      }),
+      dry_(mux_.channel(0, 5), mux_.channel(1, 5)),
 
       // dry/wet are also on mux 0 & 1
-      dry_(mux_.channel(0, 5), mux_.channel(1, 5)),
       wet_(mux_.channel(3, 0), mux_.channel(2, 0)),
+      head_{
+          .position = {mux_.channel(2, 2), mux_.channel(1, 0)},
+          .write_amount = {mux_.channel(1, 3), mux_.channel(1, 1)},
+          .read_amount = {mux_.channel(0, 3), mux_.channel(1, 2)},
+          // erase_amount =
+          .erase_amount = {mux_.channel(0, 2), mux_.channel(0, 1)},
+          // feedback =
+          .feedback = {mux_.channel(0, 0), mux_.channel(0, 3)},
+      },
       // one spare channel on mux 0 & 1
 
       // lfo knobs are on mux 2 & 3
-      lfo_({
-          {mux_.channel(2, 0), mux_.channel(3, 0)},
-          {mux_.channel(2, 1), mux_.channel(3, 1)},
-          {mux_.channel(2, 2), mux_.channel(3, 2)},
-          {mux_.channel(2, 3), mux_.channel(3, 3)},
-          {mux_.channel(2, 4), mux_.channel(3, 4)},
-          {mux_.channel(2, 5), mux_.channel(3, 5)},
-          {mux_.channel(2, 6), mux_.channel(3, 6)},
-          {mux_.channel(2, 7), mux_.channel(3, 7)},
-      }),
+      lfo_{
+          .range = {mux_.channel(2, 0), mux_.channel(3, 0)},
+          .max_grain_size = {mux_.channel(2, 1), mux_.channel(3, 1)},
+          .min_grain_size = {mux_.channel(2, 2), mux_.channel(3, 2)},
+          .reverse_chance = {mux_.channel(2, 3), mux_.channel(3, 3)},
+          .teleport_chance = {mux_.channel(2, 4), mux_.channel(3, 4)},
+          .pitch_shift_chance = {mux_.channel(2, 5), mux_.channel(3, 5)},
+          .low_octave_chance = {mux_.channel(2, 6), mux_.channel(3, 6)},
+          .high_octave_chance = {mux_.channel(2, 7), mux_.channel(3, 7)},
+      },
 
       // head selection is on mux 4
       head_select_{
@@ -149,9 +150,9 @@ mux_.channel(5, 6), mux_.channel(5, 7),
   timer_.Start();
 }
 
-const fridge::transition::Frame& Engine::Tick(const config::Config& config,
+const fridge::transition::Frame& Engine::Tick(config::Config& config,
                                               Samples<uint32_t> dt) {
-  // ui_.UpdateConfig(config);
+  ui_.UpdateConfig(config);
   const auto output = transform_.Update(config, dt);
   return head_transitions_.Update(output, transform_.head_transitions());
 }
