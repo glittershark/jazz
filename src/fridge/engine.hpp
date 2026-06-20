@@ -72,6 +72,25 @@ class BreadboardEngine {
   void operator()() { return Tick(); }
 };
 
+struct HeadKnobs {
+  io::QuadratureEncoder position;
+  io::QuadratureEncoder write_amount;
+  io::QuadratureEncoder read_amount;
+  io::QuadratureEncoder erase_amount;
+  io::QuadratureEncoder feedback;
+};
+
+struct LfoKnobs {
+  io::QuadratureEncoder range;
+  io::QuadratureEncoder max_grain_size;
+  io::QuadratureEncoder min_grain_size;
+  io::QuadratureEncoder reverse_chance;
+  io::QuadratureEncoder teleport_chance;
+  io::QuadratureEncoder pitch_shift_chance;
+  io::QuadratureEncoder low_octave_chance;
+  io::QuadratureEncoder high_octave_chance;
+};
+
 class Engine {
   // hoookay: we have 13 knobs (2 channels each), 16 buttons (1 channel each),
   // and 8:1 muxes (in hardware), so we need 6 muxes in total to account for
@@ -87,11 +106,10 @@ class Engine {
   Timer timer_;
 
   // see constructor for mux assignments
-  std::array<io::QuadratureEncoder, kHeadKnobs> head_;
   io::QuadratureEncoder dry_;
   io::QuadratureEncoder wet_;
-
-  std::array<io::QuadratureEncoder, kLfoKnobs> lfo_;
+  HeadKnobs head_;
+  LfoKnobs lfo_;
   std::array<io::Button, NUM_HEADS> head_select_;
   std::array<io::Button, NUM_LFOS> lfo_select_;
 
@@ -103,8 +121,7 @@ class Engine {
  public:
   Engine();
 
-  const transition::Frame& Tick(const config::Config& config,
-                                Samples<uint32_t> dt);
+  const transition::Frame& Tick(config::Config& config, Samples<uint32_t> dt);
 };
 
 }  // namespace fridge::engine

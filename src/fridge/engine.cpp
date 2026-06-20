@@ -122,23 +122,23 @@ mux_.channel(5, 6), mux_.channel(5, 7),
 
       ui_(leds_) {
   // assign physical controls to UI controls
-  head_[0].OnChange(ui_.head.position.GetCallback());
-  head_[1].OnChange(ui_.head.write_amount.GetCallback());
-  head_[2].OnChange(ui_.head.read_amount.GetCallback());
-  head_[3].OnChange(ui_.head.erase_amount.GetCallback());
-  head_[4].OnChange(ui_.head.feedback.GetCallback());
+  head_.position.OnChange(ui_.head.position.GetCallback());
+  head_.write_amount.OnChange(ui_.head.write_amount.GetCallback());
+  head_.read_amount.OnChange(ui_.head.read_amount.GetCallback());
+  head_.erase_amount.OnChange(ui_.head.erase_amount.GetCallback());
+  head_.feedback.OnChange(ui_.head.feedback.GetCallback());
 
   dry_.OnChange(ui_.dry.GetCallback());
   wet_.OnChange(ui_.wet.GetCallback());
 
-  lfo_[0].OnChange(ui_.lfo.range.GetCallback());
-  lfo_[1].OnChange(ui_.lfo.max_grain_size.GetCallback());
-  lfo_[2].OnChange(ui_.lfo.min_grain_size.GetCallback());
-  lfo_[3].OnChange(ui_.lfo.reverse_chance.GetCallback());
-  lfo_[4].OnChange(ui_.lfo.teleport_chance.GetCallback());
-  lfo_[5].OnChange(ui_.lfo.pitch_shift_chance.GetCallback());
-  lfo_[6].OnChange(ui_.lfo.low_octave_chance.GetCallback());
-  lfo_[7].OnChange(ui_.lfo.high_octave_chance.GetCallback());
+  lfo_.range.OnChange(ui_.lfo.range.GetCallback());
+  lfo_.max_grain_size.OnChange(ui_.lfo.max_grain_size.GetCallback());
+  lfo_.min_grain_size.OnChange(ui_.lfo.min_grain_size.GetCallback());
+  lfo_.reverse_chance.OnChange(ui_.lfo.reverse_chance.GetCallback());
+  lfo_.teleport_chance.OnChange(ui_.lfo.teleport_chance.GetCallback());
+  lfo_.pitch_shift_chance.OnChange(ui_.lfo.pitch_shift_chance.GetCallback());
+  lfo_.low_octave_chance.OnChange(ui_.lfo.low_octave_chance.GetCallback());
+  lfo_.high_octave_chance.OnChange(ui_.lfo.high_octave_chance.GetCallback());
 
   // and then physical buttons (registers in the order you would expect)
   ui_.head_select.RegisterCallbacks(head_select_);
