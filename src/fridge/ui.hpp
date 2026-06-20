@@ -291,7 +291,9 @@ class Feedback {
 
 using SingleTurn = Bounded<Turns, 0.0f, 1.0f>;
 using Position = Bounded<Ticks<size_t>, 0, BUFFER_LEN>;
-using Size = Bounded<Ticks<size_t>, 0, 0xff>;  // TODO(nausicaa): is this sane?
+using Size = Bounded<Ticks<size_t>, 0, BUFFER_LEN>;
+// TODO(nausicaa): is this sane?
+// aspen: no. consider merging position and size?
 
 template <std::size_t N>
 class RadioButtons {
@@ -410,6 +412,10 @@ struct TempoButton {
 #endif  // UNIT_TEST
 
 struct UI {
+ private:
+  config::Config config_;
+
+ public:
   size_t selected_head = 0;
   size_t selected_lfo = 0;
 
@@ -425,9 +431,11 @@ struct UI {
 
   // TODO(nausicaa): LEDs (there are a bunch, one for each encoder and
   // selection button)
-  void UpdateConfig(config::Config& config) const;
 
-  UI(io::led::Controller& led_controller);
+  const config::Config& Config();
+
+  UI(io::led::Controller& led_controller,
+     config::Config initial_config = config::Config{});
 };
 
 }  // namespace fridge::ui

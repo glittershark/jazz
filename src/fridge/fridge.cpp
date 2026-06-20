@@ -24,7 +24,7 @@ using jazz::units::Samples;
 
 DaisySeed hw;
 
-config::Config root_config{
+constexpr const config::Config kInitialConfig{
     .heads{
         {{.position = 0,
           .write_amount = 1.0f,
@@ -93,7 +93,7 @@ constexpr const Samples<uint32_t> kAudioBlockSize = Samples(2);
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
   for (size_t i = 0; i < size; ++i) {
-    auto frame = ::engine->Tick(::root_config, Samples(1));
+    auto frame = ::engine->Tick();
     auto res = ::sound->ProcessSample(frame, in[0][i]);
     out[0][i] = res;
   }
@@ -132,12 +132,9 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 [[noreturn]] void ActualFridge() {
   // XXX: construct this thing BEFORE starting the audio callback!
   ::sound = new (sound_memory) sound::Sound();
-  ::engine = new (engine_memory) engine::Engine();
+  ::engine = new (engine_memory) engine::Engine(kInitialConfig);
 
   hw.StartAudio(AudioCallback);
-
-  engine::Engine engine;
-
   hw.PrintLine("Now refrigerating your heads...");
 
   for (;;) {

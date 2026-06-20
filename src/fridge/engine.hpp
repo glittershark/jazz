@@ -119,9 +119,9 @@ class Engine {
   transition::HeadTransitionMixer head_transitions_;
 
  public:
-  Engine();
+  Engine(config::Config initial_config = config::Config{});
 
-  const transition::Frame& Tick(config::Config& config, Samples<uint32_t> dt);
+  const transition::Frame& Tick(Samples<uint32_t> dt = Samples(1));
 };
 
 }  // namespace fridge::engine

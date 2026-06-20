@@ -1,5 +1,6 @@
 #include "engine.hpp"
 
+#include "config.hpp"
 #include "libjazz/units.hpp"
 
 #ifndef UNIT_TEST
@@ -60,7 +61,7 @@ void BreadboardEngine::Tick() {
   }
 }
 
-Engine::Engine()
+Engine::Engine(config::Config initial_config)
     // TODO: assign the right pins in here
     : mux_({
           io::mux::GpioInMux(D20),
@@ -121,7 +122,7 @@ mux_.channel(5, 6), mux_.channel(5, 7),
 */
       },
 
-      ui_(leds_) {
+      ui_(leds_, initial_config) {
   // assign physical controls to UI controls
   head_.position.OnChange(ui_.head.position.GetCallback());
   head_.write_amount.OnChange(ui_.head.write_amount.GetCallback());
@@ -150,9 +151,8 @@ mux_.channel(5, 6), mux_.channel(5, 7),
   timer_.Start();
 }
 
-const fridge::transition::Frame& Engine::Tick(config::Config& config,
-                                              Samples<uint32_t> dt) {
-  ui_.UpdateConfig(config);
+const fridge::transition::Frame& Engine::Tick(Samples<uint32_t> dt) {
+  auto config = ui_.Config();
   const auto output = transform_.Update(config, dt);
   return head_transitions_.Update(output, transform_.head_transitions());
 }

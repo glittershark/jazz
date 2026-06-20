@@ -53,11 +53,18 @@ void LFO::Select(const fridge::config::LFO& lfo) {
   high_octave_chance.Set(lfo.high_octave_chance);
 }
 
-void ui::UI::UpdateConfig(config::Config& config) const {
-  config.heads[selected_head] = head.Config();
-  config.lfos[selected_lfo] = lfo.Config();
-  config.dry = dry.Get();
-  config.wet = wet.Get();
+const config::Config& ui::UI::Config() {
+  config_.heads[selected_head] = head.Config();
+
+  // HACK: keep the targets unchanged. Fix this once we have actual target
+  // selection
+  auto prev_targets = config_.lfos[selected_lfo].targets;
+  config_.lfos[selected_lfo] = lfo.Config();
+  config_.lfos[selected_lfo].targets = prev_targets;
+
+  config_.dry = dry.Get();
+  config_.wet = wet.Get();
+  return config_;
 }
 
 constexpr const value_display::CieInterp kBlueToGreen = {
@@ -65,12 +72,21 @@ constexpr const value_display::CieInterp kBlueToGreen = {
     .end = color::XYZ(35, 71, 12),
 };
 
-ui::UI::UI(io::led::Controller& leds)
-    : head{.feedback = {RgbLedValueDisplay(
-               kBlueToGreen, RgbLed(leds.B(0, 1), leds.B(1, 1), leds.B(2, 1)))}
+ui::UI::UI(io::led::Controller& led_controller, config::Config initial_config)
+    : config_(initial_config),
+      head{.feedback = {RgbLedValueDisplay(
+               kBlueToGreen,
+               RgbLed(led_controller.B(0, 1), led_controller.B(1, 1),
+                      led_controller.B(2, 1)))}
 
       },
-      wet({kBlueToGreen, RgbLed(leds.B(4, 5), leds.B(5, 5), leds.B(6, 5))}) {}
+      wet({kBlueToGreen, RgbLed(led_controller.B(4, 5), led_controller.B(5, 5),
+                                led_controller.B(6, 5))}) {
+  head.Select(config_.heads[selected_head]);
+  lfo.Select(config_.lfos[selected_lfo]);
+  dry.Set(initial_config.dry);
+  wet.Set(initial_config.wet);
+}
 
 #ifndef UNIT_TEST
 

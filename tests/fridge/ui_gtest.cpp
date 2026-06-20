@@ -1,4 +1,5 @@
 #include "config.hpp"
+#include "constants.hpp"
 #include "gtest/gtest.h"
 #include "led.hpp"
 #include "ui.hpp"
@@ -6,9 +7,24 @@
 using namespace fridge;
 
 namespace {
+using std::move;
 
 struct UITest : public testing::Test {
   io::led::Controller leds;
+  config::Config initial_config;
+
+  UITest() : leds(), initial_config{} {
+    for (size_t i = 0; i < NUM_HEADS; ++i) {
+      initial_config.heads[i].write_amount = 0.0f;
+      initial_config.heads[i].read_amount = 0.0f;
+      initial_config.heads[i].erase_amount = 0.0f;
+    }
+
+    for (size_t i = 0; i < NUM_LFOS; ++i) {
+      initial_config.lfos[i].max_grain_size = 0;
+      initial_config.lfos[i].min_grain_size = 0;
+    }
+  }
 };
 
 TEST_F(UITest, UI_can_be_constructed) {
@@ -19,7 +35,7 @@ TEST_F(UITest, update_head_knobs_via_callbacks) {
   const unsigned garbage = 21307;
   const size_t selected_head = 1;
 
-  ui::UI ui(leds);
+  ui::UI ui(leds, initial_config);
   ui.selected_head = selected_head;
   config::Config config;
 
@@ -29,7 +45,7 @@ TEST_F(UITest, update_head_knobs_via_callbacks) {
 
     auto callback = knob.GetCallback();
     callback(increment, garbage);
-    ui.UpdateConfig(config);
+    config = ui.Config();
 
     EXPECT_EQ(target, increment);
   };
@@ -43,7 +59,7 @@ TEST_F(UITest, update_head_knobs_via_callbacks) {
 
     auto callback = knob.GetCallback();
     callback(garbage, increment);
-    ui.UpdateConfig(config);
+    config = ui.Config();
 
     EXPECT_FLOAT_EQ(target, increment);
   };
@@ -62,7 +78,7 @@ TEST_F(UITest, update_head_knobs_via_callbacks) {
 
     auto callback = ui.head.feedback.GetCallback();
     callback(garbage, feedback_increment);
-    ui.UpdateConfig(config);
+    config = ui.Config();
 
     EXPECT_EQ(config.heads[selected_head].feedback.kind,
               config::Feedback::Kind::kErase);
@@ -75,7 +91,7 @@ TEST_F(UITest, update_lfo_knobs_via_callbacks) {
   const unsigned garbage = 21307;
   const size_t selected_lfo = 1;
 
-  ui::UI ui(leds);
+  ui::UI ui(leds, initial_config);
   ui.selected_lfo = selected_lfo;
   config::Config config;
 
@@ -85,7 +101,7 @@ TEST_F(UITest, update_lfo_knobs_via_callbacks) {
 
     auto callback = knob.GetCallback();
     callback(increment, garbage);
-    ui.UpdateConfig(config);
+    config = ui.Config();
 
     EXPECT_EQ(target, increment);
   };
@@ -96,7 +112,7 @@ TEST_F(UITest, update_lfo_knobs_via_callbacks) {
 
     auto callback = knob.GetCallback();
     callback(increment, garbage);
-    ui.UpdateConfig(config);
+    config = ui.Config();
 
     EXPECT_EQ(target, increment);
   };
@@ -113,7 +129,7 @@ TEST_F(UITest, update_lfo_knobs_via_callbacks) {
 
     auto callback = knob.GetCallback();
     callback(garbage, increment);
-    ui.UpdateConfig(config);
+    config = ui.Config();
 
     EXPECT_FLOAT_EQ(target, increment);
   };
@@ -184,6 +200,35 @@ TEST_F(UITest, wet_knob_uses_led_to_display) {
 
   EXPECT_GT(green.duty(), 0);
   EXPECT_GT(blue.duty(), 0);
+}
+
+TEST_F(UITest, initial_config_is_left_unchanged_if_no_callbacks) {
+  config::Config initial_config;
+  initial_config.lfos[0].range = 44100;
+  initial_config.lfos[0].max_grain_size = 19000;
+  initial_config.lfos[0].min_grain_size = 2000;
+
+  ui::UI ui(leds, initial_config);
+
+  auto new_config = ui.Config();
+  EXPECT_EQ(new_config.lfos[0].range, initial_config.lfos[0].range);
+  EXPECT_EQ(new_config.lfos[0].max_grain_size,
+            initial_config.lfos[0].max_grain_size);
+  EXPECT_EQ(new_config.lfos[0].min_grain_size,
+            initial_config.lfos[0].min_grain_size);
+}
+
+TEST_F(UITest, dry_and_wet_come_from_initial_config) {
+  config::Config initial_config;
+  initial_config.dry = 0.9;
+  initial_config.wet = 0.777;
+
+  ui::UI ui(leds, initial_config);
+
+  auto new_config = ui.Config();
+
+  EXPECT_FLOAT_EQ(new_config.dry, initial_config.dry);
+  EXPECT_FLOAT_EQ(new_config.wet, initial_config.wet);
 }
 
 }  // namespace
