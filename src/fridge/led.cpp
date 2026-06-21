@@ -26,7 +26,7 @@ Controller::Controller(uint8_t address)
 
   // clear out every register in frame 0; most frames have extent 0xb3 (see page
   // 9, table 3) and we're only using frame 0.
-  for (uint8_t reg = 0x0; reg <= 0xb3; ++reg) {
+  for (uint8_t reg = 0x0; reg < kFramePageSize; ++reg) {
     Write({.frame = 0x0, .reg = reg}, 0);
   }
 

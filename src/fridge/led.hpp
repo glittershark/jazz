@@ -21,6 +21,16 @@ constexpr const uint8_t kMaxY = 8;
 using daisy::I2CHandle;
 
 /**
+* The size of a frame register page
+*
+* A frame register is a set of addresses that store LED state, blink state, and
+* PWM state.
+*
+* See page 9 of the datasheet, table 3
+*/
+constexpr const size_t kFramePageSize = 0xb4;
+
+/**
  * Driver for the IS31FL3731.
  *
  * A note on addressing: the datasheet uses a scheme (per-matrix) like C_{y-x},
@@ -105,7 +115,7 @@ class Controller {
     }
   };
 
-  std::array<CachedReg, 0xb3> frame_cache_;
+  std::array<CachedReg, kFramePageSize> frame_cache_;
 
   I2CHandle i2c_;
   uint8_t i2c_address_;
