@@ -113,8 +113,10 @@ class Engine {
   std::array<io::Button, NUM_HEADS> head_select_;
   std::array<io::Button, NUM_LFOS> lfo_select_;
 
-  ui::UI ui_;
+  // leds_ must be declared before ui_: C++ initializes members in declaration
+  // order, and the UI constructor writes to the LED controller during init.
   io::led::Controller leds_;
+  ui::UI ui_;
   transform::State transform_;
   transition::HeadTransitionMixer head_transitions_;
 
