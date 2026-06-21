@@ -21,13 +21,13 @@ constexpr const uint8_t kMaxY = 8;
 using daisy::I2CHandle;
 
 /**
-* The size of a frame register page
-*
-* A frame register is a set of addresses that store LED state, blink state, and
-* PWM state.
-*
-* See page 9 of the datasheet, table 3
-*/
+ * The size of a frame register page
+ *
+ * A frame register is a set of addresses that store LED state, blink state, and
+ * PWM state.
+ *
+ * See page 9 of the datasheet, table 3
+ */
 constexpr const size_t kFramePageSize = 0xb4;
 
 /**
