@@ -76,8 +76,8 @@ ui::UI::UI(io::led::Controller& led_controller, config::Config initial_config)
     : config_(initial_config),
       head{.feedback = {RgbLedValueDisplay(
                kBlueToGreen,
-               RgbLed(led_controller.B(0, 1), led_controller.B(1, 1),
-                      led_controller.B(2, 1)))}
+               RgbLed(led_controller.A(0, 2), led_controller.A(1, 2),
+                      led_controller.A(3, 2)))}
 
       },
       wet({kBlueToGreen, RgbLed(led_controller.B(4, 5), led_controller.B(5, 5),
