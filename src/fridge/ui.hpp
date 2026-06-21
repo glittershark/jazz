@@ -73,6 +73,10 @@ class Knob {
 
 template <DisplayableBackingValue V, ValueDisplay VD>
 class KnobWithDisplay : public Knob<V> {
+  static void callback(KnobWithDisplay<V, VD>* this_, int ticks, float turns) {
+    this_->Increment(ticks, turns);
+  }
+
   RgbLedValueDisplay<VD> value_display_;
   void UpdateDisplay() {
     // TODO(aspen): We may want to turn the LEDs on higher up an abstraction
@@ -85,13 +89,20 @@ class KnobWithDisplay : public Knob<V> {
   KnobWithDisplay(RgbLedValueDisplay<VD> value_display)
       : value_display_(value_display) {};
 
+  TypedCallback<KnobWithDisplay<V, VD>, int, float> GetCallback() {
+    return {
+        .callback = KnobWithDisplay<V, VD>::callback,
+        .data = this,
+    };
+  }
+
   void Set(const V& rhs) {
     Knob<V>::Set(rhs);
     UpdateDisplay();
   }
 
   V& Increment(int ticks, float turns) {
-    auto res = Knob<V>::Increment(ticks, turns);
+    auto& res = Knob<V>::Increment(ticks, turns);
     UpdateDisplay();
     return res;
   }
