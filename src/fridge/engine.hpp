@@ -101,7 +101,7 @@ class Engine {
   constexpr const static size_t kLfoKnobs = 8;
 
   io::mux::MultiGpioInMux<kMuxes> mux_;
-  io::mux::ChannelScan<kMuxes, decltype(mux_)> scan_;
+  io::mux::ChannelScan<8U, decltype(mux_)> scan_;
 
   Timer timer_;
 
