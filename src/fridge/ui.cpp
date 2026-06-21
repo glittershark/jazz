@@ -2,6 +2,7 @@
 
 #include "config.hpp"
 #include "led.hpp"
+#include "libjazz/color.hpp"
 #include "value_display.hpp"
 
 #ifndef UNIT_TEST
@@ -74,10 +75,13 @@ constexpr const value_display::CieInterp kBlueToGreen = {
 
 ui::UI::UI(io::led::Controller& led_controller, config::Config initial_config)
     : config_(initial_config),
-      head{.feedback = {RgbLedValueDisplay(
-               kBlueToGreen,
-               RgbLed(led_controller.A(0, 2), led_controller.A(1, 2),
-                      led_controller.A(3, 2)))}
+      head{.feedback = FeedbackKnob(
+               RgbLed(led_controller.A(3, 2), led_controller.A(1, 2),
+                      led_controller.A(0, 2)),
+               FeedbackKnob::Config{
+                   .max_read_color = color::RGB(0, 255, 0),
+                   .max_erase_color = color::RGB(255, 0, 0),
+               })
 
       },
       wet({kBlueToGreen, RgbLed(led_controller.B(4, 5), led_controller.B(5, 5),

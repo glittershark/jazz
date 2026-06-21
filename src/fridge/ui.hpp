@@ -15,6 +15,7 @@
 #include "config.hpp"
 #include "constants.hpp"
 #include "io.hpp"
+#include "libjazz/color.hpp"
 #include "rgb_led.hpp"
 #include "value_display.hpp"
 
@@ -293,10 +294,64 @@ class Feedback {
     value_ = rhs;
     return *this;
   }
+};
 
-  uint8_t GetDisplay() const {
-    return static_cast<uint8_t>(((static_cast<float>(value_) + 1.0f) / 2.0f) *
-                                255.f);
+class FeedbackKnob : public Knob<Feedback> {
+  RgbLed rgb_led_;
+  value_display::CieInterp read_display_;
+  value_display::CieInterp erase_display_;
+
+  static void callback(FeedbackKnob* this_, int ticks, float turns) {
+    this_->Increment(ticks, turns);
+  }
+
+  color::RGB Color() {
+    config::Feedback val = Get();
+    auto amount = static_cast<uint8_t>(val.amount * 255);
+    switch (val.kind) {
+    case config::Feedback::Kind::kRead:
+      return read_display_(amount);
+    case config::Feedback::Kind::kErase:
+      return erase_display_(amount);
+    default:
+      assert(false);
+    }
+  }
+
+  void UpdateDisplay() {
+    rgb_led_.SetOn(true);
+    rgb_led_.SetColor(Color());
+  }
+
+ public:
+  struct Config {
+    color::RGB max_read_color;
+    color::RGB max_erase_color;
+    color::RGB zero_color = {0, 0, 0};
+  };
+
+  FeedbackKnob(RgbLed rgb_led, Config config)
+      : rgb_led_(rgb_led),
+        read_display_{.start = config.zero_color, .end = config.max_read_color},
+        erase_display_{.start = config.zero_color,
+                       .end = config.max_erase_color} {}
+
+  TypedCallback<FeedbackKnob, int, float> GetCallback() {
+    return {
+        .callback = FeedbackKnob::callback,
+        .data = this,
+    };
+  }
+
+  void Set(const Feedback& rhs) {
+    Knob<Feedback>::Set(rhs);
+    UpdateDisplay();
+  }
+
+  Feedback& Increment(int ticks, float turns) {
+    auto& res = Knob<Feedback>::Increment(ticks, turns);
+    UpdateDisplay();
+    return res;
   }
 };
 
@@ -361,7 +416,7 @@ struct Head {
   Knob<SingleTurn> write_amount;
   Knob<SingleTurn> read_amount;
   Knob<SingleTurn> erase_amount;
-  KnobWithDisplay<Feedback, value_display::CieInterp> feedback;
+  FeedbackKnob feedback;
 
   void Select(const config::Head& head);
   config::Head Config() const;
