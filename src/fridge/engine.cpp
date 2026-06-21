@@ -152,7 +152,7 @@ mux_.channel(5, 6), mux_.channel(5, 7),
 }
 
 const fridge::transition::Frame& Engine::Tick(Samples<uint32_t> dt) {
-  auto config = ui_.Config();
+  const auto& config = ui_.Config();
   const auto output = transform_.Update(config, dt);
   return head_transitions_.Update(output, transform_.head_transitions());
 }

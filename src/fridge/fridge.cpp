@@ -93,7 +93,7 @@ constexpr const Samples<uint32_t> kAudioBlockSize = Samples(2);
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
   for (size_t i = 0; i < size; ++i) {
-    auto frame = ::engine->Tick();
+    const auto& frame = ::engine->Tick();
     auto res = ::sound->ProcessSample(frame, in[0][i]);
     out[0][i] = res;
   }
