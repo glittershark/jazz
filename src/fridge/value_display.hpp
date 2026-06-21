@@ -52,6 +52,11 @@ struct HueWheel {
 static_assert(ValueDisplay<HueWheel>);
 static_assert(std::semiregular<HueWheel>);
 
+struct BlackToWhite {
+  color::RGB operator()(uint8_t value) const;
+};
+static_assert(ValueDisplay<BlackToWhite>);
+
 /* Display a value as a linear interpolation between two points in XYZ color
  * space */
 struct CieInterp {

@@ -6,6 +6,10 @@
 
 namespace fridge::ui::value_display {
 
+color::RGB BlackToWhite::operator()(uint8_t v) const {
+  return color::RGB(v, v, v);
+}
+
 color::RGB HueWheel::operator()(uint8_t v) const {
   /* 1. scale the value to the interval [start, end] */
   v = static_cast<uint8_t>(
