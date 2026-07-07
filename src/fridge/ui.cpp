@@ -75,7 +75,11 @@ constexpr const value_display::CieInterp kBlueToGreen = {
 
 ui::UI::UI(io::led::Controller& led_controller, config::Config initial_config)
     : config_(initial_config),
-      head{.feedback = FeedbackKnob(
+      head{.position = Knob<Position>("Position"),
+           .write_amount = Knob<SingleTurn>("Write Amount"),
+           .read_amount = Knob<SingleTurn>("Read Amount"),
+           .erase_amount = Knob<SingleTurn>("Erase Amount"),
+           .feedback = FeedbackKnob(
                RgbLed(led_controller.A(3, 2), led_controller.A(1, 2),
                       led_controller.A(0, 2)),
                FeedbackKnob::Config{
@@ -84,7 +88,19 @@ ui::UI::UI(io::led::Controller& led_controller, config::Config initial_config)
                })
 
       },
-      wet({kBlueToGreen, RgbLed(led_controller.B(4, 5), led_controller.B(5, 5),
+      lfo{
+          .range = Knob<Position>("Range"),
+          .max_grain_size = Knob<Size>("Max Grain Size"),
+          .min_grain_size = Knob<Size>("Min Grain Size"),
+          .reverse_chance = Knob<SingleTurn>("Reverse Chance"),
+          .teleport_chance = Knob<SingleTurn>("Teleport Chance"),
+          .pitch_shift_chance = Knob<SingleTurn>("Pitch Shift Chance"),
+          .low_octave_chance = Knob<SingleTurn>("Low Octave Chance"),
+          .high_octave_chance = Knob<SingleTurn>("High Octave Chance"),
+      },
+      dry("Dry"),
+      wet("Wet",
+          {kBlueToGreen, RgbLed(led_controller.B(4, 5), led_controller.B(5, 5),
                                 led_controller.B(6, 5))}) {
   head.Select(config_.heads[selected_head]);
   lfo.Select(config_.lfos[selected_lfo]);

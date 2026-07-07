@@ -101,6 +101,9 @@ class Engine {
   Engine(config::Config initial_config = config::Config{});
 
   const transition::Frame& Tick(Samples<uint32_t> dt = Samples(1));
+
+  ui::UI& ui() { return ui_; }
+  const ui::UI& ui() const { return ui_; }
 };
 
 }  // namespace fridge::engine

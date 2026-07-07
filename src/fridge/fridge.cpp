@@ -107,6 +107,9 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
   hw.StartAudio(AudioCallback);
   hw.PrintLine("Now refrigerating your heads...");
 
+  // TODO: delete
+  ::engine->ui().head.feedback.EnableLogging();
+
   for (;;) {
   }
 }

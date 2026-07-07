@@ -147,7 +147,7 @@ TEST_F(UITest, update_lfo_knobs_via_callbacks) {
 }
 
 TEST_F(UITest, single_turn_knob_saturates) {
-  ui::Knob<ui::SingleTurn> knob;
+  ui::Knob<ui::SingleTurn> knob("test knob");
   ASSERT_FLOAT_EQ(knob.Get(), 0.0f);
 
   knob.GetCallback()(0, 0.3f);
@@ -168,7 +168,7 @@ TEST_F(UITest, single_turn_knob_saturates) {
 
 TEST_F(UITest, position_knob_saturates) {
   const int third_of_buffer = static_cast<int>(BUFFER_LEN) / 3;
-  ui::Knob<ui::Position> knob;
+  ui::Knob<ui::Position> knob("test knob");
 
   ASSERT_EQ(knob.Get(), 0);
 

@@ -21,10 +21,16 @@
 
 namespace fridge::ui {
 
+#ifndef UNIT_TEST
+#include "daisy_seed.h"
+extern daisy::DaisySeed hw;
+#endif
+
 template <typename V>
 concept BackingValue =
     std::convertible_to<V, typename V::Raw_type> &&
     std::convertible_to<typename V::Raw_type, V> &&
+    requires(const V& v, const char* key) { v.Print(key); } &&
     requires(const V& vr, const V::Raw_type& raw, int ticks, float turns) {
       V();
       V(vr);
@@ -49,11 +55,24 @@ class Knob {
     this_->Increment(ticks, turns);
   }
 
+ public:
+  bool logging_enabled() const { return logging_enabled_; }
+
  protected:
   V value_;
+  const char* name_;
+  bool logging_enabled_ = false;
+
+  void LogValue() const {
+#ifndef UNIT_TEST
+    if (logging_enabled()) {
+      value_.Print(name_);
+    }
+#endif
+  }
 
  public:
-  Knob() = default;
+  Knob(const char* name) : value_(), name_(name) {}
   Knob(Knob&&) = delete;
   Knob(const Knob&) = delete;
 
@@ -65,11 +84,18 @@ class Knob {
   }
 
   V Get() const { return value_; };
-  void Set(const V& rhs) { value_ = rhs; }
+  void Set(const V& rhs) {
+    value_ = rhs;
+    LogValue();
+  }
 
   V& Increment(int ticks, float turns) {
-    return value_.Increment(ticks, turns);
+    auto& res = value_.Increment(ticks, turns);
+    LogValue();
+    return res;
   }
+
+  void EnableLogging(bool enable = true) { logging_enabled_ = enable; }
 };
 
 template <DisplayableBackingValue V, ValueDisplay VD>
@@ -87,8 +113,8 @@ class KnobWithDisplay : public Knob<V> {
   }
 
  public:
-  KnobWithDisplay(RgbLedValueDisplay<VD> value_display)
-      : value_display_(value_display) {};
+  KnobWithDisplay(const char* name, RgbLedValueDisplay<VD> value_display)
+      : Knob<V>(name), value_display_(value_display) {};
 
   TypedCallback<KnobWithDisplay<V, VD>, int, float> GetCallback() {
     return {
@@ -179,6 +205,8 @@ class Bounded {
         (static_cast<float>(value_ - min) / static_cast<float>(max - min)) *
         255.f);
   }
+
+  void Print(const char* key) const { value_.Print(key); }
 };
 
 template <typename V>
@@ -219,7 +247,15 @@ class Ticks {
     value_ += rhs;
     return *this;
   }
+
+  void Print(const char* key) const {
+#ifndef UNIT_TEST
+    hw.PrintLine("%s = %d", key, value_);
+#endif
+  }
 };
+
+static_assert(BackingValue<Ticks<size_t>>);
 
 class Turns {
   float value_;
@@ -246,7 +282,15 @@ class Turns {
     value_ += rhs;
     return *this;
   }
+
+  void Print(const char* key) const {
+#ifndef UNIT_TEST
+    hw.PrintLine("%s = " FLT_FMT(3), key, FLT_VAR3(value_));
+#endif
+  }
 };
+
+static_assert(BackingValue<Turns>);
 
 class Feedback {
   using V = Bounded<Turns, -1.0f, 1.0f>;
@@ -294,7 +338,15 @@ class Feedback {
     value_ = rhs;
     return *this;
   }
+
+  void Print(const char* key) const {
+#ifndef UNIT_TEST
+    hw.PrintLine("%s = " FLT_FMT(3), key, FLT_VAR3(value_));
+#endif
+  }
 };
+
+static_assert(BackingValue<Feedback>);
 
 class FeedbackKnob : public Knob<Feedback> {
   RgbLed rgb_led_;
@@ -331,7 +383,8 @@ class FeedbackKnob : public Knob<Feedback> {
   };
 
   FeedbackKnob(RgbLed rgb_led, Config config)
-      : rgb_led_(rgb_led),
+      : Knob("Feedback"),
+        rgb_led_(rgb_led),
         read_display_{.start = config.zero_color, .end = config.max_read_color},
         erase_display_{.start = config.zero_color,
                        .end = config.max_erase_color} {}
