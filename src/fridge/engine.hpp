@@ -49,29 +49,6 @@ class Timer {
   daisy::TimerHandle::Result Start() { return timer_.Start(); }
 };
 
-/**
- * The thing that makes the world go 'round!
- */
-class BreadboardEngine {
-  io::mux::MultiGpioInMux<2> encoders_;
-  io::mux::ChannelScan<8U, decltype(encoders_)> scan_;
-  Timer timer_;
-
-  io::QuadratureEncoder enc1_;
-  io::QuadratureEncoder enc2_;
-
-  ui::Knob<ui::Size> knob1_;
-  ui::Knob<ui::Size> knob2_;
-
-  io::led::Controller led_controller_;
-
- public:
-  BreadboardEngine();
-
-  void Tick();
-  void operator()() { return Tick(); }
-};
-
 struct HeadKnobs {
   io::QuadratureEncoder position;
   io::QuadratureEncoder write_amount;

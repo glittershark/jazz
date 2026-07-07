@@ -7,7 +7,6 @@
 
 #include "daisy_seed.h"
 #include "io.hpp"
-#include "libjazz/color.hpp"
 
 using namespace jazz;
 using namespace daisy;
@@ -26,39 +25,6 @@ Timer::Timer(daisy::TimerHandle::Config::Peripheral timer, Callback<> callback,
   timer_.Init(timer_config);
   timer_.SetCallback(Timer::timer_callback_, this);
   timer_.SetPeriod((period_.count() * timer_.GetFreq()) / 1'000'000);
-}
-
-BreadboardEngine::BreadboardEngine()
-    : encoders_({io::mux::GpioInMux(D4), io::mux::GpioInMux(D3)}),
-      scan_(io::mux::Address(
-                /* a = */ D15,
-                /* b = */ D16,
-                /* c = */ D17),
-            encoders_),
-      timer_(TimerHandle::Config::Peripheral::TIM_3, scan_.GetCallback()),
-      enc1_(encoders_.channel(0, 2), encoders_.channel(1, 2)),
-      enc2_(encoders_.channel(0, 0), encoders_.channel(1, 0)) {
-  enc1_.OnChange(knob1_.GetCallback());
-  enc2_.OnChange(knob2_.GetCallback());
-  knob1_.Set(0);
-  knob2_.Set(0);
-  timer_.Start();
-}
-
-void BreadboardEngine::Tick() {
-  {
-    color::RGB color = color::HSV(knob1_.Get(), 255, 255);
-    led_controller_.B(0, 1).SetOn(true).SetPwm(color.red);
-    led_controller_.B(1, 1).SetOn(true).SetPwm(color.blue);
-    led_controller_.B(2, 1).SetOn(true).SetPwm(color.green);
-  }
-
-  {
-    color::RGB color = color::HSV(knob2_.Get(), 255, 255);
-    led_controller_.B(4, 5).SetOn(true).SetPwm(color.red);
-    led_controller_.B(5, 5).SetOn(true).SetPwm(color.blue);
-    led_controller_.B(6, 5).SetOn(true).SetPwm(color.green);
-  }
 }
 
 Engine::Engine(config::Config initial_config)
