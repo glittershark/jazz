@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <cmath>
 #include <concepts>
 #include <cstddef>
 #include <limits>
@@ -359,7 +360,10 @@ class FeedbackKnob : public Knob<Feedback> {
 
   color::RGB Color() {
     config::Feedback val = Get();
-    auto amount = static_cast<uint8_t>(val.amount * 255);
+    // Adjust for perceptual brightness curve of our particular LEDs. This
+    // function arived at somewhat empirically
+    auto adjusted = std::pow(val.amount, 2);
+    auto amount = static_cast<uint8_t>(adjusted * 255);
     switch (val.kind) {
     case config::Feedback::Kind::kRead:
       return read_display_(amount);
