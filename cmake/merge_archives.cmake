@@ -4,7 +4,13 @@
 # Usage: cmake -DBINARY_DIR=<dir> -DOUTPUT=<path/to/out.a> -P merge_archives.cmake
 
 file(GLOB_RECURSE ARCHIVES "${BINARY_DIR}/*.a")
-list(FILTER ARCHIVES EXCLUDE REGEX "/googlemock|/googletest")
+# Exclude googletest source-tree archives and the installed copies of
+# libgtest_main.a / libgmock_main.a. The latter define a plain main() that
+# would otherwise win the link over fuzztest_gtest_main's main() (the one
+# that calls InitFuzzTest() to register FUZZ_TEST cases), and the binary
+# would report "does NOT link in any test case."
+list(FILTER ARCHIVES EXCLUDE
+     REGEX "/googlemock|/googletest|/libg(test|mock)_main\\.a$|/libfuzztest_llvm_fuzzer_(main|wrapper)\\.a$")
 
 if(NOT ARCHIVES)
   message(FATAL_ERROR "No .a files found under ${BINARY_DIR}")
