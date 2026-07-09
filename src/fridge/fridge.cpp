@@ -8,6 +8,7 @@
 
 #include "config.hpp"
 #include "daisy_seed.h"
+#include "default_config.hpp"
 #include "engine.hpp"
 #include "libjazz/color.hpp"
 #include "sound.hpp"
@@ -17,7 +18,7 @@ using namespace fridge;
 using namespace daisy;
 
 DaisySeed hw;
-config::Config config;
+config::Config config = config::DefaultConfig();
 sound::Sound* sound;
 
 char DSY_SDRAM_BSS sound_memory[sizeof(sound::Sound)];

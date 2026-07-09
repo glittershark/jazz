@@ -22,6 +22,7 @@
 
 #include "config.hpp"
 #include "config_transform.hpp"
+#include "default_config.hpp"
 #include "granular.hpp"
 #include "head_transition.hpp"
 #include "lfo_engine.hpp"
@@ -34,38 +35,9 @@ constexpr int kDefaultChannels = 2;
 constexpr size_t kFramesPerChunk = 1024;
 
 fridge::config::Config DefaultFridgeConfig() {
-  fridge::config::Config config;
-
-  config.dry = 0.7f;
-  config.wet = 0.8f;
-
-  for (fridge::config::Head& head : config.heads) {
-    head.write_amount = 0.0f;
-    head.read_amount = 0.0f;
-    head.erase_amount = 1.0f;
-    head.feedback.amount = 0.0f;
-  }
-
-  config.heads[0] = {
-      .position = 0,
-      .write_amount = 1.0f,
-      .read_amount = 0.75f,
-      .erase_amount = 0.999f,
-  };
-
-  config.lfos[0] = {
-      .range = 24000,
-      .max_grain_size = 24000,
-      .min_grain_size = 24000,
-      .reverse_chance = 1.0f,
-  };
-  config.lfos[0].targets[0] = fridge::config::Target{
-      .object = fridge::config::TargetObject::kHead,
-      .parameter = fridge::config::TargetParameter::kPosition,
-      .object_idx = 0,
-  };
-
-  return config;
+  // Boot with exactly what the firmware boots with, so a host run reproduces
+  // the hardware; presets and --fridge-* flags still override from there.
+  return fridge::config::DefaultConfig();
 }
 
 struct EffectParams {
