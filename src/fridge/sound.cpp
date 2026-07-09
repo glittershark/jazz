@@ -229,18 +229,56 @@ void Sound::Erase(size_t position, float amount) {
       &indices_to_update_[(global_clock_ + FADE_TIME) % FADE_TIME], position);
 }
 
-float Sound::ApplyHead(const fridge::config::Head& head, float sample) {
+float Sound::ApplyHead(const fridge::config::Head& head, float sample,
+                       FeedbackState* feedback_state) {
   float wet_signal = 0.f;
 
-  if (head.read_amount > 0.f) {
-    auto value = Read(head.position);
-    wet_signal = value * head.read_amount;
+  {
+    // We might need to read the value at the buffer if:
+    //
+    //  1. we are a head with nonzero read amount
+    //  2. we are a head with nonzero *read feedback* amount
+    if (head.read_amount > 0.f) {
+      float value = Read(head.position);
+      wet_signal = value * head.read_amount;
+
+      if (head.feedback.kind == config::Feedback::Kind::kRead) {
+        feedback_state->Add(value * head.feedback.amount);
+      }
+    } else if (head.feedback.kind == config::Feedback::Kind::kRead) {
+      // There is (intentionally) some code duplication here just to make sure
+      // we:
+      // 1. limit any unnecessary conditionals
+      // 2. Don't call Read (which can be expensive) more than once
+      float value = Read(head.position) * head.feedback.amount;
+      feedback_state->Add(value);
+    }
   }
 
-  if (head.write_amount > 0.f) {
-    Write(head.position, sample * head.write_amount);
+  {
+    // Accumulate a value to write to the buffer at the head's position (if
+    // any). This avoids calling write twice for heads with both write
+    // feedback and normal write
+    float write_sample = 0.f;
+
+    // Write the contents of the feedback state to the buffer at the head's
+    // current position (times the feedback amount), for heads with write
+    // feedback
+    if (head.feedback.kind == config::Feedback::Kind::kWrite) {
+      write_sample += feedback_state->value() * head.feedback.amount;
+    }
+
+    // Write the *sample* to the buffer, for heads with regular write
+    if (head.write_amount > 0.f) {
+      write_sample += sample * head.write_amount;
+    }
+
+    if (write_sample != 0.f) {
+      Write(head.position, write_sample);
+    }
   }
 
+  // Erase from the buffer, for heads with erase
   if (head.erase_amount < 1.f) {
     Erase(head.position, head.erase_amount);
   }
@@ -253,8 +291,21 @@ float Sound::ProcessSample(const fridge::config::Config& config, float sample) {
 
   float wet_signal = 0.f;
 
+  FeedbackState feedback_state;
+
+  // 1. Process all read feedback heads (to read their values into the feedback
+  // state)
   for (auto&& head : config.heads) {
-    wet_signal += ApplyHead(head, sample);
+    if (head.feedback.kind == config::Feedback::Kind::kRead) {
+      wet_signal += ApplyHead(head, sample, &feedback_state);
+    }
+  }
+
+  // 2. Process all write feedback heads (reading from feedback state)
+  for (auto&& head : config.heads) {
+    if (head.feedback.kind == config::Feedback::Kind::kWrite) {
+      wet_signal += ApplyHead(head, sample, &feedback_state);
+    }
   }
 
   global_clock_ = (global_clock_ + 1) % global_clock_max_;
@@ -268,8 +319,23 @@ float Sound::ProcessSample(const fridge::transition::Frame& frame,
 
   float wet_signal = 0.f;
 
+  FeedbackState feedback_state;
+
+  // 1. Process all read feedback heads (to read their values into the feedback
+  // state)
   for (size_t i = 0; i < frame.head_count; ++i) {
-    wet_signal += ApplyHead(frame.heads[i].head, sample);
+    const auto& head = frame.heads[i].head;
+    if (head.feedback.kind == config::Feedback::Kind::kRead) {
+      wet_signal += ApplyHead(head, sample, &feedback_state);
+    }
+  }
+
+  // 2. Process all write feedback heads (reading from feedback state)
+  for (size_t i = 0; i < frame.head_count; ++i) {
+    const auto& head = frame.heads[i].head;
+    if (head.feedback.kind == config::Feedback::Kind::kWrite) {
+      wet_signal += ApplyHead(head, sample, &feedback_state);
+    }
   }
 
   global_clock_ = (global_clock_ + 1) % global_clock_max_;

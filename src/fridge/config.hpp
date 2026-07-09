@@ -10,7 +10,7 @@
 namespace fridge::config {
 
 struct Feedback {
-  enum class Kind { kRead, kErase };
+  enum class Kind { kRead, kWrite };
 
   Kind kind = Kind::kRead;
   float amount = 0.0f;

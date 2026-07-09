@@ -84,7 +84,7 @@ ui::UI::UI(io::led::Controller& led_controller, config::Config initial_config)
                       led_controller.A(0, 2)),
                FeedbackKnob::Config{
                    .max_read_color = color::RGB(0, 255, 0),
-                   .max_erase_color = color::RGB(255, 0, 0),
+                   .max_write_color = color::RGB(255, 0, 0),
                })
 
       },

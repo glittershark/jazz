@@ -320,7 +320,7 @@ class Feedback {
       };
     } else {
       return {
-          .kind = config::Feedback::Kind::kErase,
+          .kind = config::Feedback::Kind::kWrite,
           .amount = -value_,
       };
     }
@@ -352,7 +352,7 @@ static_assert(BackingValue<Feedback>);
 class FeedbackKnob : public Knob<Feedback> {
   RgbLed rgb_led_;
   value_display::CieInterp read_display_;
-  value_display::CieInterp erase_display_;
+  value_display::CieInterp write_display_;
 
   static void callback(FeedbackKnob* this_, int ticks, float turns) {
     this_->Increment(ticks, turns);
@@ -367,8 +367,8 @@ class FeedbackKnob : public Knob<Feedback> {
     switch (val.kind) {
     case config::Feedback::Kind::kRead:
       return read_display_(amount);
-    case config::Feedback::Kind::kErase:
-      return erase_display_(amount);
+    case config::Feedback::Kind::kWrite:
+      return write_display_(amount);
     default:
       assert(false);
     }
@@ -382,7 +382,7 @@ class FeedbackKnob : public Knob<Feedback> {
  public:
   struct Config {
     color::RGB max_read_color;
-    color::RGB max_erase_color;
+    color::RGB max_write_color;
     color::RGB zero_color = {0, 0, 0};
   };
 
@@ -390,8 +390,8 @@ class FeedbackKnob : public Knob<Feedback> {
       : Knob("Feedback"),
         rgb_led_(rgb_led),
         read_display_{.start = config.zero_color, .end = config.max_read_color},
-        erase_display_{.start = config.zero_color,
-                       .end = config.max_erase_color} {}
+        write_display_{.start = config.zero_color,
+                       .end = config.max_write_color} {}
 
   TypedCallback<FeedbackKnob, int, float> GetCallback() {
     return {
