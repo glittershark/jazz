@@ -33,7 +33,7 @@ constexpr const config::Config kInitialConfig{
          .feedback =
              {
                  .kind = config::Feedback::Kind::kWrite,
-                 .amount = 1.0f,
+                 .amount = 0.4f,
                  // .amount = 0.f,
              }},
         {.position = 44100,
@@ -44,39 +44,48 @@ constexpr const config::Config kInitialConfig{
              {
                  .kind = config::Feedback::Kind::kRead,
                  // .amount = 0.f,
-                 .amount = 0.4f,
+                 .amount = 1.0f,
              }},
     }},
-    .lfos{{{
-               .range = 44100 * 2,
-               .max_grain_size = 19000,
-               .min_grain_size = 2000,
-               .reverse_chance = 0.3f,
-               .teleport_chance = 0.2f,
-               .pitch_shift_chance = 0.4f,
-               // .pitch_shift_chance = 0.f,
-               .targets{{{{
-                   .object = config::TargetObject::kHead,
-                   .parameter = config::TargetParameter::kPosition,
-                   .object_idx = 0,
-               }}}},
-           },
-           {
-               .range = 44100 * 2,
-               .max_grain_size = 19000,
-               .min_grain_size = 2000,
-               .reverse_chance = 0.3f,
-               .teleport_chance = 0.2f,
-               .pitch_shift_chance = 0.4f,
-               // .pitch_shift_chance = 0.f,
-               .targets{{{{
-                   .object = config::TargetObject::kHead,
-                   .parameter = config::TargetParameter::kPosition,
-                   .object_idx = 0,
-               }}}},
-           }}},
-    .dry = 0.6f,
-    .wet = 0.4f,
+    .lfos{{
+        {
+            .range = 44100 * 2,
+            .max_grain_size = 19000,
+            .min_grain_size = 2000,
+            // .reverse_chance = 0.3f,
+            // .teleport_chance = 0.2f,
+            // .pitch_shift_chance = 0.4f,
+            // .pitch_shift_chance = 0.f,
+            .targets{{
+                {{
+                    .object = config::TargetObject::kHead,
+                    .parameter = config::TargetParameter::kPosition,
+                    .object_idx = 0,
+                }},
+                {{
+                    .object = config::TargetObject::kHead,
+                    .parameter = config::TargetParameter::kPosition,
+                    .object_idx = 1,
+                }},
+            }},
+        },
+        // {
+        //     .range = 44100 * 2,
+        //     .max_grain_size = 19000,
+        //     .min_grain_size = 2000,
+        //     .reverse_chance = 0.3f,
+        //     .teleport_chance = 0.2f,
+        //     .pitch_shift_chance = 0.4f,
+        //     // .pitch_shift_chance = 0.f,
+        //     .targets{{{{
+        //         .object = config::TargetObject::kHead,
+        //         .parameter = config::TargetParameter::kPosition,
+        //         .object_idx = 0,
+        //     }}}},
+        // }
+    }},
+    .dry = 0.7f,
+    .wet = 0.3f,
 };
 
 sound::Sound* sound;
@@ -85,7 +94,7 @@ engine::Engine* engine = nullptr;
 char DSY_SDRAM_BSS sound_memory[sizeof(sound::Sound)];
 char engine_memory[sizeof(engine::Engine)];
 
-constexpr const Samples<uint32_t> kAudioBlockSize = Samples(2);
+constexpr const Samples<uint32_t> kAudioBlockSize = Samples(16);
 
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
