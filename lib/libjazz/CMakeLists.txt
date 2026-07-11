@@ -10,7 +10,13 @@ add_library(libjazz STATIC
     src/slab.cpp
     src/buffer.cpp
     src/color.cpp
+    src/pan.cpp
 )
+
+if(TARGET rapidcheck)
+  target_sources(libjazz PRIVATE src/gen.cpp)
+  target_link_libraries(libjazz PRIVATE rapidcheck)
+endif()
 
 # Set include directories
 target_include_directories(libjazz 
