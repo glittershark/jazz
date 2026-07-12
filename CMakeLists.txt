@@ -5,6 +5,10 @@ include(cmake/jazz.cmake)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
+  find_package(rapidcheck REQUIRED)
+endif()
+
 add_subdirectory(lib/libjazz)
 
 if(CMAKE_CROSSCOMPILING)

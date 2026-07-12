@@ -1,9 +1,8 @@
 #include "led.hpp"
 
-#include "per/gpio.h"
-
 #ifndef UNIT_TEST
 
+#include "per/gpio.h"
 using namespace fridge::io::led;
 
 #include <cassert>

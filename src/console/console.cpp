@@ -1,5 +1,3 @@
-#ifdef UNIT_TEST
-
 #include <sys/wait.h>
 
 #include <algorithm>
@@ -1943,23 +1941,3 @@ int main(int argc, char** argv) {
   return 0;
 }
 
-#else
-
-#include "daisy_seed.h"
-
-using namespace daisy;
-
-static DaisySeed hw;
-
-int main(void) {
-  hw.Configure();
-  hw.Init();
-  hw.StartLog();
-
-  while (1) {
-    System::Delay(500);
-    hw.PrintLine("test thing: %s", "string");
-  }
-}
-
-#endif
