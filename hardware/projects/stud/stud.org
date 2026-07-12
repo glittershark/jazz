@@ -1,0 +1,15 @@
+#+title: the StUD (stillmar universal devboard)
+
+* TODO MCU
+looking at either:
+- the R7KA8M2JFLCA (e.g., [[https://www.digikey.com/en/products/detail/renesas-electronics-corporation/R7KA8M2JFLCAB-UC0/27569004][this one]]), which is a hawss w/ ARM Helium & two cores;
+- the STM32N645A0, which also supports Helium but is a bit slower and has some
+  stuff we won't use.
+
+had [[https://claude.ai/chat/82b0d813-beff-4082-b18c-5ca08c604a7c][a conversation with claude]] about it, and it kind of seems like the former is
+a better fit for what we want to do: it runs at a core clock of 1 GHz / 250 MHz
+and is very straight-compute-focused. on the other hand... we might have to
+write a /lot/ of our own tooling.
+
+-> oh wait, hang on! there's https://github.com/ra-rs/ra, which we could most
+   likely update for the RA8M2 series.
