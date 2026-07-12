@@ -6,6 +6,7 @@
 #include <optional>
 
 #include "constants.hpp"
+#include "libjazz/pan.hpp"
 
 namespace fridge::config {
 
@@ -28,6 +29,7 @@ struct Head {
   float read_amount = 1.0f;
   float erase_amount = 1.0f;
   Feedback feedback{};
+  jazz::audio::Pan pan = jazz::audio::Pan::Center();
 };
 
 enum class TargetObject { kHead, kLFO, kMixer };

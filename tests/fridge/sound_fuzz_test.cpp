@@ -71,7 +71,9 @@ auto ValidFeedback() {
 auto ValidHead() {
   return fuzztest::StructOf<Head>(
       fuzztest::InRange<size_t>(0, BUFFER_LEN - 1), fuzztest::Finite<float>(),
-      fuzztest::Finite<float>(), fuzztest::Finite<float>(), ValidFeedback());
+      fuzztest::Finite<float>(), fuzztest::Finite<float>(), ValidFeedback(),
+      fuzztest::ConstructorOf<jazz::audio::Pan>(
+          fuzztest::InRange<float>(-1.0f, 1.0f)));
 }
 
 auto ValidTarget() {
