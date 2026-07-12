@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "fridge.hpp"
+#include "lfo_engine.hpp"
 #include "libjazz/units.hpp"
 
 namespace {

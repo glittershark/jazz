@@ -18,7 +18,7 @@ function(jazz_add_firmware name)
     # Host: build static library for tests
     add_library(${name} STATIC ${ARG_SOURCES})
     target_link_libraries(${name} PUBLIC jazz::libjazz)
-    target_compile_definitions(${name} PUBLIC UNIT_TEST)
+    target_compile_definitions(${name} PRIVATE UNIT_TEST)
     target_include_directories(${name} PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     )
