@@ -7,6 +7,7 @@
 #include <optional>
 
 #include "constants.hpp"
+#include "libjazz/pan.hpp"
 
 namespace fridge::config {
 
@@ -31,6 +32,7 @@ struct Head {
   float read_amount = 0.0f;
   float erase_amount = 1.0f;
   Feedback feedback{};
+  jazz::audio::Pan pan = jazz::audio::Pan::Center();
 
   bool operator==(const Head& rhs) const = default;
 };
