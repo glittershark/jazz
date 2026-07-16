@@ -9,6 +9,7 @@
 #include "constants.hpp"
 #include "fuzztest/fuzztest.h"
 #include "fuzztest/fuzztest_macros.h"
+#include "libjazz/stereo_sample.hpp"
 #include "libjazz/units.hpp"
 #include "sound.hpp"
 
@@ -24,6 +25,7 @@ using fridge::config::Target;
 using fridge::config::TargetObject;
 using fridge::config::TargetParameter;
 using fridge::sound::Sound;
+using jazz::audio::StereoSample;
 using jazz::units::Samples;
 
 namespace fridge::config {
@@ -151,7 +153,7 @@ void ProcessSampleDoesNotCrash(float sample, size_t position,
   };
 
   auto sound = std::make_unique<Sound>();
-  sound->ProcessSample(config, sample);
+  sound->ProcessSample(config, StereoSample::OfMono(sample));
 }
 
 FUZZ_TEST(FridgeSoundFuzzTest, ProcessSampleDoesNotCrash)
@@ -168,7 +170,7 @@ void StaticConfigNeverCrashes(Config root_config,
   auto sound = std::make_unique<Sound>();
   for (auto&& sample : samples) {
     auto frame = transform->Update(root_config, Samples(1));
-    auto res = sound->ProcessSample(frame, sample);
+    auto res = sound->ProcessSample(frame, StereoSample::OfMono(sample));
   }
 }
 
@@ -193,7 +195,7 @@ void DynamicConfigNeverCrashes(Config initial_config,
       config = *event.new_config;
     }
     auto frame = transform->Update(config, Samples(1));
-    auto res = sound->ProcessSample(frame, event.sample);
+    auto res = sound->ProcessSample(frame, StereoSample::OfMono(event.sample));
   }
 }
 

@@ -9,7 +9,7 @@ constexpr const size_t NUM_HEADS = 2;
 constexpr const size_t NUM_LFOS = 2;
 constexpr const size_t MAX_TARGET_PARAMS = 8;  // ??
 
-constexpr const size_t BUFFER_LEN = 44100 * 60 * 6; /* 6 minutes */
+constexpr const size_t BUFFER_LEN = 44100 * 60 * 3; /* 3 minutes */
 
 /** How long to fade updates to the audio buffer, in samples */
 constexpr const size_t FADE_TIME = 128;

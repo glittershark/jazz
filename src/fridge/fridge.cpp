@@ -1,8 +1,8 @@
 #include <cstdint>
 
+#include "constants.hpp"
+#include "libjazz/stereo_sample.hpp"
 #include "libjazz/units.hpp"
-#include "rgb_led.hpp"
-#include "value_display.hpp"
 
 #ifndef UNIT_TEST
 
@@ -12,7 +12,6 @@
 #include "config.hpp"
 #include "daisy_seed.h"
 #include "engine.hpp"
-#include "libjazz/color.hpp"
 #include "sound.hpp"
 
 using namespace jazz;
@@ -93,9 +92,15 @@ constexpr const Samples<uint32_t> kAudioBlockSize = Samples(2);
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
   for (size_t i = 0; i < size; ++i) {
+    // TODO: maybe stereo in too someday?
+    auto in_sample = audio::StereoSample::OfMono(in[0][i]);
+
     const auto& frame = ::engine->Tick();
-    auto res = ::sound->ProcessSample(frame, in[0][i]);
-    out[0][i] = res;
+    auto res = ::sound->ProcessSample(frame, in_sample);
+
+    // TODO: fold to mono if a second cable isn't plugged in
+    out[0][i] = res.left;
+    out[1][i] = res.right;
   }
 }
 

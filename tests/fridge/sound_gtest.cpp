@@ -5,6 +5,7 @@
 #include "config.hpp"
 #include "constants.hpp"
 #include "gtest/gtest.h"
+#include "libjazz/stereo_sample.hpp"
 #include "sound.hpp"
 
 using fridge::BUFFER_LEN;
@@ -14,6 +15,8 @@ using fridge::sound::BufferValue;
 using fridge::sound::IndicesToUpdate;
 using fridge::sound::Sound;
 using fridge::sound::Update;
+using jazz::audio::Pan;
+using jazz::audio::StereoSample;
 
 TEST(FridgeIndicesToUpdateTest, Prepend) {
   IndicesToUpdate* itu = nullptr;
@@ -90,50 +93,51 @@ TEST_F(FridgeSoundTest, InitialReadReturnsZero) {
   // Read-only config at position 0
   config.heads[0].write_amount = 0.0f;
 
-  float output = sound.ProcessSample(config, 0.0f);
-  EXPECT_EQ(output, 0.0f);
+  auto output = sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+  EXPECT_EQ(output, StereoSample::OfMono(0.0f));
 }
 
 TEST_F(FridgeSoundTest, ReadManyTimesReturnsZero) {
   config.heads[0].write_amount = 0.0f;
 
   for (int i = 0; i < 1000; ++i) {
-    EXPECT_EQ(sound.ProcessSample(config, 0.0f), 0.0f);
+    EXPECT_EQ(sound.ProcessSample(config, StereoSample::OfMono(0.0f)),
+              StereoSample::OfMono(0.0f));
   }
 }
 
 TEST_F(FridgeSoundTest, WriteAndReadAfterFadeTime) {
   // Write a sample
   config.heads[0].read_amount = 0.0f;
-  sound.ProcessSample(config, 0.7f);
+  sound.ProcessSample(config, StereoSample::OfMono(0.7f));
 
   // Advance past fade time with no writes
   config.heads[0].write_amount = 0.0f;
   for (size_t i = 0; i < FADE_TIME; ++i) {
-    sound.ProcessSample(config, 0.0f);
+    sound.ProcessSample(config, StereoSample::OfMono(0.0f));
   }
 
   // Now read back
   config.heads[0].read_amount = 1.0f;
-  float output = sound.ProcessSample(config, 0.0f);
-  EXPECT_NEAR(output, 0.7f, 0.0001f);
+  auto output = sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+  EXPECT_NEAR(output.Mono(), 0.7f, 0.0001f);
 }
 
 TEST_F(FridgeSoundTest, WriteNegativeSample) {
   // Write a negative sample
   config.heads[0].read_amount = 0.0f;
-  sound.ProcessSample(config, -0.5f);
+  sound.ProcessSample(config, StereoSample::OfMono(-0.5f));
 
   // Advance past fade time
   config.heads[0].write_amount = 0.0f;
   for (size_t i = 0; i < FADE_TIME; ++i) {
-    sound.ProcessSample(config, 0.0f);
+    sound.ProcessSample(config, StereoSample::OfMono(0.0f));
   }
 
   // Read back
   config.heads[0].read_amount = 1.0f;
-  float output = sound.ProcessSample(config, 0.0f);
-  EXPECT_NEAR(output, -0.5f, 0.0001f);
+  auto output = sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+  EXPECT_NEAR(output.Mono(), -0.5f, 0.0001f);
 }
 
 TEST_F(FridgeSoundTest, WriteToManyPositions) {
@@ -142,7 +146,7 @@ TEST_F(FridgeSoundTest, WriteToManyPositions) {
 
   for (size_t i = 0; i < BUFFER_LEN + 10; ++i) {
     config.heads[0].position = i % BUFFER_LEN;
-    sound.ProcessSample(config, 0.5f);
+    sound.ProcessSample(config, StereoSample::OfMono(0.5f));
   }
 }
 
@@ -153,23 +157,23 @@ TEST_F(FridgeSoundTest, DryWetMix) {
   config.dry = 0.5f;
   config.wet = 0.5f;
 
-  float output = sound.ProcessSample(config, 1.0f);
-  EXPECT_NEAR(output, 0.5f, 0.0001f);  // Only dry signal, wet is 0
+  auto output = sound.ProcessSample(config, StereoSample::OfMono(1.0f));
+  EXPECT_NEAR(output.Mono(), 0.5f, 0.0001f);  // Only dry signal, wet is 0
 }
 
 TEST_F(FridgeSoundTest, MultipleHeadsRead) {
   // Write to position 0
   config.heads[0].read_amount = 0.0f;
-  sound.ProcessSample(config, 0.4f);
+  sound.ProcessSample(config, StereoSample::OfMono(0.4f));
 
   // Write to position 100
   config.heads[0].position = 100;
-  sound.ProcessSample(config, 0.3f);
+  sound.ProcessSample(config, StereoSample::OfMono(0.3f));
 
   // Advance past fade time
   config.heads[0].write_amount = 0.0f;
   for (size_t i = 0; i < FADE_TIME; ++i) {
-    sound.ProcessSample(config, 0.0f);
+    sound.ProcessSample(config, StereoSample::OfMono(0.0f));
   }
 
   // Read from both positions with two heads
@@ -180,36 +184,36 @@ TEST_F(FridgeSoundTest, MultipleHeadsRead) {
   config.dry = 0.0f;
   config.wet = 1.0f;
 
-  float output = sound.ProcessSample(config, 0.0f);
-  EXPECT_NEAR(output, 0.7f, 0.0001f);  // 0.4 + 0.3
+  auto output = sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+  EXPECT_NEAR(output.Mono(), 0.7f, 0.0001f);  // 0.4 + 0.3
 }
 
 TEST_F(FridgeSoundTest, EraseReducesSignal) {
   // Write to position 0
   config.heads[0].read_amount = 0.0f;
-  sound.ProcessSample(config, 1.0f);
+  sound.ProcessSample(config, StereoSample::OfMono(1.0f));
 
   // Advance past fade time
   config.heads[0].write_amount = 0.0f;
   for (size_t i = 0; i < FADE_TIME; ++i) {
-    sound.ProcessSample(config, 0.0f);
+    sound.ProcessSample(config, StereoSample::OfMono(0.0f));
   }
 
   // Now erase (erase_amount multiplies the sample, so 0.5 keeps half)
   config.heads[0].position = 0;
   config.heads[0].erase_amount = 0.5f;
-  sound.ProcessSample(config, 0.0f);
+  sound.ProcessSample(config, StereoSample::OfMono(0.0f));
 
   // Advance past fade time for erase
   config.heads[0].erase_amount = 1.0f;
   for (size_t i = 0; i < FADE_TIME; ++i) {
-    sound.ProcessSample(config, 0.0f);
+    sound.ProcessSample(config, StereoSample::OfMono(0.0f));
   }
 
   // Read - should be reduced to ~0.5
   config.heads[0].read_amount = 1.0f;
-  float output = sound.ProcessSample(config, 0.0f);
-  EXPECT_NEAR(output, 0.5f, 0.01f);
+  auto output = sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+  EXPECT_NEAR(output.Mono(), 0.5f, 0.01f);
 }
 
 // Verify that Sound's destructor properly frees all slab entries, by allocating
@@ -218,12 +222,12 @@ TEST_F(FridgeSoundTest, DestructorCleansUpSlabs) {
   fridge::config::Config config;
 
   // Collect reference outputs from the first Sound instance.
-  std::vector<float> reference;
+  std::vector<StereoSample> reference;
   reference.reserve(FADE_TIME + 1);
   {
     auto sound = std::make_unique<Sound>();
     for (size_t i = 0; i <= FADE_TIME; ++i) {
-      reference.push_back(sound->ProcessSample(config, 1.0f));
+      reference.push_back(sound->ProcessSample(config, StereoSample::OfMono(1.0f)));
     }
   }
 
@@ -232,31 +236,51 @@ TEST_F(FridgeSoundTest, DestructorCleansUpSlabs) {
   for (int j = 0; j < 20; ++j) {
     auto sound = std::make_unique<Sound>();
     for (size_t i = 0; i <= FADE_TIME; ++i) {
-      ASSERT_EQ(sound->ProcessSample(config, 1.0f), reference[i])
+      ASSERT_EQ(sound->ProcessSample(config, StereoSample::OfMono(1.0f)), reference[i])
           << "output mismatch at iteration " << j << ", sample " << i;
     }
   }
 }
 
+TEST_F(FridgeSoundTest, PanOnHeadShiftsOutput) {
+  // Write with center pan so both buffer channels get the full signal.
+  config.heads[0].read_amount = 0.0f;
+  sound.ProcessSample(config, StereoSample::OfMono(0.7f));
+
+  // Advance past fade time with no writes.
+  config.heads[0].write_amount = 0.0f;
+  for (size_t i = 0; i < FADE_TIME; ++i) {
+    sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+  }
+
+  // Read with full-right pan: left channel should be silent, right should carry
+  // the full signal.
+  config.heads[0].read_amount = 1.0f;
+  config.heads[0].pan = Pan::Right(1.0f);
+  auto output = sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+  EXPECT_NEAR(output.left, 0.0f, 0.0001f);
+  EXPECT_NEAR(output.right, 0.7f, 0.0001f);
+}
+
 TEST_F(FridgeSoundTest, ZeroEraseAmountClearsSignal) {
   config.heads[0].read_amount = 0.0f;
-  sound.ProcessSample(config, 1.0f);
+  sound.ProcessSample(config, StereoSample::OfMono(1.0f));
 
   config.heads[0].write_amount = 0.0f;
   for (size_t i = 0; i < FADE_TIME; ++i) {
-    sound.ProcessSample(config, 0.0f);
+    sound.ProcessSample(config, StereoSample::OfMono(0.0f));
   }
 
   config.heads[0].position = 0;
   config.heads[0].erase_amount = 0.0f;
-  sound.ProcessSample(config, 0.0f);
+  sound.ProcessSample(config, StereoSample::OfMono(0.0f));
 
   config.heads[0].erase_amount = 1.0f;
   for (size_t i = 0; i < FADE_TIME; ++i) {
-    sound.ProcessSample(config, 0.0f);
+    sound.ProcessSample(config, StereoSample::OfMono(0.0f));
   }
 
   config.heads[0].read_amount = 1.0f;
-  float output = sound.ProcessSample(config, 0.0f);
-  EXPECT_NEAR(output, 0.0f, 0.01f);
+  auto output = sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+  EXPECT_NEAR(output.Mono(), 0.0f, 0.01f);
 }
