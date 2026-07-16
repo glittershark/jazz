@@ -7,10 +7,10 @@ namespace fridge {
 
 constexpr const size_t NUM_HEADS = 8;
 constexpr const size_t NUM_LFOS = 8;
-constexpr const size_t MAX_TARGET_PARAMS = 64;  // ??
+constexpr const size_t MAX_TARGET_PARAMS = 8;  // ??
 
-/** Cap on simultaneously-active modulation routes across all LFOs. */
-constexpr const size_t MAX_PATCHES = 128;
+/** Every (LFO, target) pair can be an active modulation route. */
+constexpr const size_t MAX_PATCHES = NUM_LFOS * MAX_TARGET_PARAMS;
 
 constexpr const size_t BUFFER_LEN = 44100 * 60 * 3; /* 3 minutes */
 
