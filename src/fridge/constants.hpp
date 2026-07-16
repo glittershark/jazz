@@ -15,7 +15,7 @@ constexpr const size_t BUFFER_LEN = 44100 * 60 * 3; /* 3 minutes */
 constexpr const size_t FADE_TIME = 128;
 
 constexpr const size_t UPDATE_CAP =
-    ((NUM_HEADS + 1) * ((FADE_TIME + 1) * 2)) * 2;
+    ((NUM_HEADS + 1) * ((FADE_TIME + 1) * 2)) * 4;
 
 }  // namespace fridge
 
