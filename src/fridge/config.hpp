@@ -72,6 +72,7 @@ enum class TargetParameter : uint8_t {
   kPitchShiftChance,
   kLowOctaveChance,
   kHighOctaveChance,
+  kPan,
   kDry,
   kWet,
 };
