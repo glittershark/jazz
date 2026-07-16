@@ -27,6 +27,21 @@ namespace fridge::ui {
 extern daisy::DaisySeed hw;
 #endif
 
+// Tracks whether any UI input has changed since the last consumer read the
+// flag. Set by Knob/RadioButtons on input; consumed by Engine each audio tick
+// so `transform::State::Update` can skip the O(NUM_HEADS + NUM_LFOS)
+// MatchesSanitizedConfig compare when nothing changed.
+namespace detail {
+inline bool g_config_dirty = true;
+}
+inline void MarkConfigDirty() { detail::g_config_dirty = true; }
+inline bool PeekConfigDirty() { return detail::g_config_dirty; }
+inline bool ConsumeConfigDirty() {
+  bool was = detail::g_config_dirty;
+  detail::g_config_dirty = false;
+  return was;
+}
+
 template <typename V>
 concept BackingValue =
     std::convertible_to<V, typename V::Raw_type> &&
@@ -88,11 +103,13 @@ class Knob {
   void Set(const V& rhs) {
     value_ = rhs;
     LogValue();
+    MarkConfigDirty();
   }
 
   V& Increment(int ticks, float turns) {
     auto& res = value_.Increment(ticks, turns);
     LogValue();
+    MarkConfigDirty();
     return res;
   }
 
@@ -437,6 +454,7 @@ class RadioButtons {
     void Select(bool state) {
       if (state && rb) {
         rb->selected_ = which;
+        MarkConfigDirty();
       }
     }
 

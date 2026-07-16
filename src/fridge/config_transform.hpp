@@ -30,9 +30,9 @@ class State {
   void RebaseRootConfig(const config::Config& root_config);
   float CurrentDelta(size_t lfo_idx) const;
   void ApplyCurrentDeltas(config::Config& config) const;
-  void RecordHeadTransitions(size_t lfo_idx,
-                             const fridge::state::LFOTransition& transition,
-                             const config::Config& previous_output);
+  void RecordHeadTransitions(
+      size_t lfo_idx, const fridge::state::LFOTransition& transition,
+      const std::array<size_t, NUM_HEADS>& previous_head_positions);
 
   // ----- Validation
 
@@ -53,8 +53,13 @@ class State {
  public:
   explicit State(uint32_t seed = std::random_device{}()) : seed_(seed) {}
   const config::Config& Reset(const config::Config& root_config);
+  // `config_may_have_changed` is a caller-supplied hint. When false, we skip
+  // the O(NUM_HEADS + NUM_LFOS) MatchesSanitizedConfig compare and assume
+  // root_config still sanitizes to root_config_. Engine wires this to the UI
+  // dirty flag; tests default to true and get the previous behavior.
   const config::Config& Update(const config::Config& root_config,
-                               Samples<uint32_t> step);
+                               Samples<uint32_t> step,
+                               bool config_may_have_changed = true);
   Samples<uint32_t> time() const { return time_; }
   const std::array<std::optional<fridge::transition::HeadMotionTransition>,
                    NUM_HEADS>&

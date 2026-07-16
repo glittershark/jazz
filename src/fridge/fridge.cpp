@@ -1,6 +1,7 @@
 #include <cstdint>
 
 #include "constants.hpp"
+#include "libjazz/pan.hpp"
 #include "libjazz/stereo_sample.hpp"
 #include "libjazz/units.hpp"
 
@@ -23,36 +24,104 @@ using jazz::units::Samples;
 
 DaisySeed hw;
 
-constexpr const config::Config kInitialConfig{
-    .heads{
-        {{.position = 0,
-          .write_amount = 1.0f,
-          .read_amount = 1.0f,
-          .erase_amount = 0.7f,
-          .feedback =
-              {
-                  .kind = config::Feedback::Kind::kRead,
-                  .amount = 0.7f,
-              }},
-         {.position = 0,
-          .write_amount = 0.99f,
-          .read_amount = 0.99f,
-          .erase_amount = 0.9f,
-          .feedback =
-              {
-                  .kind = config::Feedback::Kind::kRead,
-                  .amount = 0.7f,
-              }}},
+// constexpr const config::Config kInitialConfig{
+//     .heads{{{
+//                 .position = 0,
+//                 .write_amount = 1.0f,
+//                 .read_amount = 1.0f,
+//                 .erase_amount = 0.7f,
+//             },
+//             {
+//                 .position = 22000,
+//                 .write_amount = 1,
+//                 .read_amount = 0,
+//                 .erase_amount = 0,
+//             },
+//             {
+//                 .position = 0,
+//                 .write_amount = 0.f,
+//                 .read_amount = 0.f,
+//                 .erase_amount = 0.f,
+//             },
+//             {
+//                 .position = 0,
+//                 .write_amount = 0.f,
+//                 .read_amount = 0.f,
+//                 .erase_amount = 0.f,
+//             }}},
+//     .lfos{{
+//         {
+//             .range = 44100 * 2,
+//             .targets{{{{
+//                 .object = config::TargetObject::kHead,
+//                 .parameter = config::TargetParameter::kPosition,
+//                 .object_idx = 0,
+//             }}}},
+//         },
+//         {
+//             .range = 44100 * 2,
+//             .targets{{{{
+//                 .object = config::TargetObject::kHead,
+//                 .parameter = config::TargetParameter::kPosition,
+//                 .object_idx = 1,
+//             }}}},
+//         },
+//     }},
+//     .dry = 1.0f,
+//     .wet = 0.7f,
+// };
 
-    },
+constexpr const config::Config kInitialConfig{
+    .heads{{{.position = 0,
+             .write_amount = 1.0f,
+             .read_amount = 1.0f,
+             .erase_amount = 0.7f,
+             .feedback =
+                 {
+                     .kind = config::Feedback::Kind::kRead,
+                     .amount = 0.7f,
+                 },
+             .pan = audio::Pan::Right(0.9)},
+            {.position = 0,
+             .write_amount = 0.99f,
+             .read_amount = 0.99f,
+             .erase_amount = 0.9f,
+             .feedback =
+                 {
+                     .kind = config::Feedback::Kind::kRead,
+                     .amount = 0.7f,
+                 },
+             .pan = audio::Pan::Left(0.9)},
+            {.position = 0,
+             .write_amount = 1.0f,
+             .read_amount = 1.0f,
+             .erase_amount = 0.7f,
+             .feedback =
+                 {
+                     .kind = config::Feedback::Kind::kRead,
+                     .amount = 0.7f,
+                 },
+             .pan = audio::Pan::Right(0.9)},
+            {.position = 0,
+             .write_amount = 0.99f,
+             .read_amount = 0.99f,
+             .erase_amount = 0.9f,
+             .feedback =
+                 {
+                     .kind = config::Feedback::Kind::kRead,
+                     .amount = 0.7f,
+                 },
+             .pan = audio::Pan::Left(0.9)}}},
     .lfos{{
         {
             .range = 44100 * 2,
             .max_grain_size = 19000,
             .min_grain_size = 2000,
-            .reverse_chance = 0.3f,
-            .teleport_chance = 0.2f,
-            .pitch_shift_chance = 0.4f,
+            .reverse_chance = 0.f,
+            .teleport_chance = 0,
+            .pitch_shift_chance = 1.f,
+            .low_octave_chance = 0.f,
+            .high_octave_chance = 1.f,
             .targets{{{{
                 .object = config::TargetObject::kHead,
                 .parameter = config::TargetParameter::kPosition,
@@ -64,8 +133,8 @@ constexpr const config::Config kInitialConfig{
             .max_grain_size = 1000,
             .min_grain_size = 22000,
             .reverse_chance = 0.9f,
-            .teleport_chance = 0.9f,
-            .pitch_shift_chance = 0.9f,
+            .teleport_chance = 0,
+            .pitch_shift_chance = 0.f,
             .targets{
                 {{{
                      .object = config::TargetObject::kHead,
@@ -79,23 +148,39 @@ constexpr const config::Config kInitialConfig{
                  }}}},
         },
         {
-            .range = BUFFER_LEN,
+            .range = 44100 * 2,
+            .max_grain_size = 19000,
+            .min_grain_size = 2000,
+            .reverse_chance = 0.3f,
+            .teleport_chance = 0,
+            .pitch_shift_chance = 0.f,
             .targets{{{{
                 .object = config::TargetObject::kHead,
-                .parameter = config::TargetParameter::kPan,
-                .object_idx = 0,
+                .parameter = config::TargetParameter::kPosition,
+                .object_idx = 2,
             }}}},
         },
         {
-            .range = BUFFER_LEN,
-            .targets{{{{
-                .object = config::TargetObject::kHead,
-                .parameter = config::TargetParameter::kPan,
-                .object_idx = 1,
-            }}}},
+            .range = 10000,
+            .max_grain_size = 1000,
+            .min_grain_size = 22000,
+            .reverse_chance = 0.9f,
+            .teleport_chance = 0.f,
+            .pitch_shift_chance = 0.f,
+            .targets{
+                {{{
+                     .object = config::TargetObject::kHead,
+                     .parameter = config::TargetParameter::kPosition,
+                     .object_idx = 3,
+                 }},
+                 {{
+                     .object = config::TargetObject::kLFO,
+                     .parameter = config::TargetParameter::kPitchShiftChance,
+                     .object_idx = 3,
+                 }}}},
         },
     }},
-    .dry = 0.8f,
+    .dry = 0.7f,
     .wet = 0.3f,
 };
 
@@ -138,7 +223,7 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 }
 
 [[noreturn]] int main() {
-  hw.Init();
+  hw.Init(/*boost=*/true);
   hw.SetAudioBlockSize(kAudioBlockSize.samples());
   hw.StartLog(false);
 

@@ -3,6 +3,7 @@
 
 #include "lfo_engine.hpp"
 #include "libjazz/units.hpp"
+#include "ui.hpp"
 
 namespace {
 
@@ -56,6 +57,20 @@ LFOEngine::LFOEngine(const config::LFO& config, uint32_t seed)
 }
 
 void LFOEngine::SetConfig(const config::LFO& config) {
+  // Called every audio sample from transform::State::Update. The 128B targets
+  // array never affects tick behavior and rarely changes, so we field-compare
+  // just the 32B of runtime params and early-out when nothing that matters
+  // changed. Skips a 160B struct copy plus a WrapToRange (fmodf) call.
+  if (config_.range == config.range &&
+      config_.max_grain_size == config.max_grain_size &&
+      config_.min_grain_size == config.min_grain_size &&
+      config_.reverse_chance == config.reverse_chance &&
+      config_.teleport_chance == config.teleport_chance &&
+      config_.pitch_shift_chance == config.pitch_shift_chance &&
+      config_.low_octave_chance == config.low_octave_chance &&
+      config_.high_octave_chance == config.high_octave_chance) {
+    return;
+  }
   config_ = config;
   value_ = WrapToRange(value_, config_.range);
 }
@@ -117,11 +132,13 @@ std::optional<LFOTransition> LFOEngine::StartNewGrain(bool initial_grain) {
 
   if (!initial_grain) {
     if (RollChance(config_.reverse_chance)) {
+      ui::hw.PrintLine("Reversed!");
       direction_ = ReverseDirection(direction_);
       transition.reversed = true;
     }
 
     if (RollChance(config_.teleport_chance)) {
+      ui::hw.PrintLine("Teleported!");
       value_ = SampleTeleportValue();
       transition.teleported = true;
     }
@@ -169,6 +186,11 @@ float LFOEngine::SampleSpeed() {
 }
 
 bool LFOEngine::RollChance(float chance) {
+  if (chance <= 0.f) {
+    return false;
+  } else if (chance >= 1.f) {
+    return true;
+  }
   std::bernoulli_distribution dist(std::clamp(chance, 0.0f, 1.0f));
   return dist(rng_);
 }

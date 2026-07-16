@@ -247,7 +247,7 @@ void State::ApplyCurrentDeltas(config::Config& config) const {
 
 void State::RecordHeadTransitions(
     size_t lfo_idx, const fridge::state::LFOTransition& transition,
-    const config::Config& previous_output) {
+    const std::array<size_t, NUM_HEADS>& previous_head_positions) {
   // Invalid LFO indexes cannot produce a meaningful transition record.
   if (lfo_idx >= NUM_LFOS) {
     return;
@@ -272,7 +272,7 @@ void State::RecordHeadTransitions(
     head_transitions_[head_idx] = fridge::transition::HeadMotionTransition{
         .old_motion =
             fridge::transition::HeadMotion{
-                .position = previous_output.heads[head_idx].position,
+                .position = previous_head_positions[head_idx],
                 .direction = transition.old_direction,
                 .speed = transition.old_speed,
             },
@@ -304,12 +304,14 @@ const config::Config& State::Reset(const config::Config& root_config) {
 }
 
 const config::Config& State::Update(const config::Config& root_config,
-                                    Samples<uint32_t> step) {
+                                    Samples<uint32_t> step,
+                                    bool config_may_have_changed) {
   head_transitions_ = {};
 
   if (!initialized_) {
     Initialize(root_config);
-  } else if (!MatchesSanitizedConfig(root_config, root_config_)) {
+  } else if (config_may_have_changed &&
+             !MatchesSanitizedConfig(root_config, root_config_)) {
     RebaseRootConfig(root_config);
   }
 
@@ -321,7 +323,12 @@ const config::Config& State::Update(const config::Config& root_config,
   for (size_t i = 0; i < NUM_LFOS; ++i) {
     previous_deltas[i] = CurrentDelta(i);
   }
-  config::Config previous_output = output_config_;
+  // RecordHeadTransitions only reads head positions from the pre-tick state,
+  // so we save just NUM_HEADS * 8B instead of the whole ~760B Config.
+  std::array<size_t, NUM_HEADS> previous_head_positions{};
+  for (size_t i = 0; i < NUM_HEADS; ++i) {
+    previous_head_positions[i] = output_config_.heads[i].position;
+  }
 
   for (size_t i = 0; i < NUM_LFOS; ++i) {
     lfo_engines_[i].SetConfig(output_config_.lfos[i]);
@@ -344,7 +351,8 @@ const config::Config& State::Update(const config::Config& root_config,
 
   for (size_t i = 0; i < NUM_LFOS; ++i) {
     if (lfo_transitions[i].has_value()) {
-      RecordHeadTransitions(i, lfo_transitions[i].value(), previous_output);
+      RecordHeadTransitions(i, lfo_transitions[i].value(),
+                            previous_head_positions);
     }
   }
 

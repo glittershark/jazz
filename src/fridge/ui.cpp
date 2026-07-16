@@ -55,6 +55,13 @@ void LFO::Select(const fridge::config::LFO& lfo) {
 }
 
 const config::Config& ui::UI::Config() {
+  // Called once per audio sample. When no knob/button has changed since the
+  // last read, the cached config_ is already correct — skip the ~1.4k cycles
+  // of writes. We only peek at the dirty flag here; Engine consumes it after.
+  if (!PeekConfigDirty()) {
+    return config_;
+  }
+
   config_.heads[selected_head] = head.Config();
 
   // HACK: keep the targets unchanged. Fix this once we have actual target

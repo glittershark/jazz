@@ -22,6 +22,47 @@ const Frame& HeadTransitionMixer::Update(
     previous_heads_ = config.heads;
   }
 
+  // Transitions exist to hide clicks/discontinuities in the audio produced by
+  // a head when its position jumps. A head that neither reads nor writes
+  // makes no such click — so treat those transitions as no-ops. That keeps
+  // the steady-state fast path active even when an LFO targeting a
+  // read/write-disabled head grain-starts.
+  auto head_needs_fade = [&](size_t i) {
+    const auto& h = config.heads[i];
+    return h.read_amount > 0.f || h.write_amount > 0.f;
+  };
+  bool any_new_transition = false;
+  for (size_t i = 0; i < NUM_HEADS; ++i) {
+    if (transitions[i].has_value() && head_needs_fade(i)) {
+      any_new_transition = true;
+      break;
+    }
+  }
+  bool any_active_transition = false;
+  for (const auto& t : active_transitions_) {
+    if (t.has_value()) {
+      any_active_transition = true;
+      break;
+    }
+  }
+
+  // Steady-state fast path: no transitions in flight and none starting this
+  // tick. Skip the full BuildFrame rebuild (zeros 256B + calls ScaleHead which
+  // is a no-op at weight=1.0) plus AdvanceTransitions. Called every audio
+  // sample, so this ~1k-cycle saving is the difference between fitting in
+  // budget and dropping samples.
+  if (!any_new_transition && !any_active_transition) {
+    frame_.dry = config.dry;
+    frame_.wet = config.wet;
+    frame_.head_count = NUM_HEADS;
+    for (size_t i = 0; i < NUM_HEADS; ++i) {
+      frame_.heads[i].head = config.heads[i];
+      frame_.heads[i].weight = 1.0f;
+    }
+    previous_heads_ = config.heads;
+    return frame_;
+  }
+
   for (size_t i = 0; i < NUM_HEADS; ++i) {
     if (transitions[i].has_value()) {
       BeginTransition(i, previous_heads_[i], transitions[i].value());
@@ -39,6 +80,13 @@ void HeadTransitionMixer::BeginTransition(
     const HeadMotionTransition& transition) {
   if (head_idx >= NUM_HEADS ||
       (!transition.reversed && !transition.teleported)) {
+    return;
+  }
+  // Erase-only heads don't produce audio contributions, so a position jump
+  // is inaudible — skip the fade to keep them out of active_transitions_
+  // (which would otherwise double this head's work in ProcessSample for
+  // fade_time_ samples).
+  if (head.read_amount == 0.f && head.write_amount == 0.f) {
     return;
   }
 

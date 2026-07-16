@@ -73,10 +73,11 @@ Engine::Engine(config::Config initial_config)
       // head selection is on mux 4
       head_select_{
           mux_.channel(4, 0),
-          mux_.channel(4, 1), /*mux_.channel(4, 2),
-mux_.channel(4, 3), mux_.channel(4, 4), mux_.channel(4, 5),
-mux_.channel(4, 6), mux_.channel(4, 7),
-*/
+          mux_.channel(4, 1),
+          mux_.channel(4, 2),
+          mux_.channel(4, 3), /*mux_.channel(4, 4), mux_.channel(4, 5),
+          mux_.channel(4, 6), mux_.channel(4, 7),
+          */
       },
 
       // lfo selection is on mux 5
@@ -120,7 +121,9 @@ mux_.channel(4, 6), mux_.channel(4, 7),
 
 const fridge::transition::Frame& Engine::Tick(Samples<uint32_t> dt) {
   const auto& config = ui_.Config();
-  const auto output = transform_.Update(config, dt);
+  const bool config_may_have_changed = fridge::ui::ConsumeConfigDirty();
+  const auto& output =
+      transform_.Update(config, dt, config_may_have_changed);
   return head_transitions_.Update(output, transform_.head_transitions());
 }
 
