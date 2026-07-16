@@ -28,6 +28,15 @@ TEST(StereoSampleTest, Panned) {
   auto sample = StereoSample::OfMono(0.7);
   auto panned = sample.Panned(Pan::Left(0.5));
 
-  ASSERT_FLOAT_EQ(panned.left, 0.525);
-  ASSERT_FLOAT_EQ(panned.right, 0.175);
+  // Pan::Left(0.5) => p=-0.5; left stays at unity, right fades to 0.5
+  ASSERT_FLOAT_EQ(panned.left, 0.7f);
+  ASSERT_FLOAT_EQ(panned.right, 0.35f);
+}
+
+TEST(StereoSampleTest, PannedCenterIsUnity) {
+  auto sample = StereoSample::OfMono(0.7);
+  auto panned = sample.Panned(Pan::Center());
+
+  ASSERT_FLOAT_EQ(panned.left, 0.7f);
+  ASSERT_FLOAT_EQ(panned.right, 0.7f);
 }

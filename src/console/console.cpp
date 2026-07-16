@@ -20,16 +20,17 @@
 
 #include "config.hpp"
 #include "granular.hpp"
+#include "libjazz/stereo_sample.hpp"
 #include "libjazz/units.hpp"
 #include "mod.hpp"
 #include "sound.hpp"
 
+using jazz::audio::StereoSample;
 using jazz::units::Samples;
 
 namespace {
 
 constexpr int kDefaultSampleRate = 48000;
-constexpr int kDefaultChannels = 2;
 constexpr size_t kFramesPerChunk = 1024;
 
 fridge::config::Config DefaultFridgeConfig() {
@@ -86,7 +87,6 @@ struct Options {
   std::optional<std::string> output_path = std::nullopt;
   bool play = true;
   int sample_rate = kDefaultSampleRate;
-  int channels = kDefaultChannels;
   std::vector<std::string> effect_chain = {"granular"};
   EffectParams params;
   bool fridge_lfo_chart = false;
@@ -555,8 +555,8 @@ bool ApplyFridgeTargetValue(const std::string& field, const std::string& value,
   }
   if (field == "index" || field == "object_idx") {
     size_t object_idx = 0;
-    if (!ParseFridgeSize(value, 0, fridge::NUM_HEADS - 1,
-                         "fridge target index", &object_idx, error)) {
+    if (!ParseFridgeSize(value, 0, fridge::NUM_HEADS - 1, "fridge target index",
+                         &object_idx, error)) {
       return false;
     }
     target->object_idx = static_cast<uint8_t>(object_idx);
@@ -695,16 +695,6 @@ bool ApplyConfigKV(const std::string& key, const std::string& value,
       return false;
     }
     options->sample_rate = v;
-    return true;
-  }
-
-  if (k == "channels") {
-    int v = 0;
-    if (!ParseInt(value, &v) || v < 1 || v > 8) {
-      *error = "invalid channels in preset (supported 1-8)";
-      return false;
-    }
-    options->channels = v;
     return true;
   }
 
@@ -1089,7 +1079,7 @@ bool LoadPreset(const std::string& path, Options* options, std::string* error) {
 void PrintUsage(const char* argv0) {
   std::cerr << "Usage: " << argv0
             << " <input.mp3> [--output output.mp3] [--no-play]"
-               " [--sample-rate hz] [--channels n]"
+               " [--sample-rate hz]"
                " [--effect e1,e2,...] [--preset preset.{json|toml}]"
                " [--fridge-lfo-chart] [--list-effects]\n";
   std::cerr << "Effects: " << EffectListText() << "\n";
@@ -1193,17 +1183,6 @@ ParseResult ParseArgs(int argc, char** argv) {
     if (arg == "--sample-rate") {
       if (i + 1 >= argc || !ParseInt(argv[++i], &options.sample_rate)) {
         std::cerr << "invalid --sample-rate\n";
-        return result;
-      }
-      continue;
-    }
-    if (arg == "--channels") {
-      if (i + 1 >= argc || !ParseInt(argv[++i], &options.channels)) {
-        std::cerr << "invalid --channels\n";
-        return result;
-      }
-      if (options.channels < 1 || options.channels > 8) {
-        std::cerr << "supported channel count: 1-8\n";
         return result;
       }
       continue;
@@ -1393,29 +1372,6 @@ bool CommandExists(const std::string& command) {
   return std::system(check.c_str()) == 0;
 }
 
-std::optional<std::string> ChannelLayoutForCount(int channels) {
-  switch (channels) {
-  case 1:
-    return "mono";
-  case 2:
-    return "stereo";
-  case 3:
-    return "2.1";
-  case 4:
-    return "quad";
-  case 5:
-    return "5.0";
-  case 6:
-    return "5.1";
-  case 7:
-    return "6.1";
-  case 8:
-    return "7.1";
-  default:
-    return std::nullopt;
-  }
-}
-
 std::array<granular::Head, granular::NUM_HEADS> MakeDefaultHeads() {
   return {{
       {
@@ -1453,15 +1409,23 @@ std::array<granular::Head, granular::NUM_HEADS> MakeDefaultHeads() {
 class SampleProcessor {
  public:
   virtual ~SampleProcessor() = default;
+  virtual StereoSample Process(StereoSample sample) = 0;
+};
+
+class MonoSampleProcessor : public SampleProcessor {
+ public:
   virtual float Process(float sample) = 0;
+  StereoSample Process(StereoSample sample) override {
+    return StereoSample::OfMono(Process(sample.Mono()));
+  };
 };
 
 class BypassProcessor final : public SampleProcessor {
  public:
-  float Process(float sample) override { return sample; }
+  StereoSample Process(StereoSample sample) override { return sample; }
 };
 
-class GranularProcessor final : public SampleProcessor {
+class GranularProcessor final : public MonoSampleProcessor {
  public:
   GranularProcessor() : heads_(MakeDefaultHeads()) {}
 
@@ -1484,7 +1448,7 @@ class FridgeProcessor final : public SampleProcessor {
     modulator_.Reset(config);
   }
 
-  float Process(float sample) override {
+  StereoSample Process(StereoSample sample) override {
     return sound_.ProcessSample(modulator_.TickSample(), sample);
   }
 
@@ -1498,10 +1462,13 @@ class ClipProcessor final : public SampleProcessor {
   ClipProcessor(float threshold, float gain)
       : threshold_(threshold), gain_(gain) {}
 
-  float Process(float sample) override {
-    const float amplified = sample * gain_;
-    const float clipped = std::clamp(amplified, -threshold_, threshold_);
-    const float residue = amplified - clipped;
+  StereoSample Process(StereoSample sample) override {
+    const auto amplified = sample * gain_;
+    const auto clipped = StereoSample{
+        .left = std::clamp(amplified.left, -threshold_, threshold_),
+        .right = std::clamp(amplified.right, -threshold_, threshold_),
+    };
+    const auto residue = amplified - clipped;
     return amplified - residue;
   }
 
@@ -1510,7 +1477,7 @@ class ClipProcessor final : public SampleProcessor {
   float gain_;
 };
 
-class AnticlipProcessor final : public SampleProcessor {
+class AnticlipProcessor final : public MonoSampleProcessor {
  public:
   AnticlipProcessor(float threshold, float gain)
       : threshold_(threshold), gain_(gain) {}
@@ -1527,7 +1494,7 @@ class AnticlipProcessor final : public SampleProcessor {
   float gain_;
 };
 
-class LowPassProcessor final : public SampleProcessor {
+class LowPassProcessor final : public MonoSampleProcessor {
  public:
   explicit LowPassProcessor(float alpha) : alpha_(alpha) {}
 
@@ -1541,7 +1508,7 @@ class LowPassProcessor final : public SampleProcessor {
   float last_output_ = 0.0f;
 };
 
-class HighPassProcessor final : public SampleProcessor {
+class HighPassProcessor final : public MonoSampleProcessor {
  public:
   explicit HighPassProcessor(float alpha) : alpha_(alpha) {}
 
@@ -1557,7 +1524,7 @@ class HighPassProcessor final : public SampleProcessor {
   float last_input_ = 0.0f;
 };
 
-class CursedLowPassProcessor final : public SampleProcessor {
+class CursedLowPassProcessor final : public MonoSampleProcessor {
  public:
   explicit CursedLowPassProcessor(float alpha) : alpha_(alpha) {}
 
@@ -1580,7 +1547,7 @@ class CursedLowPassProcessor final : public SampleProcessor {
   float last_output_ = 1.0f;
 };
 
-class CursedHighPassProcessor final : public SampleProcessor {
+class CursedHighPassProcessor final : public MonoSampleProcessor {
  public:
   explicit CursedHighPassProcessor(float alpha) : alpha_(alpha) {}
 
@@ -1611,7 +1578,7 @@ class CursedHighPassProcessor final : public SampleProcessor {
   float last_input_ = 1.0f;
 };
 
-class LaSortProcessor final : public SampleProcessor {
+class LaSortProcessor final : public MonoSampleProcessor {
  public:
   LaSortProcessor(float weight_center, float weight_sharpness)
       : weight_center_(weight_center), weight_sharpness_(weight_sharpness) {}
@@ -1740,8 +1707,9 @@ std::unique_ptr<SampleProcessor> MakeProcessor(EffectKind effect,
   return std::make_unique<BypassProcessor>();
 }
 
-bool WriteAll(FILE* stream, const float* buffer, size_t samples) {
+bool WriteAll(FILE* stream, const StereoSample* buffer, size_t samples) {
   const size_t bytes_total = samples * sizeof(float);
+  // TODO(aspen): uhhhhhhhhhh
   const auto cursor = reinterpret_cast<const unsigned char*>(buffer);
   size_t bytes_written = 0;
 
@@ -1816,20 +1784,10 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  std::optional<std::string> channel_layout = std::nullopt;
-  if (options.play) {
-    channel_layout = ChannelLayoutForCount(options.channels);
-    if (!channel_layout.has_value()) {
-      std::cerr << "unsupported channel count for playback: "
-                << options.channels << "\n";
-      return 1;
-    }
-  }
-
   const std::string decoder_command =
       "ffmpeg -hide_banner -loglevel error -i " +
-      ShellEscape(options.input_path) + " -f f32le -acodec pcm_f32le -ac " +
-      std::to_string(options.channels) + " -ar " +
+      ShellEscape(options.input_path) +
+      " -f f32le -acodec pcm_f32le -ac stereo -ar " +
       std::to_string(options.sample_rate) + " pipe:1";
 
   FILE* decoder = popen(decoder_command.c_str(), "r");
@@ -1842,8 +1800,7 @@ int main(int argc, char** argv) {
   if (options.play) {
     const std::string player_command =
         "ffplay -hide_banner -loglevel error -nodisp -autoexit -f f32le -ar " +
-        std::to_string(options.sample_rate) + " -ch_layout " + *channel_layout +
-        " -i -";
+        std::to_string(options.sample_rate) + " -ch_layout stereo" + " -i -";
     player = popen(player_command.c_str(), "w");
     if (player == nullptr) {
       std::cerr << "failed to start ffplay\n";
@@ -1856,8 +1813,7 @@ int main(int argc, char** argv) {
   if (options.output_path.has_value()) {
     const std::string encoder_command =
         "ffmpeg -hide_banner -loglevel error -y -f f32le -acodec pcm_f32le "
-        "-ac " +
-        std::to_string(options.channels) + " -ar " +
+        "-ac stereo -ar " +
         std::to_string(options.sample_rate) +
         " -i pipe:0 -vn -codec:a libmp3lame -q:a 2 " +
         ShellEscape(*options.output_path);
@@ -1872,17 +1828,13 @@ int main(int argc, char** argv) {
     }
   }
 
-  std::vector<std::vector<std::unique_ptr<SampleProcessor>>> chains;
-  chains.resize(options.channels);
-  for (int channel = 0; channel < options.channels; channel++) {
-    auto& chain = chains[channel];
-    chain.reserve(effect_chain.size());
-    for (EffectKind effect : effect_chain) {
-      chain.push_back(MakeProcessor(effect, options.params));
-    }
+  std::vector<std::unique_ptr<SampleProcessor>> chain;
+  chain.reserve(effect_chain.size());
+  for (EffectKind effect : effect_chain) {
+    chain.push_back(MakeProcessor(effect, options.params));
   }
 
-  std::vector<float> chunk(options.channels * kFramesPerChunk);
+  std::vector<StereoSample> chunk(kFramesPerChunk);
 
   bool write_failed = false;
   while (true) {
@@ -1893,12 +1845,11 @@ int main(int argc, char** argv) {
     }
 
     for (size_t i = 0; i < read_samples; i++) {
-      const int channel = i % options.channels;
-      float sample = chunk[i];
-      for (auto& processor : chains[channel]) {
+      StereoSample sample = chunk[i];
+      for (auto& processor : chain) {
         sample = processor->Process(sample);
       }
-      chunk[i] = std::clamp(sample, -1.0f, 1.0f);
+      chunk[i] = sample.Clip();
     }
 
     if (player != nullptr && !WriteAll(player, chunk.data(), read_samples)) {
@@ -1940,4 +1891,3 @@ int main(int argc, char** argv) {
 
   return 0;
 }
-

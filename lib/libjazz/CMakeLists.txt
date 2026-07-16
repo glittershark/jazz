@@ -11,6 +11,7 @@ add_library(libjazz STATIC
     src/buffer.cpp
     src/color.cpp
     src/pan.cpp
+    src/stereo_sample.cpp
 )
 
 if(TARGET rapidcheck)

@@ -8,8 +8,15 @@
 
 #include "constants.hpp"
 #include "libjazz/pan.hpp"
+#include "libjazz/stereo_sample.hpp"
 
 namespace fridge::config {
+
+namespace {
+using jazz::audio::Pan;
+using jazz::audio::StereoSample;
+
+}  // namespace
 
 struct Feedback {
   enum class Kind { kRead, kErase };
@@ -32,9 +39,21 @@ struct Head {
   float read_amount = 0.0f;
   float erase_amount = 1.0f;
   Feedback feedback{};
-  jazz::audio::Pan pan = jazz::audio::Pan::Center();
+  Pan pan = jazz::audio::Pan::Center();
 
   bool operator==(const Head& rhs) const = default;
+
+  StereoSample WriteAmount() const {
+    return StereoSample::OfMono(write_amount).Panned(pan);
+  }
+
+  StereoSample ReadAmount() const {
+    return StereoSample::OfMono(read_amount).Panned(pan);
+  }
+
+  StereoSample EraseAmount() const {
+    return StereoSample::OfMono(erase_amount).Panned(pan);
+  }
 };
 
 enum class TargetObject : uint8_t { kHead, kLFO, kMixer };

@@ -1,8 +1,7 @@
 #ifndef STEREO_SAMPLE_H_
 #define STEREO_SAMPLE_H_
 
-#include <rapidcheck/gen/Build.h>
-
+#include <algorithm>
 #include <ostream>
 
 #include "libjazz/pan.hpp"
@@ -23,23 +22,71 @@ struct StereoSample {
     return {.left = mono_sample, .right = mono_sample};
   }
 
+  constexpr static StereoSample Zero() { return OfMono(0.f); }
+
   /** Fold the sample back down to mono */
   constexpr float Mono() const { return (left * 0.5) + (right * 0.5); }
 
-  /** Pan the sample by an amount */
+  /** Pan the sample by an amount.
+   *
+   * Uses a linear panning law: the attenuated channel fades out linearly while
+   * the boosted channel stays at unity. This preserves signal volume at center.
+   */
   constexpr StereoSample Panned(Pan pan) const {
-    auto channels = pan.channels();
+    float p = pan.pan();
     return {
-        .left = left * channels.left,
-        .right = right * channels.right,
+        .left = left * std::clamp(1.f - p, 0.f, 1.f),
+        .right = right * std::clamp(1.f + p, 0.f, 1.f),
     };
   }
+
+  constexpr bool operator==(const StereoSample& other) const = default;
+
+  constexpr StereoSample operator*(const float& other) const {
+    return {
+        .left = left * other,
+        .right = right * other,
+    };
+  }
+
+  constexpr StereoSample operator*(const StereoSample& other) const {
+    return {
+        .left = left * other.left,
+        .right = right * other.right,
+    };
+  }
+
+  constexpr StereoSample operator+(const StereoSample& other) const {
+    return {
+        .left = left + other.left,
+        .right = right + other.right,
+    };
+  }
+
+  constexpr StereoSample operator-(const StereoSample& other) const {
+    return {
+        .left = left - other.left,
+        .right = right - other.right,
+    };
+  }
+
+  constexpr StereoSample& operator+=(const StereoSample& other) {
+    left += other.left;
+    right += other.right;
+    return *this;
+  }
+
+  constexpr StereoSample Clip(float min, float max) {
+    return {
+        .left = std::clamp(left, min, max),
+        .right = std::clamp(right, min, max),
+    };
+  }
+
+  constexpr StereoSample Clip() { return Clip(-1.0f, 1.0f); }
 };
 
-std::ostream& operator<<(std::ostream& out, const StereoSample& val) {
-  return out << "StereoSample{.left =" << val.left << ", .right =" << val.right
-             << "}";
-}
+std::ostream& operator<<(std::ostream& out, const StereoSample& val);
 
 }  // namespace audio
 }  // namespace jazz

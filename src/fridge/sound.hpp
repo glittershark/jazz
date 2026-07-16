@@ -8,9 +8,13 @@
 #include "config.hpp"
 #include "constants.hpp"
 #include "libjazz/slab.hpp"
+#include "libjazz/stereo_sample.hpp"
 #include "mod.hpp"
 
 namespace fridge::sound {
+namespace {
+using jazz::audio::StereoSample;
+};
 
 struct Update {
   enum Kind { kErase, kWrite } kind;
@@ -244,7 +248,8 @@ class Sound {
   size_t global_clock_ = 0;
 
   std::array<IndicesToUpdate*, FADE_TIME> indices_to_update_{};
-  std::array<BufferValue, BUFFER_LEN> buffer_;
+  std::array<BufferValue, BUFFER_LEN> left_buffer_;
+  std::array<BufferValue, BUFFER_LEN> right_buffer_;
 
   /** Perform pre-tick housekeeping */
   void PreHousekeeping(size_t clock_time);
@@ -259,26 +264,29 @@ class Sound {
   /**
    * Read the value from the buffer at `position` in the buffer.
    */
-  float Read(size_t position);
+  StereoSample Read(size_t position);
 
   /**
    * Write a value `sample` to the buffer at `position`
    */
-  void Write(size_t position, float sample);
+  void Write(size_t position, StereoSample sample);
 
   /**
    * Erase the value in the buffer at `position` by multiplying it by `amount`
    * (which should be between 0 and 1)
    * */
-  void Erase(size_t position, float amount);
-  float ApplyHead(const fridge::config::Head& head, float sample);
+  void Erase(size_t position, StereoSample amount);
+
+  StereoSample ApplyHead(const fridge::config::Head& head, StereoSample sample);
 
  public:
   /**
    * Process an audio sample. Moves the internal clock forwards by 1
    */
-  float ProcessSample(const fridge::config::Config& config, float sample);
-  float ProcessSample(const fridge::mod::Frame& frame, float sample);
+  StereoSample ProcessSample(const fridge::config::Config& config,
+                             StereoSample sample);
+  StereoSample ProcessSample(const fridge::mod::Frame& frame,
+                             StereoSample sample);
 };
 
 }  // namespace fridge::sound

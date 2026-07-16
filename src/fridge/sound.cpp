@@ -2,8 +2,11 @@
 
 #include "config.hpp"
 #include "constants.hpp"
+#include "libjazz/stereo_sample.hpp"
 
 namespace fridge::sound {
+
+using jazz::audio::StereoSample;
 
 Slab<BufferValue::SampleWithUpdates, UPDATE_CAP> BufferValue::SAMPLES;
 Slab<IndicesToUpdate, UPDATE_CAP> IndicesToUpdate::SLAB;
@@ -112,46 +115,48 @@ Sound::~Sound() {
 }
 
 void Sound::DoUpdate(size_t index) {
-  auto content = &buffer_[index];
+  for (auto buffer : {&left_buffer_, &right_buffer_}) {
+    auto content = &((*buffer)[index]);
 
-  // Apply erases
-  auto update_ptr = content->FirstUpdate();
-  while (update_ptr != nullptr && *update_ptr != nullptr) {
-    auto update = *update_ptr;
-    if (update->kind == Update::Kind::kErase) {
-      auto time_till_ripe =
-          (update->finished_at - global_clock_) % global_clock_max_;
-      if (time_till_ripe == 0) {
-        content->setSample(content->sample() * update->value);
-        *update_ptr = update->next_;
-        content->OnUpdateFreed(update);
-        UPDATES.Free(update);
-        continue;
+    // Apply erases
+    auto update_ptr = content->FirstUpdate();
+    while (update_ptr != nullptr && *update_ptr != nullptr) {
+      auto update = *update_ptr;
+      if (update->kind == Update::Kind::kErase) {
+        auto time_till_ripe =
+            (update->finished_at - global_clock_) % global_clock_max_;
+        if (time_till_ripe == 0) {
+          content->setSample(content->sample() * update->value);
+          *update_ptr = update->next_;
+          content->OnUpdateFreed(update);
+          UPDATES.Free(update);
+          continue;
+        }
       }
+      update_ptr = &update->next_;
     }
-    update_ptr = &update->next_;
-  }
 
-  // Apply writes
-  update_ptr = content->FirstUpdate();
-  while (update_ptr != nullptr && *update_ptr != nullptr) {
-    auto update = *update_ptr;
-    if (update->kind == Update::Kind::kWrite) {
-      auto time_till_ripe =
-          ((update->finished_at - global_clock_) + global_clock_max_) %
-          global_clock_max_;
-      if (time_till_ripe == 0) {
-        *update_ptr = update->next_;
-        content->OnUpdateFreed(update);
-        UPDATES.Free(update);
-        content->setSample(content->sample() + update->value);
-        continue;
+    // Apply writes
+    update_ptr = content->FirstUpdate();
+    while (update_ptr != nullptr && *update_ptr != nullptr) {
+      auto update = *update_ptr;
+      if (update->kind == Update::Kind::kWrite) {
+        auto time_till_ripe =
+            ((update->finished_at - global_clock_) + global_clock_max_) %
+            global_clock_max_;
+        if (time_till_ripe == 0) {
+          *update_ptr = update->next_;
+          content->OnUpdateFreed(update);
+          UPDATES.Free(update);
+          content->setSample(content->sample() + update->value);
+          continue;
+        }
       }
+      update_ptr = &update->next_;
     }
-    update_ptr = &update->next_;
-  }
 
-  content->Housekeep();
+    content->Housekeep();
+  }
 }
 
 void Sound::PreHousekeeping(size_t clock_time) {
@@ -167,70 +172,88 @@ void Sound::PreHousekeeping(size_t clock_time) {
   }
 }
 
-float Sound::Read(size_t position) {
-  auto content = &buffer_[position];
-  auto value = content->sample();
+StereoSample Sound::Read(size_t position) {
+  auto read_channel = [&](auto buffer) {
+    auto content = &((*buffer)[position]);
+    auto value = content->sample();
 
-  // Apply erases
-  auto maybe_update = content->FirstUpdate();
-  if (maybe_update == nullptr) {
+    // Apply erases
+    auto maybe_update = content->FirstUpdate();
+    if (maybe_update == nullptr) {
+      return value;
+    }
+    auto update = *maybe_update;
+
+    while (update != nullptr) {
+      if (update->kind == Update::Kind::kErase) {
+        auto time_till_ripe =
+            ((update->finished_at - global_clock_) + global_clock_max_) %
+            global_clock_max_;
+        auto frac_offset = (FADE_TIME * update->value) / (1 - update->value);
+        auto factor =
+            frac_offset / ((FADE_TIME - time_till_ripe) + frac_offset + 1);
+        value *= factor;
+      }
+      update = update->next_;
+    }
+
+    // Apply writes
+    update = *content->FirstUpdate();
+    while (update != nullptr) {
+      if (update->kind == Update::Kind::kWrite) {
+        auto time_till_ripe =
+            ((update->finished_at - global_clock_) + global_clock_max_) %
+            global_clock_max_;
+        auto target_val = update->value;
+        auto fading_in_val =
+            target_val * (FADE_TIME - time_till_ripe) / FADE_TIME;
+        value += fading_in_val;
+      }
+      update = update->next_;
+    }
+
     return value;
-  }
-  auto update = *maybe_update;
+  };
 
-  while (update != nullptr) {
-    if (update->kind == Update::Kind::kErase) {
-      auto time_till_ripe =
-          ((update->finished_at - global_clock_) + global_clock_max_) %
-          global_clock_max_;
-      auto frac_offset = (FADE_TIME * update->value) / (1 - update->value);
-      auto factor =
-          frac_offset / ((FADE_TIME - time_till_ripe) + frac_offset + 1);
-      value *= factor;
-    }
-    update = update->next_;
-  }
-
-  // Apply writes
-  update = *content->FirstUpdate();
-  while (update != nullptr) {
-    if (update->kind == Update::Kind::kWrite) {
-      auto time_till_ripe =
-          ((update->finished_at - global_clock_) + global_clock_max_) %
-          global_clock_max_;
-      auto target_val = update->value;
-      auto fading_in_val =
-          target_val * (FADE_TIME - time_till_ripe) / FADE_TIME;
-      value += fading_in_val;
-    }
-    update = update->next_;
-  }
-
-  return value;
+  return StereoSample{
+      .left = read_channel(&left_buffer_),
+      .right = read_channel(&right_buffer_),
+  };
 }
 
-void Sound::Write(size_t position, float sample) {
-  buffer_[position].PushBack({
-      .kind = Update::Kind::kWrite,
-      .finished_at = global_clock_ + FADE_TIME,
-      .value = sample,
-  });
-  IndicesToUpdate::Prepend(
-      &indices_to_update_[(global_clock_ + FADE_TIME) % FADE_TIME], position);
+void Sound::Write(size_t position, StereoSample sample) {
+  auto do_write = [&](auto buffer, float sample) {
+    (*buffer)[position].PushBack({
+        .kind = Update::Kind::kWrite,
+        .finished_at = global_clock_ + FADE_TIME,
+        .value = sample,
+    });
+    IndicesToUpdate::Prepend(
+        &indices_to_update_[(global_clock_ + FADE_TIME) % FADE_TIME], position);
+  };
+
+  do_write(&left_buffer_, sample.left);
+  do_write(&right_buffer_, sample.right);
 }
 
-void Sound::Erase(size_t position, float amount) {
-  buffer_[position].PushBack({
-      .kind = Update::Kind::kErase,
-      .finished_at = global_clock_ + FADE_TIME,
-      .value = amount,
-  });
-  IndicesToUpdate::Prepend(
-      &indices_to_update_[(global_clock_ + FADE_TIME) % FADE_TIME], position);
+void Sound::Erase(size_t position, StereoSample amount) {
+  auto do_erase = [&](auto buffer, float amount) {
+    (*buffer)[position].PushBack({
+        .kind = Update::Kind::kErase,
+        .finished_at = global_clock_ + FADE_TIME,
+        .value = amount,
+    });
+    IndicesToUpdate::Prepend(
+        &indices_to_update_[(global_clock_ + FADE_TIME) % FADE_TIME], position);
+  };
+
+  do_erase(&left_buffer_, amount.left);
+  do_erase(&right_buffer_, amount.right);
 }
 
-float Sound::ApplyHead(const fridge::config::Head& head, float sample) {
-  float wet_signal = 0.f;
+StereoSample Sound::ApplyHead(const fridge::config::Head& head,
+                              StereoSample sample) {
+  auto wet_signal = StereoSample::Zero();
 
   // Wrap once here so a position past the end of the tape can never index
   // out of the buffer.
@@ -238,24 +261,25 @@ float Sound::ApplyHead(const fridge::config::Head& head, float sample) {
 
   if (head.read_amount > 0.f) {
     auto value = Read(position);
-    wet_signal = value * head.read_amount;
+    wet_signal = value * head.ReadAmount();
   }
 
   if (head.write_amount > 0.f) {
-    Write(position, sample * head.write_amount);
+    Write(position, sample * head.WriteAmount());
   }
 
   if (head.erase_amount < 1.f) {
-    Erase(position, head.erase_amount);
+    Erase(position, head.EraseAmount());
   }
 
   return wet_signal;
 }
 
-float Sound::ProcessSample(const fridge::config::Config& config, float sample) {
+StereoSample Sound::ProcessSample(const fridge::config::Config& config,
+                                  StereoSample sample) {
   PreHousekeeping(global_clock_);
 
-  float wet_signal = 0.f;
+  auto wet_signal = StereoSample::Zero();
 
   for (auto&& head : config.heads) {
     wet_signal += ApplyHead(head, sample);
@@ -266,10 +290,11 @@ float Sound::ProcessSample(const fridge::config::Config& config, float sample) {
   return sample * config.dry + wet_signal * config.wet;
 }
 
-float Sound::ProcessSample(const fridge::mod::Frame& frame, float sample) {
+StereoSample Sound::ProcessSample(const fridge::mod::Frame& frame,
+                                  StereoSample sample) {
   PreHousekeeping(global_clock_);
 
-  float wet_signal = 0.f;
+  auto wet_signal = StereoSample::Zero();
 
   for (size_t i = 0; i < frame.head_count; ++i) {
     wet_signal += ApplyHead(frame.heads[i], sample);
