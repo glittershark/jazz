@@ -72,20 +72,16 @@ Engine::Engine(config::Config initial_config)
 
       // head selection is on mux 4
       head_select_{
-          mux_.channel(4, 0),
-          mux_.channel(4, 1), /*mux_.channel(4, 2),
-mux_.channel(4, 3), mux_.channel(4, 4), mux_.channel(4, 5),
-mux_.channel(4, 6), mux_.channel(4, 7),
-*/
+          mux_.channel(4, 0), mux_.channel(4, 1), mux_.channel(4, 2),
+          mux_.channel(4, 3), mux_.channel(4, 4), mux_.channel(4, 5),
+          mux_.channel(4, 6), mux_.channel(4, 7),
       },
 
       // lfo selection is on mux 5
       lfo_select_{
-          mux_.channel(5, 0),
-          mux_.channel(5, 1), /*mux_.channel(5, 2),
-mux_.channel(5, 3), mux_.channel(5, 4), mux_.channel(5, 5),
-mux_.channel(5, 6), mux_.channel(5, 7),
-*/
+          mux_.channel(5, 0), mux_.channel(5, 1), mux_.channel(5, 2),
+          mux_.channel(5, 3), mux_.channel(5, 4), mux_.channel(5, 5),
+          mux_.channel(5, 6), mux_.channel(5, 7),
       },
 
       ui_(leds_, initial_config) {
