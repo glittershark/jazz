@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <optional>
 
 #include "constants.hpp"
@@ -22,17 +23,21 @@ struct Feedback {
   }
 };
 
+// Default heads are inert: they neither write, read, nor erase. Only heads
+// the config explicitly turns on touch the tape.
 struct Head {
   size_t position = 0;
-  float write_amount = 1.0f;
-  float read_amount = 1.0f;
+  float write_amount = 0.0f;
+  float read_amount = 0.0f;
   float erase_amount = 1.0f;
   Feedback feedback{};
+
+  bool operator==(const Head& rhs) const = default;
 };
 
-enum class TargetObject { kHead, kLFO, kMixer };
+enum class TargetObject : uint8_t { kHead, kLFO, kMixer };
 
-enum class TargetParameter {
+enum class TargetParameter : uint8_t {
   kPosition,
   kWriteAmount,
   kReadAmount,
@@ -50,10 +55,14 @@ enum class TargetParameter {
   kWet,
 };
 
+// Packed to 3 bytes so a full target list stays small; an
+// std::optional<Target> is 4 bytes.
 struct Target {
   TargetObject object = TargetObject::kHead;
   TargetParameter parameter = TargetParameter::kPosition;
-  size_t object_idx = 0;
+  uint8_t object_idx = 0;
+
+  bool operator==(const Target& rhs) const = default;
 };
 
 struct LFO {
@@ -66,6 +75,8 @@ struct LFO {
   float low_octave_chance = 0.0f;
   float high_octave_chance = 0.0f;
   std::array<std::optional<Target>, MAX_TARGET_PARAMS> targets{};
+
+  bool operator==(const LFO& rhs) const = default;
 };
 
 struct Config {
@@ -73,6 +84,8 @@ struct Config {
   std::array<LFO, NUM_LFOS> lfos{};
   float dry = 1.0f;
   float wet = 1.0f;
+
+  bool operator==(const Config& rhs) const = default;
 };
 
 }  // namespace fridge::config
