@@ -13,6 +13,7 @@
 #include <limits>
 #include <memory>
 #include <optional>
+#include <random>
 #include <regex>
 #include <sstream>
 #include <string>
@@ -1444,7 +1445,8 @@ class GranularProcessor final : public MonoSampleProcessor {
 
 class FridgeProcessor final : public SampleProcessor {
  public:
-  explicit FridgeProcessor(const fridge::config::Config& config) {
+  explicit FridgeProcessor(const fridge::config::Config& config)
+      : modulator_(std::random_device{}()) {
     modulator_.Reset(config);
   }
 

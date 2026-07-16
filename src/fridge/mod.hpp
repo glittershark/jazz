@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <random>
 
 #include "config.hpp"
 #include "constants.hpp"
@@ -137,8 +136,10 @@ struct Frame {
  */
 class Modulator {
  public:
-  explicit Modulator(uint32_t seed = std::random_device{}(),
-                     size_t fade_time = FADE_TIME);
+  /** Default seed is fixed: std::random_device hard-faults on the bare-metal
+   * target (newlib has no entropy source), so hosts that want per-run
+   * randomness must pass their own seed. */
+  explicit Modulator(uint32_t seed = 1, size_t fade_time = FADE_TIME);
 
   /** Replace the root config. LFO phase and current modulation offsets are
    * preserved; the new base takes effect on the next sample. */

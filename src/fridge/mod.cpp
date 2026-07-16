@@ -94,8 +94,7 @@ uint32_t Rng::Between(uint32_t lo, uint32_t hi) {
 
 // ----- LFOEngine
 
-LFOEngine::LFOEngine(const config::LFO& config)
-    : LFOEngine(config, std::random_device{}()) {}
+LFOEngine::LFOEngine(const config::LFO& config) : LFOEngine(config, 1) {}
 
 LFOEngine::LFOEngine(const config::LFO& config, uint32_t seed) : rng_(seed) {
   SetConfig(config);
