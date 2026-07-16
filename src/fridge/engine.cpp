@@ -177,7 +177,11 @@ Engine::Engine(config::Config initial_config)
 
 void Engine::SetConfig(const config::Config& config) {
   installed_config_ = config;
+  // The audio IRQ walks the modulator's state; don't let it observe a
+  // half-applied config swap.
+  __disable_irq();
   modulator_.SetConfig(config);
+  __enable_irq();
 }
 
 void Engine::SyncConfig() {
