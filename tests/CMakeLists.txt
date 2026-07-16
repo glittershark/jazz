@@ -80,6 +80,10 @@ add_dependencies(fuzztest_all fuzztest_bundle)
 
 function(link_fuzztest name)
   target_link_libraries(${name} PRIVATE fuzztest_all)
+  if(APPLE)
+    # abseil's cctz (bundled via fuzztest) calls CoreFoundation time-zone APIs
+    target_link_libraries(${name} PRIVATE "-framework CoreFoundation")
+  endif()
 endfunction()
 
 # ---------------------------------------------------------------------------
