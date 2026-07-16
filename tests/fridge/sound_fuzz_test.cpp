@@ -96,6 +96,7 @@ auto ValidTarget() {
           TargetParameter::kPitchShiftChance,
           TargetParameter::kLowOctaveChance,
           TargetParameter::kHighOctaveChance,
+          TargetParameter::kPan,
           TargetParameter::kDry,
           TargetParameter::kWet,
       }),

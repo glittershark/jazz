@@ -45,38 +45,56 @@ constexpr const config::Config kInitialConfig{
               }}},
 
     },
-    .lfos{{{
-               .range = 44100 * 2,
-               .max_grain_size = 19000,
-               .min_grain_size = 2000,
-               .reverse_chance = 0.3f,
-               .teleport_chance = 0.2f,
-               .pitch_shift_chance = 0.4f,
-               .targets{{{{
-                   .object = config::TargetObject::kHead,
-                   .parameter = config::TargetParameter::kPosition,
-                   .object_idx = 0,
-               }}}},
-           },
-           {
-               .range = 10000,
-               .max_grain_size = 1000,
-               .min_grain_size = 22000,
-               .reverse_chance = 0.9f,
-               .teleport_chance = 0.9f,
-               .pitch_shift_chance = 0.9f,
-               .targets{
-                   {{{
-                        .object = config::TargetObject::kHead,
-                        .parameter = config::TargetParameter::kPosition,
-                        .object_idx = 1,
-                    }},
-                    {{
-                        .object = config::TargetObject::kLFO,
-                        .parameter = config::TargetParameter::kPitchShiftChance,
-                        .object_idx = 1,
-                    }}}},
-           }}},
+    .lfos{{
+        {
+            .range = 44100 * 2,
+            .max_grain_size = 19000,
+            .min_grain_size = 2000,
+            .reverse_chance = 0.3f,
+            .teleport_chance = 0.2f,
+            .pitch_shift_chance = 0.4f,
+            .targets{{{{
+                .object = config::TargetObject::kHead,
+                .parameter = config::TargetParameter::kPosition,
+                .object_idx = 0,
+            }}}},
+        },
+        {
+            .range = 10000,
+            .max_grain_size = 1000,
+            .min_grain_size = 22000,
+            .reverse_chance = 0.9f,
+            .teleport_chance = 0.9f,
+            .pitch_shift_chance = 0.9f,
+            .targets{
+                {{{
+                     .object = config::TargetObject::kHead,
+                     .parameter = config::TargetParameter::kPosition,
+                     .object_idx = 1,
+                 }},
+                 {{
+                     .object = config::TargetObject::kLFO,
+                     .parameter = config::TargetParameter::kPitchShiftChance,
+                     .object_idx = 1,
+                 }}}},
+        },
+        {
+            .range = BUFFER_LEN,
+            .targets{{{{
+                .object = config::TargetObject::kHead,
+                .parameter = config::TargetParameter::kPan,
+                .object_idx = 0,
+            }}}},
+        },
+        {
+            .range = BUFFER_LEN,
+            .targets{{{{
+                .object = config::TargetObject::kHead,
+                .parameter = config::TargetParameter::kPan,
+                .object_idx = 1,
+            }}}},
+        },
+    }},
     .dry = 0.8f,
     .wet = 0.3f,
 };

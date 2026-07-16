@@ -6,7 +6,7 @@
 namespace fridge {
 
 constexpr const size_t NUM_HEADS = 2;
-constexpr const size_t NUM_LFOS = 2;
+constexpr const size_t NUM_LFOS = 4;
 constexpr const size_t MAX_TARGET_PARAMS = 8;  // ??
 
 constexpr const size_t BUFFER_LEN = 44100 * 60 * 3; /* 3 minutes */

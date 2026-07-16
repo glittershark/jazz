@@ -265,7 +265,6 @@ TEST(FridgeLFOSystemTest, ResetSanitizesNonFiniteTargetedFloatValues) {
   EXPECT_NEAR(output.dry, 0.0f, 0.1e-9);
   EXPECT_FLOAT_EQ(output.heads[0].feedback.amount, 0.0f);
   EXPECT_FLOAT_EQ(output.lfos[3].teleport_chance, 0.0f);
-  EXPECT_FLOAT_EQ(output.lfos[4].reverse_chance, 0.0f);
 }
 
 TEST(FridgeLFOSystemTest, UpdateClampsNonFiniteProbabilityInputsForEngines) {

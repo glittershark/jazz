@@ -133,6 +133,7 @@ void State::ApplyTargetDelta(config::Config& config,
 
     config::Head& head = config.heads[target.object_idx];
     switch (target.parameter) {
+      // TODO(aspen): All non-position heads should be divided by BUFFER_LEN
     case TargetParameter::kPosition:
       head.position =
           std::max<size_t>(head.position + delta + BUFFER_LEN, 0) % BUFFER_LEN;
@@ -148,6 +149,9 @@ void State::ApplyTargetDelta(config::Config& config,
       return;
     case TargetParameter::kFeedbackAmount:
       head.feedback.amount = ClampFinite(head.feedback.amount + delta);
+      return;
+    case TargetParameter::kPan:
+      head.pan.pan() = ClampFinite(head.pan.pan() + delta);
       return;
     default:
       return;

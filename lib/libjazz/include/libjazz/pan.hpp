@@ -20,6 +20,7 @@ class Pan {
   static constexpr const Pan Center() { return Pan(0.f); }
 
   constexpr float pan() const { return pan_; }
+  constexpr float& pan() { return pan_; }
 
   constexpr bool operator==(const Pan&) const = default;
 

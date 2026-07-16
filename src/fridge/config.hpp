@@ -67,6 +67,7 @@ enum class TargetParameter {
   kPitchShiftChance,
   kLowOctaveChance,
   kHighOctaveChance,
+  kPan,
   kDry,
   kWet,
 };
