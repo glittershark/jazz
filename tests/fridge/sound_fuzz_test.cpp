@@ -34,9 +34,9 @@ void FuzzTestPrintSourceCode(Sink& sink, const Target& v) {
                "fridge::config::Target{.object = "
                "static_cast<fridge::config::TargetObject>(%d), "
                ".parameter = static_cast<fridge::config::TargetParameter>(%d), "
-               ".object_idx = %zu}",
+               ".object_idx = %d}",
                static_cast<int>(v.object), static_cast<int>(v.parameter),
-               v.object_idx);
+               static_cast<int>(v.object_idx));
 }
 
 template <typename Sink>
@@ -95,7 +95,8 @@ auto ValidTarget() {
           TargetParameter::kDry,
           TargetParameter::kWet,
       }),
-      fuzztest::InRange<size_t>(0, std::min(NUM_HEADS, NUM_LFOS) - 1));
+      fuzztest::InRange<uint8_t>(
+          0, static_cast<uint8_t>(std::min(NUM_HEADS, NUM_LFOS) - 1)));
 }
 
 auto ValidLFO() {

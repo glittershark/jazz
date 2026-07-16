@@ -558,8 +558,13 @@ bool ApplyFridgeTargetValue(const std::string& field, const std::string& value,
     return ApplyFridgeTargetParameter(value, target, error);
   }
   if (field == "index" || field == "object_idx") {
-    return ParseFridgeSize(value, 0, fridge::NUM_HEADS - 1,
-                           "fridge target index", &target->object_idx, error);
+    size_t object_idx = 0;
+    if (!ParseFridgeSize(value, 0, fridge::NUM_HEADS - 1,
+                         "fridge target index", &object_idx, error)) {
+      return false;
+    }
+    target->object_idx = static_cast<uint8_t>(object_idx);
+    return true;
   }
 
   *error = "unknown fridge target key: " + field;
