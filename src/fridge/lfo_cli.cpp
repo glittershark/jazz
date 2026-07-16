@@ -7,14 +7,15 @@
 #include <string>
 #include <vector>
 
-#include "fridge.hpp"
+#include "config.hpp"
 #include "libjazz/units.hpp"
+#include "mod.hpp"
 
 namespace {
 
 using fridge::config::LFO;
-using fridge::state::Direction;
-using fridge::state::LFOEngine;
+using fridge::mod::Direction;
+using fridge::mod::LFOEngine;
 using jazz::units::Samples;
 
 struct RunConfig {

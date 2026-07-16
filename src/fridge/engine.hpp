@@ -11,11 +11,10 @@
 #include <chrono>
 
 #include "config.hpp"
-#include "config_transform.hpp"
 #include "constants.hpp"
-#include "head_transition.hpp"
 #include "io.hpp"
 #include "led.hpp"
+#include "mod.hpp"
 #include "ui.hpp"
 
 namespace fridge::engine {
@@ -92,16 +91,25 @@ class Engine {
   // order, and the UI constructor writes to the LED controller during init.
   io::led::Controller leds_;
   ui::UI ui_;
-  transform::State transform_;
-  transition::HeadTransitionMixer head_transitions_;
+  mod::Modulator modulator_;
+  config::Config installed_config_;
 
  public:
   Engine(config::Config initial_config = config::Config{});
 
-  const transition::Frame& Tick(Samples<uint32_t> dt = Samples(1));
-
   ui::UI& ui() { return ui_; }
   const ui::UI& ui() const { return ui_; }
+
+  /** Install a new root config (cheap enough for occasional knob changes,
+   * not for the audio path). */
+  void SetConfig(const config::Config& config);
+
+  /** Pull the UI's config and install it if a knob changed it. Call from the
+   * main loop, never the audio path. */
+  void SyncConfig();
+
+  /** Advance the modulation world one sample; feed the result to Sound. */
+  const mod::Frame& TickSample() { return modulator_.TickSample(); }
 };
 
 }  // namespace fridge::engine

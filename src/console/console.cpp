@@ -21,11 +21,9 @@
 #include <vector>
 
 #include "config.hpp"
-#include "config_transform.hpp"
 #include "granular.hpp"
-#include "head_transition.hpp"
-#include "lfo_engine.hpp"
 #include "libjazz/units.hpp"
+#include "mod.hpp"
 #include "sound.hpp"
 
 using jazz::units::Samples;
@@ -812,8 +810,8 @@ std::vector<FridgeLfoTracePoint> CollectFridgeLfoTrace(
   const Samples<uint32_t> dt = Samples(
       point_count > 1 ? duration / static_cast<uint32_t>(point_count - 1) : 0);
 
-  fridge::state::LFOEngine engine(lfo, 1234);
-  engine.Reset(0.0f, fridge::state::Direction::kForwards);
+  fridge::mod::LFOEngine engine(lfo, 1234);
+  engine.Reset(0.0f, fridge::mod::Direction::kForwards);
 
   std::vector<FridgeLfoTracePoint> points;
   points.reserve(point_count);
@@ -1484,23 +1482,16 @@ class GranularProcessor final : public SampleProcessor {
 
 class FridgeProcessor final : public SampleProcessor {
  public:
-  explicit FridgeProcessor(const fridge::config::Config& config)
-      : root_config_(config) {
-    transform_.Reset(root_config_);
+  explicit FridgeProcessor(const fridge::config::Config& config) {
+    modulator_.Reset(config);
   }
 
   float Process(float sample) override {
-    const fridge::config::Config& config =
-        transform_.Update(root_config_, Samples(1));
-    const fridge::transition::Frame& frame =
-        head_transitions_.Update(config, transform_.head_transitions());
-    return sound_.ProcessSample(frame, sample);
+    return sound_.ProcessSample(modulator_.TickSample(), sample);
   }
 
  private:
-  fridge::config::Config root_config_;
-  fridge::transform::State transform_;
-  fridge::transition::HeadTransitionMixer head_transitions_;
+  fridge::mod::Modulator modulator_;
   fridge::sound::Sound sound_;
 };
 

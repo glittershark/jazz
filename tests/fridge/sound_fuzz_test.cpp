@@ -5,11 +5,11 @@
 #include <optional>
 
 #include "config.hpp"
-#include "config_transform.hpp"
 #include "constants.hpp"
 #include "fuzztest/fuzztest.h"
 #include "fuzztest/fuzztest_macros.h"
 #include "libjazz/units.hpp"
+#include "mod.hpp"
 #include "sound.hpp"
 
 using fridge::BUFFER_LEN;
@@ -163,11 +163,11 @@ FUZZ_TEST(FridgeSoundFuzzTest, ProcessSampleDoesNotCrash)
 void StaticConfigNeverCrashes(Config root_config,
                               const std::vector<float>& samples,
                               uint32_t seed) {
-  auto transform = std::make_unique<fridge::transform::State>(seed);
+  auto modulator = std::make_unique<fridge::mod::Modulator>(seed);
   auto sound = std::make_unique<Sound>();
   for (auto&& sample : samples) {
-    auto frame = transform->Update(root_config, Samples(1));
-    auto res = sound->ProcessSample(frame, sample);
+    const auto& modulated = modulator->Update(root_config, Samples(1));
+    auto res = sound->ProcessSample(modulated, sample);
   }
 }
 
@@ -184,15 +184,15 @@ struct Event {
 void DynamicConfigNeverCrashes(Config initial_config,
                                const std::vector<Event>& events,
                                uint32_t seed) {
-  auto transform = std::make_unique<fridge::transform::State>(seed);
+  auto modulator = std::make_unique<fridge::mod::Modulator>(seed);
   auto sound = std::make_unique<Sound>();
   Config config = initial_config;
   for (auto&& event : events) {
     if (event.new_config.has_value()) {
       config = *event.new_config;
     }
-    auto frame = transform->Update(config, Samples(1));
-    auto res = sound->ProcessSample(frame, event.sample);
+    const auto& modulated = modulator->Update(config, Samples(1));
+    auto res = sound->ProcessSample(modulated, event.sample);
   }
 }
 

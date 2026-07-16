@@ -146,6 +146,7 @@ Engine::Engine(config::Config initial_config)
       }),
 
       ui_(leds_, initial_config) {
+  modulator_.SetConfig(initial_config);
   // assign physical controls to UI controls
   head_.position.OnChange(ui_.head.position.GetCallback());
   head_.write_amount.OnChange(ui_.head.write_amount.GetCallback());
@@ -174,10 +175,16 @@ Engine::Engine(config::Config initial_config)
   timer_.Start();
 }
 
-const fridge::transition::Frame& Engine::Tick(Samples<uint32_t> dt) {
-  const auto& config = ui_.Config();
-  const auto& output = transform_.Update(config, dt);
-  return head_transitions_.Update(output, transform_.head_transitions());
+void Engine::SetConfig(const config::Config& config) {
+  installed_config_ = config;
+  modulator_.SetConfig(config);
+}
+
+void Engine::SyncConfig() {
+  const config::Config& config = ui_.Config();
+  if (config != installed_config_) {
+    SetConfig(config);
+  }
 }
 
 #endif  // UNIT_TEST

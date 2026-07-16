@@ -3,8 +3,8 @@
 #include "libjazz/units.hpp"
 
 using fridge::config::LFO;
-using fridge::state::Direction;
-using fridge::state::LFOEngine;
+using fridge::mod::Direction;
+using fridge::mod::LFOEngine;
 using jazz::units::Samples;
 
 namespace {
@@ -185,7 +185,7 @@ TEST(FridgeLFOTest, TickWithEventsReportsReverseTransition) {
              .reverse_chance = 1.0f};
   LFOEngine engine(config, 1234);
 
-  fridge::state::LFOTickResult result = engine.TickWithEvents(Samples(1));
+  fridge::mod::LFOTickResult result = engine.TickWithEvents(Samples(1));
 
   ASSERT_TRUE(result.transition.has_value());
   EXPECT_TRUE(result.transition->reversed);
@@ -201,7 +201,7 @@ TEST(FridgeLFOTest, TickWithEventsAccumulatesTransitionsAcrossTick) {
              .reverse_chance = 1.0f};
   LFOEngine engine(config, 1234);
 
-  fridge::state::LFOTickResult result = engine.TickWithEvents(Samples(2));
+  fridge::mod::LFOTickResult result = engine.TickWithEvents(Samples(2));
 
   ASSERT_TRUE(result.transition.has_value());
   EXPECT_TRUE(result.transition->reversed);
@@ -216,7 +216,7 @@ TEST(FridgeLFOTest, TickWithEventsReportsTeleportTransition) {
              .teleport_chance = 1.0f};
   LFOEngine engine(config, 1234);
 
-  fridge::state::LFOTickResult result = engine.TickWithEvents(Samples(1));
+  fridge::mod::LFOTickResult result = engine.TickWithEvents(Samples(1));
 
   ASSERT_TRUE(result.transition.has_value());
   EXPECT_FALSE(result.transition->reversed);

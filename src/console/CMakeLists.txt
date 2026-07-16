@@ -1,7 +1,5 @@
 add_library(jazz-console-fridge STATIC
-  ../fridge/lfo.cpp
-  ../fridge/head_transition.cpp
-  ../fridge/config_transform.cpp
+  ../fridge/mod.cpp
   ../fridge/sound.cpp
 )
 target_link_libraries(jazz-console-fridge PUBLIC jazz::libjazz)

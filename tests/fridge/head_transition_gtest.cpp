@@ -1,112 +1,98 @@
-#include <array>
-#include <optional>
-
 #include "fridge.hpp"
 #include "gtest/gtest.h"
+#include "libjazz/units.hpp"
 
 using fridge::NUM_HEADS;
 using fridge::config::Config;
-using fridge::state::Direction;
-using fridge::transition::HeadMotion;
-using fridge::transition::HeadMotionTransition;
-using fridge::transition::HeadTransitionMixer;
+using fridge::config::Target;
+using fridge::config::TargetObject;
+using fridge::config::TargetParameter;
+using fridge::mod::Frame;
+using fridge::mod::Modulator;
 
 namespace {
 
-std::array<std::optional<HeadMotionTransition>, NUM_HEADS> NoTransitions() {
-  return {};
+/* Head 0 with distinctive amounts, driven by an LFO that reverses at every
+ * grain boundary (every `grain_size` samples). */
+Config ReversingHeadConfig(size_t grain_size) {
+  Config config;
+  config.heads[0].position = 10;
+  config.heads[0].read_amount = 1.0f;
+  config.heads[0].write_amount = 0.5f;
+  config.heads[0].erase_amount = 0.25f;
+  config.lfos[0] = fridge::config::LFO{.range = 20,
+                                       .max_grain_size = grain_size,
+                                       .min_grain_size = grain_size,
+                                       .reverse_chance = 1.0f};
+  config.lfos[0].targets[0] = Target{.object = TargetObject::kHead,
+                                     .parameter = TargetParameter::kPosition,
+                                     .object_idx = 0};
+  return config;
 }
 
 }  // namespace
 
-TEST(FridgeHeadTransitionTest, StaticConfigProducesOneContributionPerHead) {
+TEST(FridgeHeadFadeTest, StaticConfigProducesOneContributionPerHead) {
   Config config;
   config.heads[0].position = 44;
   config.heads[0].read_amount = 0.5f;
 
-  HeadTransitionMixer mixer(4);
-  const fridge::transition::Frame& frame =
-      mixer.Update(config, NoTransitions());
+  Modulator modulator(1234, /*fade_time=*/4);
+  modulator.Reset(config);
+  const Frame& frame = modulator.TickSample();
 
   EXPECT_EQ(frame.head_count, NUM_HEADS);
-  EXPECT_EQ(frame.heads[0].head.position, 44u);
-  EXPECT_FLOAT_EQ(frame.heads[0].head.read_amount, 0.5f);
+  EXPECT_EQ(frame.heads[0].position, 44u);
+  EXPECT_FLOAT_EQ(frame.heads[0].read_amount, 0.5f);
 }
 
-TEST(FridgeHeadTransitionTest, TransitionFadesOldOutAndNewIn) {
-  Config config;
-  config.heads[0].position = 100;
-  config.heads[0].read_amount = 1.0f;
-  config.heads[0].write_amount = 0.5f;
-  config.heads[0].erase_amount = 0.25f;
+TEST(FridgeHeadFadeTest, ReversalFadesOldMotionOutAndNewIn) {
+  Modulator modulator(1234, /*fade_time=*/4);
+  modulator.Reset(ReversingHeadConfig(/*grain_size=*/2));
 
-  std::array<std::optional<HeadMotionTransition>, NUM_HEADS> transitions{};
-  transitions[0] = HeadMotionTransition{
-      .old_motion =
-          HeadMotion{
-              .position = 12,
-              .direction = Direction::kForwards,
-              .speed = 1.0f,
-          },
-      .new_motion =
-          HeadMotion{
-              .position = 100,
-              .direction = Direction::kBackwards,
-              .speed = 1.0f,
-          },
-      .reversed = true,
-  };
+  // Sample 1: LFO mid-grain, head simply tracks it forwards.
+  const Frame& tracking = modulator.TickSample();
+  ASSERT_EQ(tracking.head_count, NUM_HEADS);
+  EXPECT_EQ(tracking.heads[0].position, 11u);
 
-  HeadTransitionMixer mixer(4);
-  const fridge::transition::Frame& first = mixer.Update(config, transitions);
+  // Sample 2: grain boundary reverses the LFO. The fade starts at full
+  // weight on the old motion, so the new head (weight 0) is omitted.
+  const Frame& boundary = modulator.TickSample();
+  ASSERT_EQ(boundary.head_count, NUM_HEADS);
+  EXPECT_EQ(boundary.heads[0].position, 11u);
+  EXPECT_FLOAT_EQ(boundary.heads[0].read_amount, 1.0f);
 
-  ASSERT_EQ(first.head_count, NUM_HEADS);
-  EXPECT_EQ(first.heads[0].head.position, 12u);
-  EXPECT_FLOAT_EQ(first.heads[0].weight, 1.0f);
-  EXPECT_FLOAT_EQ(first.heads[0].head.read_amount, 1.0f);
-
-  const fridge::transition::Frame& second =
-      mixer.Update(config, NoTransitions());
-
-  ASSERT_EQ(second.head_count, NUM_HEADS + 1);
-  EXPECT_EQ(second.heads[0].head.position, 13u);
-  EXPECT_FLOAT_EQ(second.heads[0].weight, 0.75f);
-  EXPECT_FLOAT_EQ(second.heads[1].weight, 0.25f);
-  EXPECT_FLOAT_EQ(second.heads[0].head.read_amount, 0.75f);
-  EXPECT_FLOAT_EQ(second.heads[1].head.read_amount, 0.25f);
-  EXPECT_FLOAT_EQ(second.heads[0].head.write_amount, 0.375f);
-  EXPECT_FLOAT_EQ(second.heads[1].head.write_amount, 0.125f);
-  EXPECT_FLOAT_EQ(second.heads[0].head.erase_amount, 0.4375f);
-  EXPECT_FLOAT_EQ(second.heads[1].head.erase_amount, 0.8125f);
+  // Sample 3: the old motion keeps moving forwards (12) at weight 3/4 while
+  // the reversed head (11) fades in at weight 1/4.
+  const Frame& fading = modulator.TickSample();
+  ASSERT_EQ(fading.head_count, NUM_HEADS + 1);
+  EXPECT_EQ(fading.heads[0].position, 12u);
+  EXPECT_FLOAT_EQ(fading.heads[0].read_amount, 0.75f);
+  EXPECT_FLOAT_EQ(fading.heads[0].write_amount, 0.375f);
+  EXPECT_FLOAT_EQ(fading.heads[0].erase_amount, 0.4375f);
+  EXPECT_EQ(fading.heads[1].position, 11u);
+  EXPECT_FLOAT_EQ(fading.heads[1].read_amount, 0.25f);
+  EXPECT_FLOAT_EQ(fading.heads[1].write_amount, 0.125f);
+  EXPECT_FLOAT_EQ(fading.heads[1].erase_amount, 0.8125f);
 }
 
-TEST(FridgeHeadTransitionTest, TransitionEndsAfterFadeTime) {
-  Config config;
-  config.heads[0].position = 100;
+TEST(FridgeHeadFadeTest, FadeEndsAfterFadeTime) {
+  Modulator modulator(1234, /*fade_time=*/2);
+  modulator.Reset(ReversingHeadConfig(/*grain_size=*/2));
 
-  std::array<std::optional<HeadMotionTransition>, NUM_HEADS> transitions{};
-  transitions[0] = HeadMotionTransition{
-      .old_motion =
-          HeadMotion{
-              .position = 12,
-              .direction = Direction::kForwards,
-              .speed = 1.0f,
-          },
-      .new_motion =
-          HeadMotion{
-              .position = 100,
-              .direction = Direction::kBackwards,
-              .speed = 1.0f,
-          },
-      .teleported = true,
-  };
+  modulator.TickSample();  // tracking
+  modulator.TickSample();  // reversal at the grain boundary
 
-  HeadTransitionMixer mixer(2);
-  mixer.Update(config, transitions);
-  mixer.Update(config, NoTransitions());
-  const fridge::transition::Frame& finished =
-      mixer.Update(config, NoTransitions());
+  // Stop further reversals so the fade can run out undisturbed.
+  Config no_reverse = ReversingHeadConfig(/*grain_size=*/2);
+  no_reverse.lfos[0].reverse_chance = 0.0f;
+  modulator.SetConfig(no_reverse);
+
+  modulator.TickSample();  // mid-fade
+  const Frame& finished = modulator.TickSample();
 
   EXPECT_EQ(finished.head_count, NUM_HEADS);
-  EXPECT_EQ(finished.heads[0].head.position, 100u);
+  for (const auto& fade : modulator.fades()) {
+    EXPECT_EQ(fade.remaining, 0u);
+  }
 }

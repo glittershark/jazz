@@ -232,17 +232,21 @@ void Sound::Erase(size_t position, float amount) {
 float Sound::ApplyHead(const fridge::config::Head& head, float sample) {
   float wet_signal = 0.f;
 
+  // Wrap once here so a position past the end of the tape can never index
+  // out of the buffer.
+  size_t position = head.position % BUFFER_LEN;
+
   if (head.read_amount > 0.f) {
-    auto value = Read(head.position);
+    auto value = Read(position);
     wet_signal = value * head.read_amount;
   }
 
   if (head.write_amount > 0.f) {
-    Write(head.position, sample * head.write_amount);
+    Write(position, sample * head.write_amount);
   }
 
   if (head.erase_amount < 1.f) {
-    Erase(head.position, head.erase_amount);
+    Erase(position, head.erase_amount);
   }
 
   return wet_signal;
@@ -262,14 +266,13 @@ float Sound::ProcessSample(const fridge::config::Config& config, float sample) {
   return sample * config.dry + wet_signal * config.wet;
 }
 
-float Sound::ProcessSample(const fridge::transition::Frame& frame,
-                           float sample) {
+float Sound::ProcessSample(const fridge::mod::Frame& frame, float sample) {
   PreHousekeeping(global_clock_);
 
   float wet_signal = 0.f;
 
   for (size_t i = 0; i < frame.head_count; ++i) {
-    wet_signal += ApplyHead(frame.heads[i].head, sample);
+    wet_signal += ApplyHead(frame.heads[i], sample);
   }
 
   global_clock_ = (global_clock_ + 1) % global_clock_max_;

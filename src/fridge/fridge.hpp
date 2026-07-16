@@ -2,9 +2,7 @@
 #define FRIDGE_H_
 
 #include "config.hpp"
-#include "config_transform.hpp"
-#include "head_transition.hpp"
-#include "lfo_engine.hpp"
+#include "mod.hpp"
 #include "ui.hpp"
 
 #endif  // FRIDGE_H_
