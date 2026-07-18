@@ -20,7 +20,7 @@ constexpr const size_t FADE_TIME = 128;
 // A frame can carry up to 2 contributions per head while a fade is active,
 // each posting a write and an erase that live for FADE_TIME samples.
 constexpr const size_t UPDATE_CAP =
-    ((NUM_HEADS * 2 + 1) * ((FADE_TIME + 1) * 2));
+    ((NUM_HEADS * 2 + 1) * ((FADE_TIME + 1) * 2)) * 2;
 
 }  // namespace fridge
 
