@@ -1,0 +1,128 @@
+(footprint "Adam Tech SW-T3-2B-A-A3-S1"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(property "Reference" "REF**"
+		(at 0 -5.794 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "a56a6399-adf5-4a7f-af08-8eaa39275e7d")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+		)
+	)
+	(property "Value" "Adam Tech SW-T3-2B-A-A3-S1"
+		(at 0 -4.294 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "8ec8191b-b220-4bf0-aede-f27f8411b9f2")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "e43709c5-ab7b-4fc8-93a0-365db50b2cbb")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "03d47ec2-abe0-4e9a-ae4f-7bccb3c78e5e")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr through_hole)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_rect
+		(start -2.675 -1.675)
+		(end 2.675 6.675)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "148100e5-c3b8-47eb-8f81-a74d5dd8b883")
+	)
+	(fp_rect
+		(start -1.55 -1.1)
+		(end 1.55 6.1)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "B.CrtYd")
+		(uuid "d1422d89-dc9f-4067-9cf2-229e338ec5ba")
+	)
+	(fp_rect
+		(start -2.7 -1.7)
+		(end 2.7 6.7)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "88698bf5-0ca1-49b5-a5ea-887dc1430a39")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 -2.794 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "2ffa2156-988d-4604-99a2-4adf6b806cf1")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "1" thru_hole rect
+		(at 0 0)
+		(size 2.5 1.5)
+		(drill oval 1.75 0.75)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "cf6ef00d-afcf-4aa8-b654-51be21ddcec9")
+	)
+	(pad "2" thru_hole oval
+		(at 0 2.5)
+		(size 2.5 1.5)
+		(drill oval 1.75 0.75)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "08eb1ffd-16bb-4084-9968-5827b3c7e1e6")
+	)
+	(pad "3" thru_hole oval
+		(at 0 5)
+		(size 2.5 1.5)
+		(drill oval 1.75 0.75)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "b1198f87-e372-455c-ab46-000bd85eeff2")
+	)
+	(embedded_fonts no)
+)
