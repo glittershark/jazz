@@ -1,0 +1,7 @@
+#+title: Notes
+
+
+* Digikey parts
+
+*SPDT Toggle switches*: https://www.digikey.com/en/products/detail/adam-tech/SW-T3-2B-A-A3-S1/15284416
+
