@@ -1,0 +1,50 @@
+Updated TL072 (unit C) from U2C to U1C.
+Updated 12k from R4 to R3.
+Updated 100k from R8 to R4.
+Updated 100k from R14 to R5.
+Updated 10k from R5 to R6.
+Updated 100 from R6 to R7.
+Updated 10k from R9 to R8.
+Updated 1M from R7 to R9.
+Updated A100k from R3 to R12.
+Updated 1M from R12 to R13.
+Updated 100k from R13 to R14.
+Updated Integrator On from SW2 to SW1.
+Updated Differentiator On from SW1 to SW2.
+Updated 3.3n from C9 to C6.
+Updated TL072 (unit C) from U3C to U2C.
+Updated TL072 (unit A) from U2A to U1A.
+Updated TL072 (unit C) from U5C to U3C.
+Updated TL072 (unit B) from U2B to U1B.
+Updated TL072 (unit A) from U3A to U2A.
+Updated TL072 (unit B) from U3B to U2B.
+Updated 40175 from U1 to U4.
+Updated AD633JNZ from U4 to U5.
+Updated TL072 (unit A) from U5A to U3A.
+Updated TL072 (unit B) from U5B to U3B.
+Updated 9 from V2 to V1.
+Updated GNDPWR from #PWR01 to #PWR013.
+Updated GNDPWR from #PWR03 to #PWR02.
+Updated GND from #PWR017 to #PWR03.
+Updated +9V from #PWR018 to #PWR04.
+Updated GNDPWR from #PWR02 to #PWR05.
+Updated +9V from #PWR07 to #PWR06.
+Updated GNDPWR from #PWR04 to #PWR07.
+Updated GND from #PWR020 to #PWR08.
+Updated GND from #PWR029 to #PWR09.
+Updated GND from #PWR021 to #PWR010.
+Updated GND from #PWR026 to #PWR011.
+Updated +9V from #PWR023 to #PWR012.
+Updated +9V from #PWR05 to #PWR01.
+Updated GND from #PWR019 to #PWR014.
+Updated GND from #PWR022 to #PWR015.
+Updated GND from #PWR027 to #PWR016.
+Updated GND from #PWR028 to #PWR017.
+Updated +9V from #PWR024 to #PWR018.
+Updated GNDPWR from #PWR06 to #PWR019.
+Updated GND from #PWR025 to #PWR020.
+Updated 470n from C6 to C2.
+Updated 47u from C2 to C3.
+Updated 470n from C7 to C4.
+Updated 4.7n from C8 to C5.
+Annotation complete.

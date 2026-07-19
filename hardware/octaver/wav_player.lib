@@ -1,0 +1,4 @@
+.subckt AUDIO_SOURCE OUT GND
+A1 %vd(OUT GND) filesrc
+.model filesrc filesrc(file="bass.txt" amplification=1)
+.ends AUDIO_SOURCE

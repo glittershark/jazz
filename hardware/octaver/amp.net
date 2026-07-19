@@ -1,0 +1,26 @@
+.title KiCad schematic
+.include "./2N3904_model.txt"
+.include "./v.sub"
+.save all
+.probe alli
+.probe p(XV1)
+.probe p(V2)
+.probe p(R2)
+.probe p(C1)
+.probe p(R3)
+.probe p(R1)
+.probe p(Q1)
+XV1 in GND VFILE
+V2 +9V GND DC 9
+R2 Net-_Q1-C_ +9V 10k
+C1 out Net-_Q1-C_ 1
+R3 GND out 1Meg
+R1 GND Net-_Q1-E_ 1k
+Q1 Net-_Q1-C_ in Net-_Q1-E_ 2N3904
+.control
+tran 20.83u 5
+sndparam output.wav 48000 wav24 1.0 0.0 1
+sndprint v(out)
+wrdata output v(out)
+.endc
+.end
