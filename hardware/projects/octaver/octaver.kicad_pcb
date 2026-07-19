@@ -188,7 +188,7 @@
 		(path "/c838b325-1b27-4f6d-be8a-698d4b5bf67b")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr exclude_from_bom)
+		(attr exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 3.81 -1.27)
@@ -743,7 +743,7 @@
 		(path "/8238531e-93f5-4951-bd57-417bb90159ee")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -1.38 -1.38)
@@ -1281,7 +1281,7 @@
 		(path "/b70c9ba3-157b-4bc1-abfe-fc90b12b07c5")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -1.38 -1.38)
@@ -2435,7 +2435,7 @@
 		(path "/28f89c47-be59-462e-9cdf-745d32618bc8")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 1.04 0)
@@ -3211,7 +3211,7 @@
 		(path "/49fbf6a1-852b-4da7-b936-75953032674c")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr exclude_from_bom)
+		(attr exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -3.81 -1.27)
@@ -3462,7 +3462,7 @@
 		(path "/e7d65013-da44-4bd8-a4b3-8445c31c2fc3")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -1.38 11.54)
@@ -3883,7 +3883,7 @@
 		(path "/1a304460-3ff7-4529-9707-ece136dcc405")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 1.16 8.95)
@@ -5904,7 +5904,7 @@
 		(path "/aa6c1090-69ca-4098-b581-ce5f586d3364")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -1.38 11.54)
@@ -7302,7 +7302,7 @@
 		(path "/1d808952-3896-4546-8f63-396b451a2aed")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr exclude_from_bom)
+		(attr exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 3.81 -1.27)
@@ -7705,7 +7705,7 @@
 		(path "/687c6a0f-d679-4807-8dcd-68eee3b41547")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -1.38 -1.38)
@@ -9464,7 +9464,7 @@
 		(path "/9f3903ee-2a71-47a2-a278-ff9d4ca151e3")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 1.27 -11.43)
@@ -9689,7 +9689,7 @@
 		(path "/ea9db3fa-fd03-4da6-ab9d-cbe565f48ca5")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 1.27 -11.43)
@@ -9923,7 +9923,7 @@
 		(path "/54c9613e-3f46-4bde-978b-4de1ec3ea9bd")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 1.38 -1.27)
@@ -10180,7 +10180,7 @@
 		(path "/d892d2e1-79de-48ca-92cb-ca9cc9868c16")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 1.27 -11.43)
@@ -10405,7 +10405,7 @@
 		(path "/84663634-1ec2-4a36-a0f0-d1c33e2a98ce")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 1.27 -11.43)
@@ -10639,7 +10639,7 @@
 		(path "/16cac9dd-2793-4ddb-aa05-b93f6baf95cf")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 1.38 -1.27)
@@ -10895,7 +10895,7 @@
 		(path "/f7295eaf-c060-4599-a3f3-20dc25e7a209")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_rect
 			(start -2.675 1.675)
@@ -11064,7 +11064,7 @@
 		(path "/f504d2c2-236a-4ec5-a94c-08dbfb95b82a")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -1.29 1.545)
@@ -11268,7 +11268,7 @@
 		(path "/d349ec6d-3538-4c72-9e14-2d04b63f3e30")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_rect
 			(start -9.8 8.5)
@@ -11515,7 +11515,7 @@
 		(path "/9154e921-d545-484e-9049-affbb6917604")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_rect
 			(start -2.675 1.675)
@@ -11660,7 +11660,7 @@
 		(path "/d49eeebd-839a-4dc3-a204-5d062f7846a1")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_rect
 			(start -2.675 1.675)
@@ -11805,7 +11805,7 @@
 		(path "/8a8041a1-b657-4dd7-a310-cee5c2811e91")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_rect
 			(start -2.675 1.675)
@@ -11951,7 +11951,7 @@
 		(path "/4424245c-851f-4b4d-a9bf-a401e1f7db86")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 1.27 -11.43)
@@ -12176,7 +12176,7 @@
 		(path "/6c9530ae-5588-4b74-aa81-4f2cc0f46a45")
 		(sheetname "/")
 		(sheetfile "octaver.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 1.27 -11.43)
@@ -13019,6 +13019,114 @@
 		(layer "Edge.Cuts")
 		(uuid "312ec63c-e9aa-4a35-b655-c32c53a4cf3b")
 	)
+	(gr_text "let the calculus flow through you"
+		(at 36.068 88.392 0)
+		(layer "F.SilkS")
+		(uuid "34d50fd7-6139-4bb6-b9e7-82f9bc345d2f")
+		(effects
+			(font
+				(size 0.5 0.5)
+				(thickness 0.08)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "the can v0.1\n© 2026 stillmar electric\n<3 aspen, chris, & nausicaa"
+		(at 42.545 25.4 0)
+		(layer "F.SilkS")
+		(uuid "01813770-b075-4873-a360-16e0de0f35d4")
+		(effects
+			(font
+				(size 0.5 0.5)
+				(thickness 0.08)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "JLCJLCJLCJLC"
+		(at 45.72 105.41 0)
+		(layer "F.SilkS")
+		(uuid "5a5948fe-db0a-44dc-9127-94d817aec185")
+		(effects
+			(font
+				(size 0.5 0.5)
+				(thickness 0.08)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "the can v0.1\n© 2026 stillmar electric\n<3 aspen, chris, & nausicaa"
+		(at 75.565 106.045 0)
+		(layer "F.SilkS")
+		(uuid "67321784-dec9-433d-a425-f57a680d945c")
+		(effects
+			(font
+				(size 0.5 0.5)
+				(thickness 0.08)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "the can v0.1\n© 2026 stillmar electric\n<3 aspen, chris, & nausicaa"
+		(at 97.79 98.425 0)
+		(layer "F.SilkS")
+		(uuid "efdceaa9-ffb1-419c-ba10-3d157c7d633f")
+		(effects
+			(font
+				(size 0.5 0.5)
+				(thickness 0.08)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "footswitch board"
+		(at 36.195 90.805 0)
+		(layer "F.SilkS")
+		(uuid "f66503b1-c0c6-4824-8f1f-b890124200e7")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "pot board"
+		(at 78.74 24.13 0)
+		(layer "F.SilkS")
+		(uuid "adc08e63-8a27-490a-927a-b67aa531d7f5")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "main board"
+		(at 145.415 42.545 0)
+		(layer "F.SilkS")
+		(uuid "8f8080b2-2e07-4dd6-8cb3-9fb54164325a")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "i love spaghetti (?)"
+		(at 98.552 71.12 75)
+		(layer "F.SilkS")
+		(uuid "40b6bd5a-a7c6-4960-afc9-728190376583")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+			(justify left bottom)
+		)
+	)
 	(gr_text "+"
 		(locked yes)
 		(at 129.938 43.792 90)
@@ -13043,6 +13151,18 @@
 				(thickness 0.15)
 			)
 			(justify left bottom)
+		)
+	)
+	(gr_text "all-in-one crushed tomatoes\n  vine-ripened tomatoes\n    not from concentrate\n      chunky ;)"
+		(at 53.848 53.848 -75)
+		(layer "B.SilkS")
+		(uuid "e9f69c1c-4847-46d6-a4ee-031ae114e693")
+		(effects
+			(font
+				(size 0.6 0.6)
+				(thickness 0.1)
+			)
+			(justify left bottom mirror)
 		)
 	)
 	(point
