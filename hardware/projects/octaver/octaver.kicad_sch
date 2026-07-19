@@ -8459,7 +8459,7 @@
 				)
 			)
 		)
-		(property "Footprint" "circuits:mono_jack"
+		(property "Footprint" "custom:mono_jack"
 			(at 105.41 73.66 0)
 			(hide yes)
 			(show_name no)
@@ -8800,7 +8800,7 @@
 				)
 			)
 		)
-		(property "Footprint" "footprints:N_8_ADI"
+		(property "Footprint" "Package_DIP:DIP-8_W7.62mm"
 			(at 260.35 157.48 0)
 			(hide yes)
 			(show_name no)
@@ -10597,7 +10597,7 @@
 				)
 			)
 		)
-		(property "Footprint" "circuits:Taiss_Potentiometer_vertical"
+		(property "Footprint" "custom:Taiss_Potentiometer_vertical"
 			(at 242.57 87.63 0)
 			(hide yes)
 			(show_name no)
@@ -11176,7 +11176,7 @@
 				)
 			)
 		)
-		(property "Footprint" "circuits:mono_jack"
+		(property "Footprint" "custom:mono_jack"
 			(at 105.41 59.69 0)
 			(hide yes)
 			(show_name no)
@@ -12108,7 +12108,7 @@
 				)
 			)
 		)
-		(property "Footprint" "circuits:Taiss_Potentiometer_vertical"
+		(property "Footprint" "custom:Taiss_Potentiometer_vertical"
 			(at 302.26 59.69 0)
 			(hide yes)
 			(show_name no)
@@ -12726,7 +12726,7 @@
 				)
 			)
 		)
-		(property "Footprint" "circuits:Taiss_Potentiometer_vertical"
+		(property "Footprint" "custom:Taiss_Potentiometer_vertical"
 			(at 154.94 142.24 0)
 			(hide yes)
 			(show_name no)
@@ -12887,7 +12887,7 @@
 				)
 			)
 		)
-		(property "Footprint" "circuits:Adam Tech SW-T3-2B-A-A3-S1"
+		(property "Footprint" "custom:Adam Tech SW-T3-2B-A-A3-S1"
 			(at 137.16 92.71 0)
 			(hide yes)
 			(show_name no)
@@ -13323,7 +13323,7 @@
 				)
 			)
 		)
-		(property "Footprint" "circuits:Adam Tech SW-T3-2B-A-A3-S1"
+		(property "Footprint" "custom:Adam Tech SW-T3-2B-A-A3-S1"
 			(at 158.75 165.1 0)
 			(hide yes)
 			(show_name no)
@@ -14080,7 +14080,7 @@
 				)
 			)
 		)
-		(property "Footprint" "circuits:Taiss_Potentiometer_vertical"
+		(property "Footprint" "custom:Taiss_Potentiometer_vertical"
 			(at 290.83 93.98 0)
 			(hide yes)
 			(show_name no)
@@ -15958,7 +15958,7 @@
 				)
 			)
 		)
-		(property "Footprint" "circuits:PBS-24-302_3PDT"
+		(property "Footprint" "custom:PBS-24-302_3PDT"
 			(at 43.18 68.58 0)
 			(hide yes)
 			(show_name no)
@@ -16059,7 +16059,7 @@
 				)
 			)
 		)
-		(property "Footprint" "circuits:PBS-24-302_3PDT"
+		(property "Footprint" "custom:PBS-24-302_3PDT"
 			(at 43.18 83.82 0)
 			(hide yes)
 			(show_name no)
@@ -16160,7 +16160,7 @@
 				)
 			)
 		)
-		(property "Footprint" "circuits:PBS-24-302_3PDT"
+		(property "Footprint" "custom:PBS-24-302_3PDT"
 			(at 44.45 203.2 0)
 			(hide yes)
 			(show_name no)
@@ -16339,7 +16339,7 @@
 				)
 			)
 		)
-		(property "Footprint" "circuits:Adam Tech SW-T3-2B-A-A3-S1"
+		(property "Footprint" "custom:Adam Tech SW-T3-2B-A-A3-S1"
 			(at 237.49 180.34 0)
 			(hide yes)
 			(show_name no)
@@ -16602,7 +16602,7 @@
 				)
 			)
 		)
-		(property "Footprint" "circuits:Taiss_Potentiometer_vertical"
+		(property "Footprint" "custom:Taiss_Potentiometer_vertical"
 			(at 241.3 157.48 0)
 			(hide yes)
 			(show_name no)
@@ -17289,7 +17289,7 @@
 				)
 			)
 		)
-		(property "Footprint" "circuits:Taiss_Potentiometer_vertical"
+		(property "Footprint" "custom:Taiss_Potentiometer_vertical"
 			(at 356.87 97.79 0)
 			(hide yes)
 			(show_name no)
@@ -17541,7 +17541,7 @@
 				)
 			)
 		)
-		(property "Footprint" "circuits:Adam Tech SW-T3-2B-A-A3-S1"
+		(property "Footprint" "custom:Adam Tech SW-T3-2B-A-A3-S1"
 			(at 227.33 71.12 0)
 			(hide yes)
 			(show_name no)
