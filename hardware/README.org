@@ -1,0 +1,30 @@
+#+title: README (hardware)
+
+* directory structure
+- =projects/=: kicad projects
+  - =devboard/=: general development board
+  - =octaver/=: the can
+- =lib/=: library files
+  - =kicad/=: kicad part library files
+    - =custom.kicad_sym=: custom symbol library (stuff we've drawn)
+    - =custom.pretty/=: custom footprint library (stuff we've drawn)
+    - =vendor/=: symbol library files (=*.kicad_sym=) downloaded from vendors
+    - =vendor.pretty/=: footprint files (=*.kicad_mod=) & 3D models downloaded from vendors
+  - =spice/=: spice simulation files
+* creating a new project
+1. create it in kicad under =projects/=
+2. copy == & == from this directory into the project; this pulls in our custom
+   libraries with all our stuff
+3. enjoy!
+* adding downloaded symbols & footprints
+1. download the symbol & footprint libraries for the latest version of kicad
+   available (6+ is fine)
+2. move files:
+   a. =*.kicad_sym= -> =lib/kicad/vendor/=
+   b. =*.kicad_mod=, 3D models -> =lib/kicad/vendor.pretty/=
+3. open the symbol editor. for each new symbol, change the footprint reference
+   to =vendor:*= (since we just put the footprint into our own library)
+4. open the footprint editor: for each new referenced footprint, if it should
+   have a 3D model associated with it (i.e., the library came with a model),
+   ensure the model shows up in the 3D view of the footprint. if not, add it and
+   move it to the right place.
