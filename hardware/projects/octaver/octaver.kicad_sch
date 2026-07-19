@@ -9187,7 +9187,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Panelization:MouseBite-Slot_2.54x2.54mm_on-edge_D0.5mm_P0.85mm_4h_Trace"
+		(property "Footprint" "custom:MouseBite_2.54x7.62mm_JLCPCB"
 			(at 185.42 219.71 0)
 			(hide yes)
 			(show_name no)
@@ -11041,7 +11041,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Panelization:MouseBite-Slot_2.54x2.54mm_on-edge_D0.5mm_P0.85mm_4h_Trace"
+		(property "Footprint" "custom:MouseBite_2.54x7.62mm_JLCPCB"
 			(at 185.42 231.14 0)
 			(hide yes)
 			(show_name no)
@@ -15840,7 +15840,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Panelization:MouseBite-Slot_2.54x2.54mm_on-edge_D0.5mm_P0.85mm_4h_Trace"
+		(property "Footprint" "custom:MouseBite_2.54x7.62mm_JLCPCB"
 			(at 185.42 208.28 0)
 			(hide yes)
 			(show_name no)
