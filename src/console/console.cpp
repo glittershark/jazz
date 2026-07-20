@@ -422,8 +422,8 @@ bool ApplyFridgeFeedbackKind(const std::string& value,
     feedback->kind = fridge::config::Feedback::Kind::kRead;
     return true;
   }
-  if (kind == "erase") {
-    feedback->kind = fridge::config::Feedback::Kind::kErase;
+  if (kind == "write") {
+    feedback->kind = fridge::config::Feedback::Kind::kWrite;
     return true;
   }
 

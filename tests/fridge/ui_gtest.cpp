@@ -81,7 +81,7 @@ TEST_F(UITest, update_head_knobs_via_callbacks) {
     config = ui.Config();
 
     EXPECT_EQ(config.heads[selected_head].feedback.kind,
-              config::Feedback::Kind::kErase);
+              config::Feedback::Kind::kWrite);
     EXPECT_FLOAT_EQ(config.heads[selected_head].feedback.amount,
                     -feedback_increment);
   }

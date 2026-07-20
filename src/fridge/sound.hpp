@@ -238,6 +238,18 @@ class BufferValue {
   friend DrainingIterator;
 };
 
+/** State of feedback for a single sample */
+class FeedbackState {
+  float value_;
+
+ public:
+  FeedbackState() : value_(0.f) {}
+  FeedbackState(const FeedbackState&) = delete;
+  FeedbackState& operator=(const FeedbackState&) = delete;
+  void Add(float value) { value_ += value; }
+  float value() { return value_; }
+};
+
 class Sound {
  private:
   static constexpr const size_t global_clock_max_ = SIZE_MAX - 1;
@@ -271,7 +283,9 @@ class Sound {
    * (which should be between 0 and 1)
    * */
   void Erase(size_t position, float amount);
-  float ApplyHead(const fridge::config::Head& head, float sample);
+
+  float ApplyHead(const fridge::config::Head& head, float sample,
+                  FeedbackState* feedback_state);
 
  public:
   /**

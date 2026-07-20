@@ -64,7 +64,7 @@ void FuzzTestPrintSourceCode(Sink& sink, const LFO& v) {
 
 auto ValidFeedback() {
   return fuzztest::StructOf<Feedback>(
-      fuzztest::ElementOf({Feedback::Kind::kRead, Feedback::Kind::kErase}),
+      fuzztest::ElementOf({Feedback::Kind::kRead, Feedback::Kind::kWrite}),
       fuzztest::Finite<float>());
 }
 

@@ -74,6 +74,7 @@ class FridgeSoundTest : public ::testing::Test {
     config.heads[0].read_amount = 1.0f;
     config.heads[0].write_amount = 1.0f;
     config.heads[0].erase_amount = 1.0f;
+    config.heads[0].feedback.amount = 0.0f;
     config.dry = 0.0f;
     config.wet = 1.0f;
 
@@ -259,4 +260,42 @@ TEST_F(FridgeSoundTest, ZeroEraseAmountClearsSignal) {
   config.heads[0].read_amount = 1.0f;
   float output = sound.ProcessSample(config, 0.0f);
   EXPECT_NEAR(output, 0.0f, 0.01f);
+}
+
+TEST_F(FridgeSoundTest, FeedbackCopiesValueBetweenPositions) {
+  // Prime position 0 with 1.0 using head 0's regular write.
+  sound.ProcessSample(config, 1.0f);
+  config.heads[0].write_amount = 0.0f;
+  for (size_t i = 0; i < FADE_TIME; ++i) {
+    sound.ProcessSample(config, 0.0f);
+  }
+
+  // Reconfigure:
+  //   head 1: read feedback at position 0 -> puts 1.0 into feedback state
+  //   head 0: write feedback at position echo_pos with amount 0.8 -> writes 0.8 there
+  config.heads[0].read_amount = 0.0f;
+  const size_t echo_pos = 500;
+  config.heads[0].position = echo_pos;
+  config.heads[0].feedback.kind = fridge::config::Feedback::Kind::kWrite;
+  config.heads[0].feedback.amount = 0.8f;
+
+  config.heads[1].position = 0;
+  config.heads[1].read_amount = 1.0f;
+  config.heads[1].feedback.kind = fridge::config::Feedback::Kind::kRead;
+  config.heads[1].feedback.amount = 1.0f;
+
+  sound.ProcessSample(config, 0.0f);
+
+  // Disable feedback and let the write at echo_pos fade in.
+  config.heads[0].feedback.amount = 0.0f;
+  config.heads[1].read_amount = 0.0f;
+  config.heads[1].feedback.amount = 0.0f;
+  for (size_t i = 0; i < FADE_TIME; ++i) {
+    sound.ProcessSample(config, 0.0f);
+  }
+
+  // Read back from echo_pos with head 0.
+  config.heads[0].read_amount = 1.0f;
+  float output = sound.ProcessSample(config, 0.0f);
+  EXPECT_NEAR(output, 0.8f, 0.0001f);
 }
