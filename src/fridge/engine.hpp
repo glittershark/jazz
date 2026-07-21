@@ -69,14 +69,12 @@ struct LfoKnobs {
 };
 
 class Engine {
-  // hoookay: we have 13 knobs (2 channels each), 16 buttons (1 channel each),
-  // and 8:1 muxes (in hardware), so we need 6 muxes in total to account for
-  // everything.
-  constexpr const static size_t kMuxes = 6;
-
+ public:
+  constexpr const static size_t kMuxes = 8;
   constexpr const static size_t kHeadKnobs = 5;
   constexpr const static size_t kLfoKnobs = 8;
 
+ private:
   io::mux::MultiGpioInMux<kMuxes> mux_;
   io::mux::ChannelScan<8U, decltype(mux_)> scan_;
 

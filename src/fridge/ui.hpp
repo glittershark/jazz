@@ -468,11 +468,14 @@ class RadioButtons {
 #endif  // UNIT_TEST
 };
 
+template <DisplayableBackingValue V>
+using CieInterpKnob = KnobWithDisplay<V, value_display::CieInterp>;
+
 struct Head {
-  Knob<Position> position;
-  Knob<SingleTurn> write_amount;
-  Knob<SingleTurn> read_amount;
-  Knob<SingleTurn> erase_amount;
+  CieInterpKnob<Position> position;
+  CieInterpKnob<SingleTurn> write_amount;
+  CieInterpKnob<SingleTurn> read_amount;
+  CieInterpKnob<SingleTurn> erase_amount;
   FeedbackKnob feedback;
 
   void Select(const config::Head& head);
@@ -480,14 +483,14 @@ struct Head {
 };
 
 struct LFO {
-  Knob<Position> range;
-  Knob<Size> max_grain_size;
-  Knob<Size> min_grain_size;
-  Knob<SingleTurn> reverse_chance;
-  Knob<SingleTurn> teleport_chance;
-  Knob<SingleTurn> pitch_shift_chance;
-  Knob<SingleTurn> low_octave_chance;
-  Knob<SingleTurn> high_octave_chance;
+  CieInterpKnob<Position> range;
+  CieInterpKnob<Size> max_grain_size;
+  CieInterpKnob<Size> min_grain_size;
+  CieInterpKnob<SingleTurn> reverse_chance;
+  CieInterpKnob<SingleTurn> teleport_chance;
+  CieInterpKnob<SingleTurn> pitch_shift_chance;
+  CieInterpKnob<SingleTurn> low_octave_chance;
+  CieInterpKnob<SingleTurn> high_octave_chance;
 
   void Select(const config::LFO& lfo);
   config::LFO Config() const;
@@ -545,8 +548,8 @@ struct UI {
   Head head;
   LFO lfo;
 
-  Knob<SingleTurn> dry;
-  KnobWithDisplay<SingleTurn, value_display::CieInterp> wet;
+  CieInterpKnob<SingleTurn> dry;
+  CieInterpKnob<SingleTurn> wet;
   TempoButton tempo;
 
   RadioButtons<NUM_HEADS> head_select;
