@@ -1,5 +1,7 @@
 #include "engine.hpp"
 
+#include <cstddef>
+
 #include "config.hpp"
 #include "libjazz/units.hpp"
 
@@ -27,62 +29,121 @@ Timer::Timer(daisy::TimerHandle::Config::Peripheral timer, Callback<> callback,
   timer_.SetPeriod((period_.count() * timer_.GetFreq()) / 1'000'000);
 }
 
+namespace {
+constexpr const size_t kSW0 = 0;
+constexpr const size_t kSW1 = 1;
+constexpr const size_t kKNOB_A0 = 2;
+constexpr const size_t kKNOB_B0 = 3;
+constexpr const size_t kKNOB_A1 = 4;
+constexpr const size_t kKNOB_B1 = 5;
+constexpr const size_t kKNOB_S0 = 6;
+constexpr const size_t kKNOB_S1 = 7;
+
+enum class KnobBank { K0, K1 };
+
+static size_t knob_a(KnobBank mux) {
+  switch (mux) {
+  case KnobBank::K0:
+    return kKNOB_A0;
+  case KnobBank::K1:
+    return kKNOB_A1;
+  default:
+    assert(false);
+  }
+}
+
+static size_t knob_b(KnobBank mux) {
+  switch (mux) {
+  case KnobBank::K0:
+    return kKNOB_B0;
+  case KnobBank::K1:
+    return kKNOB_B1;
+  default:
+    assert(false);
+  }
+}
+
+static io::QuadratureEncoder knob(io::mux::MultiGpioInMux<Engine::kMuxes>* mux,
+                                  KnobBank bank, size_t channel) {
+  return {mux->channel(knob_a(bank), channel),
+          mux->channel(knob_b(bank), channel)};
+}
+}  // namespace
+
 Engine::Engine(config::Config initial_config)
     // TODO: assign the right pins in here
     : mux_({
-          io::mux::GpioInMux(D20),
-          io::mux::GpioInMux(D19),
-          io::mux::GpioInMux(D18),
-          io::mux::GpioInMux(D17),
-          io::mux::GpioInMux(D16),
-          io::mux::GpioInMux(D15),
+          /* 0 =*/io::mux::GpioInMux(D3),   // SW0 in the schematic
+          /* 1 =*/io::mux::GpioInMux(D4),   // SW1 in the schematic
+          /* 2 =*/io::mux::GpioInMux(D5),   // KNOB_A0 in the schematic
+          /* 3 =*/io::mux::GpioInMux(D6),   // KNOB_B0 in the schematic
+          /* 4 =*/io::mux::GpioInMux(D7),   // KNOB_A1 in the schematic
+          /* 5 =*/io::mux::GpioInMux(D8),   // KNOB_B1 in the schematic
+          /* 6 =*/io::mux::GpioInMux(D9),   // KNOB_S0 in the schematic
+          /* 7 =*/io::mux::GpioInMux(D10),  // KNOB_S1 in the schematic
       }),
 
-      scan_(io::mux::Address(D1, D2, D3), &mux_),
+      scan_(io::mux::Address(D0, D1, D2), &mux_),
 
       timer_(TimerHandle::Config::Peripheral::TIM_3, scan_.GetCallback()),
 
-      // head knobs are on mux 0 & 1
-      dry_(mux_.channel(0, 5), mux_.channel(1, 5)),
+      // dry = SW2
+      dry_(knob(&mux_, KnobBank::K0, 0)),
+      // wet = SW3
+      wet_(knob(&mux_, KnobBank::K0, 1)),
 
-      // dry/wet are also on mux 0 & 1
-      wet_(mux_.channel(3, 0), mux_.channel(2, 0)),
       head_{
-          .position = {mux_.channel(2, 2), mux_.channel(1, 0)},
-          .write_amount = {mux_.channel(1, 3), mux_.channel(1, 1)},
-          .read_amount = {mux_.channel(0, 3), mux_.channel(1, 2)},
-          // erase_amount =
-          .erase_amount = {mux_.channel(0, 2), mux_.channel(0, 1)},
-          // feedback =
-          .feedback = {mux_.channel(0, 0), mux_.channel(0, 3)},
+          // position = SW4
+          .position = knob(&mux_, KnobBank::K0, 2),
+          // write_amount = SW5
+          .write_amount = knob(&mux_, KnobBank::K0, 3),
+          // read_amount = SW6
+          .read_amount = knob(&mux_, KnobBank::K0, 4),
+          // erase_amount = Sw7
+          .erase_amount = knob(&mux_, KnobBank::K0, 5),
+          // feedback = SW8
+          .feedback = knob(&mux_, KnobBank::K0, 6),
+          // SW9 is spare
       },
-      // one spare channel on mux 0 & 1
 
-      // lfo knobs are on mux 2 & 3
       lfo_{
-          .range = {mux_.channel(2, 0), mux_.channel(3, 0)},
-          .max_grain_size = {mux_.channel(2, 1), mux_.channel(3, 1)},
-          .min_grain_size = {mux_.channel(2, 2), mux_.channel(3, 2)},
-          .reverse_chance = {mux_.channel(2, 3), mux_.channel(3, 3)},
-          .teleport_chance = {mux_.channel(2, 4), mux_.channel(3, 4)},
-          .pitch_shift_chance = {mux_.channel(2, 5), mux_.channel(3, 5)},
-          .low_octave_chance = {mux_.channel(2, 6), mux_.channel(3, 6)},
-          .high_octave_chance = {mux_.channel(2, 7), mux_.channel(3, 7)},
+          // range = SW10
+          .range = knob(&mux_, KnobBank::K1, 0),
+          // range = SW11
+          .max_grain_size = knob(&mux_, KnobBank::K1, 1),
+          // range = SW12
+          .min_grain_size = knob(&mux_, KnobBank::K1, 2),
+          // range = SW13
+          .reverse_chance = knob(&mux_, KnobBank::K1, 3),
+          // range = SW14
+          .teleport_chance = knob(&mux_, KnobBank::K1, 4),
+          // range = SW15
+          .pitch_shift_chance = knob(&mux_, KnobBank::K1, 5),
+          // range = SW16
+          .low_octave_chance = knob(&mux_, KnobBank::K1, 6),
+          // range = SW17
+          .high_octave_chance = knob(&mux_, KnobBank::K1, 7),
       },
 
-      // head selection is on mux 4
+      // head selection is on the SW0 mux
       head_select_{
-          mux_.channel(4, 0), mux_.channel(4, 1), mux_.channel(4, 2),
-          mux_.channel(4, 3), mux_.channel(4, 4), mux_.channel(4, 5),
-          mux_.channel(4, 6), mux_.channel(4, 7),
+          mux_.channel(kSW0, 0), mux_.channel(kSW0, 1), mux_.channel(kSW0, 2),
+          mux_.channel(kSW0, 3), mux_.channel(kSW0, 4), mux_.channel(kSW0, 5),
+          mux_.channel(kSW0, 6), mux_.channel(kSW0, 7),
       },
 
-      // lfo selection is on mux 5
+      // lfo selection is on the SW1 mux
       lfo_select_{
-          mux_.channel(5, 0), mux_.channel(5, 1), mux_.channel(5, 2),
-          mux_.channel(5, 3), mux_.channel(5, 4), mux_.channel(5, 5),
-          mux_.channel(5, 6), mux_.channel(5, 7),
+          mux_.channel(kSW1, 0), mux_.channel(kSW1, 1), mux_.channel(kSW1, 2),
+          mux_.channel(kSW1, 3), mux_.channel(kSW1, 4), mux_.channel(kSW1, 5),
+          mux_.channel(kSW1, 6), mux_.channel(kSW1, 7),
       },
+
+      leds_({
+          .interrupt = D13,
+          .shutdown = D14,
+
+      }),
 
       ui_(leds_, initial_config) {
   // assign physical controls to UI controls
@@ -115,7 +176,7 @@ Engine::Engine(config::Config initial_config)
 
 const fridge::transition::Frame& Engine::Tick(Samples<uint32_t> dt) {
   const auto& config = ui_.Config();
-  const auto output = transform_.Update(config, dt);
+  const auto& output = transform_.Update(config, dt);
   return head_transitions_.Update(output, transform_.head_transitions());
 }
 

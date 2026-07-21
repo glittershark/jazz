@@ -1,5 +1,7 @@
 #include "led.hpp"
 
+#include "per/gpio.h"
+
 #ifndef UNIT_TEST
 
 using namespace fridge::io::led;
@@ -8,10 +10,15 @@ using namespace fridge::io::led;
 
 #include "daisy_seed.h"
 
-Controller::Controller(uint8_t address)
+Controller::Controller(Pins pins, uint8_t address)
     : i2c_address_(address), timeout_(1000), current_frame_(0xff) {
   // for our purposes, can't use an address greater than 0x7F
   assert(address < 0x80);
+
+  interrupt_.Init(pins.interrupt, daisy::GPIO::Mode::INPUT,
+                  daisy::GPIO::Pull::PULLUP);
+  shutdown_.Init(pins.shutdown, daisy::GPIO::Mode::OUTPUT);
+  shutdown_.Write(true);
 
   I2CHandle::Config c;
   c.periph = I2CHandle::Config::Peripheral::I2C_1;

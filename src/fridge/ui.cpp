@@ -3,6 +3,7 @@
 #include "config.hpp"
 #include "led.hpp"
 #include "libjazz/color.hpp"
+#include "rgb_led.hpp"
 #include "value_display.hpp"
 
 #ifndef UNIT_TEST
@@ -68,40 +69,77 @@ const config::Config& ui::UI::Config() {
   return config_;
 }
 
+namespace {
 constexpr const value_display::CieInterp kBlueToGreen = {
     .start = color::XYZ(18, 7, 95),
     .end = color::XYZ(35, 71, 12),
 };
 
-ui::UI::UI(io::led::Controller& led_controller, config::Config initial_config)
-    : config_(initial_config),
-      head{.position = Knob<Position>("Position"),
-           .write_amount = Knob<SingleTurn>("Write Amount"),
-           .read_amount = Knob<SingleTurn>("Read Amount"),
-           .erase_amount = Knob<SingleTurn>("Erase Amount"),
-           .feedback = FeedbackKnob(
-               RgbLed(led_controller.A(3, 2), led_controller.A(1, 2),
-                      led_controller.A(0, 2)),
-               FeedbackKnob::Config{
-                   .max_read_color = color::RGB(0, 255, 0),
-                   .max_erase_color = color::RGB(255, 0, 0),
-               })
+template <DisplayableBackingValue V>
+CieInterpKnob<V> knob(const char* name, fridge::ui::RgbLed rgb_led) {
+  return CieInterpKnob<V>(name, {kBlueToGreen, rgb_led});
+}
 
+}  // namespace
+
+ui::UI::UI(io::led::Controller& led, config::Config initial_config)
+    : config_(initial_config),
+      head{
+          // D16
+          .position = knob<Position>(
+              "Position", RgbLed(led.B(2, 0), led.B(2, 1), led.B(2, 2))),
+          // D22
+          .write_amount = knob<SingleTurn>(
+              "Write Amount", RgbLed(led.B(3, 0), led.B(3, 1), led.B(3, 2))),
+          // D28
+          .read_amount = knob<SingleTurn>(
+              "Read Amount", RgbLed(led.B(4, 0), led.B(4, 1), led.B(4, 2))),
+          // D34
+          .erase_amount = knob<SingleTurn>(
+              "Erase Amount", RgbLed(led.B(5, 0), led.B(5, 1), led.B(5, 2))),
+          // D40
+          .feedback = FeedbackKnob(
+              RgbLed(led.B(6, 0), led.B(6, 1), led.B(6, 2)),
+              FeedbackKnob::Config{
+                  .max_read_color = color::RGB(0, 255, 0),
+                  .max_erase_color = color::RGB(255, 0, 0),
+              }),
       },
       lfo{
-          .range = Knob<Position>("Range"),
-          .max_grain_size = Knob<Size>("Max Grain Size"),
-          .min_grain_size = Knob<Size>("Min Grain Size"),
-          .reverse_chance = Knob<SingleTurn>("Reverse Chance"),
-          .teleport_chance = Knob<SingleTurn>("Teleport Chance"),
-          .pitch_shift_chance = Knob<SingleTurn>("Pitch Shift Chance"),
-          .low_octave_chance = Knob<SingleTurn>("Low Octave Chance"),
-          .high_octave_chance = Knob<SingleTurn>("High Octave Chance"),
+          // D5
+          .range = knob<Position>(
+              "Range", RgbLed(led.B(0, 3), led.B(0, 4), led.B(0, 5))),
+          // D11
+          .max_grain_size = knob<Size>(
+              "Max Grain Size", RgbLed(led.B(1, 3), led.B(1, 4), led.B(1, 5))),
+          // D17
+          .min_grain_size = knob<Size>(
+              "Min Grain Size", RgbLed(led.B(2, 3), led.B(2, 4), led.B(2, 5))),
+          // D23
+          .reverse_chance = knob<SingleTurn>(
+              "Reverse Chance", RgbLed(led.B(3, 3), led.B(3, 4), led.B(3, 5))),
+          // D29
+          .teleport_chance = knob<SingleTurn>(
+              "Teleport Chance", RgbLed(led.B(4, 3), led.B(4, 4), led.B(4, 5))),
+          // D35
+          .pitch_shift_chance = knob<SingleTurn>(
+              "Pitch Shift Chance",
+              RgbLed(led.B(5, 3), led.B(5, 4), led.B(5, 5))),
+          // D41
+          .low_octave_chance = knob<SingleTurn>(
+              "Low Octave Chance",
+              RgbLed(led.B(6, 3), led.B(6, 4), led.B(6, 5))),
+          // D47
+          .high_octave_chance = knob<SingleTurn>(
+              "High Octave Chance",
+              RgbLed(led.B(7, 3), led.B(7, 4), led.B(7, 5))),
       },
-      dry("Dry"),
-      wet("Wet",
-          {kBlueToGreen, RgbLed(led_controller.B(4, 5), led_controller.B(5, 5),
-                                led_controller.B(6, 5))}) {
+      // D4
+      dry(knob<SingleTurn>("Dry",
+                           RgbLed(led.B(0, 0), led.B(0, 1), led.B(0, 2)))),
+      // D10
+      wet(knob<SingleTurn>("Wet",
+                           RgbLed(led.B(1, 0), led.B(1, 1), led.B(1, 2)))) {
   head.Select(config_.heads[selected_head]);
   lfo.Select(config_.lfos[selected_lfo]);
   dry.Set(initial_config.dry);

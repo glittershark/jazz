@@ -5,6 +5,9 @@
 #include <cassert>
 #include <cstdint>
 
+#include "daisy_core.h"
+#include "per/gpio.h"
+
 #ifndef UNIT_TEST
 
 #include "per/i2c.h"
@@ -55,6 +58,12 @@ class Controller {
     uint8_t bit;
   };
 
+  /** Misc IO pin configuration */
+  struct Pins {
+    daisy::Pin interrupt;
+    daisy::Pin shutdown;
+  };
+
  public:
   class Led {
     friend class Controller;
@@ -89,7 +98,7 @@ class Controller {
    * few bridgeable pads on the demo board, which correspond to address setting
    * pins on the chip), so if in doubt, leave it as its default.
    */
-  Controller(uint8_t address = 0x74);
+  Controller(Pins pins, uint8_t address = 0x74);
 
   Led A(uint8_t x, uint8_t y) {
     assert(x <= kMaxX);
@@ -114,6 +123,9 @@ class Controller {
       return *this;
     }
   };
+
+  daisy::GPIO interrupt_;
+  daisy::GPIO shutdown_;
 
   std::array<CachedReg, kFramePageSize> frame_cache_;
 

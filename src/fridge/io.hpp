@@ -1,6 +1,7 @@
 #ifndef IO_H_
 #define IO_H_
 
+#include <cstddef>
 #ifndef UNIT_TEST
 
 #include <array>
