@@ -98,12 +98,12 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
           .erase_amount = knob<SingleTurn>(
               "Erase Amount", RgbLed(led.B(5, 0), led.B(5, 1), led.B(5, 2))),
           // D40
-          .feedback = FeedbackKnob(
-              RgbLed(led.B(6, 0), led.B(6, 1), led.B(6, 2)),
-              FeedbackKnob::Config{
-                  .max_read_color = color::RGB(0, 255, 0),
-                  .max_erase_color = color::RGB(255, 0, 0),
-              }),
+          .feedback =
+              FeedbackKnob(RgbLed(led.B(6, 0), led.B(6, 1), led.B(6, 2)),
+                           FeedbackKnob::Config{
+                               .max_read_color = color::RGB(0, 255, 0),
+                               .max_erase_color = color::RGB(255, 0, 0),
+                           }),
       },
       lfo{
           // D5
@@ -122,24 +122,51 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
           .teleport_chance = knob<SingleTurn>(
               "Teleport Chance", RgbLed(led.B(4, 3), led.B(4, 4), led.B(4, 5))),
           // D35
-          .pitch_shift_chance = knob<SingleTurn>(
-              "Pitch Shift Chance",
-              RgbLed(led.B(5, 3), led.B(5, 4), led.B(5, 5))),
+          .pitch_shift_chance =
+              knob<SingleTurn>("Pitch Shift Chance",
+                               RgbLed(led.B(5, 3), led.B(5, 4), led.B(5, 5))),
           // D41
-          .low_octave_chance = knob<SingleTurn>(
-              "Low Octave Chance",
-              RgbLed(led.B(6, 3), led.B(6, 4), led.B(6, 5))),
+          .low_octave_chance =
+              knob<SingleTurn>("Low Octave Chance",
+                               RgbLed(led.B(6, 3), led.B(6, 4), led.B(6, 5))),
           // D47
-          .high_octave_chance = knob<SingleTurn>(
-              "High Octave Chance",
-              RgbLed(led.B(7, 3), led.B(7, 4), led.B(7, 5))),
+          .high_octave_chance =
+              knob<SingleTurn>("High Octave Chance",
+                               RgbLed(led.B(7, 3), led.B(7, 4), led.B(7, 5))),
       },
       // D4
       dry(knob<SingleTurn>("Dry",
                            RgbLed(led.B(0, 0), led.B(0, 1), led.B(0, 2)))),
       // D10
       wet(knob<SingleTurn>("Wet",
-                           RgbLed(led.B(1, 0), led.B(1, 1), led.B(1, 2)))) {
+                           RgbLed(led.B(1, 0), led.B(1, 1), led.B(1, 2)))),
+
+      // D1, D7, D13, D19, D25, D31, D37, D43
+      head_select(
+          std::array<RgbLed, 8U>{
+              RgbLed(led.A(0, 0), led.A(0, 1), led.A(0, 2)),
+              RgbLed(led.A(1, 0), led.A(1, 1), led.A(1, 2)),
+              RgbLed(led.A(2, 0), led.A(2, 1), led.A(2, 2)),
+              RgbLed(led.A(3, 0), led.A(3, 1), led.A(3, 2)),
+              RgbLed(led.A(4, 0), led.A(4, 1), led.A(4, 2)),
+              RgbLed(led.A(5, 0), led.A(5, 1), led.A(5, 2)),
+              RgbLed(led.A(6, 0), led.A(6, 1), led.A(6, 2)),
+              RgbLed(led.A(7, 0), led.A(7, 1), led.A(7, 2)),
+          },
+          color::RGB(0, 1, 0)),
+      // D2, D8, D14, D20, D26, D32, D38, D44
+      lfo_select(
+          std::array<RgbLed, 8U>{
+              RgbLed(led.A(0, 3), led.A(0, 4), led.A(0, 5)),
+              RgbLed(led.A(1, 3), led.A(1, 4), led.A(1, 5)),
+              RgbLed(led.A(2, 3), led.A(2, 4), led.A(2, 5)),
+              RgbLed(led.A(3, 3), led.A(3, 4), led.A(3, 5)),
+              RgbLed(led.A(4, 3), led.A(4, 4), led.A(4, 5)),
+              RgbLed(led.A(5, 3), led.A(5, 4), led.A(5, 5)),
+              RgbLed(led.A(6, 3), led.A(6, 4), led.A(6, 5)),
+              RgbLed(led.A(7, 3), led.A(7, 4), led.A(7, 5)),
+          },
+          color::RGB(0, 1, 0)) {
   head.Select(config_.heads[selected_head]);
   lfo.Select(config_.lfos[selected_lfo]);
   dry.Set(initial_config.dry);

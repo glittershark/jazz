@@ -421,6 +421,19 @@ using Size = Bounded<Ticks<size_t>, 0, BUFFER_LEN>;
 template <std::size_t N>
 class RadioButtons {
   std::size_t selected_;
+  std::array<RgbLed, N> leds_;
+  color::RGB selected_color_;
+
+  void Select(std::size_t which) {
+    if (which == selected_) {
+      return;
+    }
+    leds_[selected_].SetOn(false);
+    leds_[which].SetOn(true);
+    leds_[which].SetColor(selected_color_);
+
+    selected_ = which;
+  }
 
   struct Selector {
     RadioButtons* rb;
@@ -436,7 +449,7 @@ class RadioButtons {
 
     void Select(bool state) {
       if (state && rb) {
-        rb->selected_ = which;
+        rb->Select(which);
       }
     }
 
@@ -449,12 +462,13 @@ class RadioButtons {
     }
   };
 
-  std::array<Selector, N> buttons_;
+  std::array<Selector, N> selectors_;
 
  public:
-  RadioButtons() : selected_(0) {
+  RadioButtons(std::array<RgbLed, N> leds, color::RGB selected_color)
+      : selected_(0), leds_(leds), selected_color_(selected_color) {
     for (std::size_t i = 0; i < N; ++i) {
-      buttons_[i].Configure(this, i);
+      selectors_[i].Configure(this, i);
     }
   }
 
@@ -462,7 +476,7 @@ class RadioButtons {
   void RegisterCallbacks(std::array<io::Button, N>& buttons) {
     // i miss rust and zip()
     for (std::size_t i = 0; i < N; ++i) {
-      buttons[i].OnChange(buttons_[i].GetCallback());
+      buttons[i].OnChange(selectors_[i].GetCallback());
     }
   }
 #endif  // UNIT_TEST
