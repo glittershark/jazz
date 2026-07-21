@@ -153,7 +153,9 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
               RgbLed(led.A(6, 0), led.A(6, 1), led.A(6, 2)),
               RgbLed(led.A(7, 0), led.A(7, 1), led.A(7, 2)),
           },
-          color::RGB(0, 1, 0)),
+          // TODO(aspen): Pick a real color. Or use the color to indicate
+          // something.
+          color::RGB(0, 255, 0)),
       // D2, D8, D14, D20, D26, D32, D38, D44
       lfo_select(
           std::array<RgbLed, 8U>{
@@ -166,7 +168,9 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
               RgbLed(led.A(6, 3), led.A(6, 4), led.A(6, 5)),
               RgbLed(led.A(7, 3), led.A(7, 4), led.A(7, 5)),
           },
-          color::RGB(0, 1, 0)) {
+          // TODO(aspen): Pick a real color. Or use the color to indicate
+          // something (like the lfo moving?)
+          color::RGB(0, 255, 0)) {
   head.Select(config_.heads[selected_head]);
   lfo.Select(config_.lfos[selected_lfo]);
   dry.Set(initial_config.dry);
