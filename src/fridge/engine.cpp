@@ -88,9 +88,9 @@ Engine::Engine(config::Config initial_config)
       timer_(TimerHandle::Config::Peripheral::TIM_3, scan_.GetCallback()),
 
       // dry = SW2
-      dry_(knob(&mux_, KnobBank::K0, 0)),
+      dry_(knob(&mux_, KnobBank::K0, 1)),
       // wet = SW3
-      wet_(knob(&mux_, KnobBank::K0, 1)),
+      wet_(knob(&mux_, KnobBank::K0, 0)),
 
       head_{
           // position = SW4
