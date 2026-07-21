@@ -40,23 +40,23 @@ template <std::size_t kNumChannels, typename CB>
 class ChannelScan {
   Address address_;
   TimerHandle timer_;
-  CB& callback_;
+  CB* callback_;
 
   // We scan through the mux one channel every 100 microseconds
   static constexpr const uint32_t kFreqUs = 100;
 
   void TimerCallback() {
     auto channel = address_.Channel();
-    auto arg = callback_.BeforeChange(channel);
+    auto arg = callback_->BeforeChange(channel);
     address_.SelectChannel((channel + 1) % kNumChannels);
-    callback_.AfterChange(channel, arg);
+    callback_->AfterChange(channel, arg);
   }
 
  public:
   ChannelScan(const ChannelScan&) = delete;
   ChannelScan& operator=(const ChannelScan&) = delete;
 
-  ChannelScan(Address address, CB& callback)
+  ChannelScan(Address address, CB* callback)
       : address_(std::move(address)), callback_(callback) {};
 
   Callback<> GetCallback() {

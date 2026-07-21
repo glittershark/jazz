@@ -38,7 +38,7 @@ Engine::Engine(config::Config initial_config)
           io::mux::GpioInMux(D15),
       }),
 
-      scan_(io::mux::Address(D1, D2, D3), mux_),
+      scan_(io::mux::Address(D1, D2, D3), &mux_),
 
       timer_(TimerHandle::Config::Peripheral::TIM_3, scan_.GetCallback()),
 
