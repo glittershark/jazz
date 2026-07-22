@@ -109,19 +109,19 @@ Engine::Engine(config::Config initial_config)
       lfo_{
           // range = SW10
           .range = knob(&mux_, KnobBank::K1, 0),
-          // range = SW11
+          // max_grain_size = SW11
           .max_grain_size = knob(&mux_, KnobBank::K1, 1),
-          // range = SW12
+          // min_grain_size = SW12
           .min_grain_size = knob(&mux_, KnobBank::K1, 2),
-          // range = SW13
+          // reverse_chance = SW13
           .reverse_chance = knob(&mux_, KnobBank::K1, 3),
-          // range = SW14
+          // teleport_chance = SW14
           .teleport_chance = knob(&mux_, KnobBank::K1, 4),
-          // range = SW15
+          // pitch_shift_chance = SW15
           .pitch_shift_chance = knob(&mux_, KnobBank::K1, 5),
-          // range = SW16
+          // low_octave_chance = SW16
           .low_octave_chance = knob(&mux_, KnobBank::K1, 6),
-          // range = SW17
+          // high_octave_chance = SW17
           .high_octave_chance = knob(&mux_, KnobBank::K1, 7),
       },
 
