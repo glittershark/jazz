@@ -117,6 +117,8 @@ class KnobWithDisplay : public Knob<V> {
   }
 
   RgbLedValueDisplay<VD> value_display_;
+
+ public:
   void UpdateDisplay() {
     // TODO(aspen): We may want to turn the LEDs on higher up an abstraction
     // level at some point. For now, this should suffice.
@@ -124,7 +126,6 @@ class KnobWithDisplay : public Knob<V> {
     value_display_.SetValue(this->Get().GetDisplay());
   }
 
- public:
   KnobWithDisplay(const char* name, RgbLedValueDisplay<VD> value_display)
       : Knob<V>(name), value_display_(value_display) {};
 
@@ -148,6 +149,19 @@ class KnobWithDisplay : public Knob<V> {
 
   RgbLedValueDisplay<VD>& value_display() { return value_display_; }
   RgbLed& rgb_led() { return value_display_; }
+
+  void BlinkOn() {
+    rgb_led().SetOn(true);
+    rgb_led().SetColor(kUnselectedBlinkColor);
+  }
+  void BlinkOff() { rgb_led().SetOn(false); }
+  void Blink(bool on) {
+    if (on) {
+      BlinkOn();
+    } else {
+      BlinkOff();
+    }
+  }
 };
 
 template <BackingValue V>
@@ -385,11 +399,6 @@ class FeedbackKnob : public Knob<Feedback> {
     }
   }
 
-  void UpdateDisplay() {
-    rgb_led_.SetOn(true);
-    rgb_led_.SetColor(Color());
-  }
-
  public:
   struct Config {
     color::RGB max_read_color;
@@ -403,6 +412,11 @@ class FeedbackKnob : public Knob<Feedback> {
         read_display_{.start = config.zero_color, .end = config.max_read_color},
         erase_display_{.start = config.zero_color,
                        .end = config.max_erase_color} {}
+
+  void UpdateDisplay() {
+    rgb_led_.SetOn(true);
+    rgb_led_.SetColor(Color());
+  }
 
   TypedCallback<FeedbackKnob, int, float> GetCallback() {
     return {
@@ -420,6 +434,19 @@ class FeedbackKnob : public Knob<Feedback> {
     auto& res = Knob<Feedback>::Increment(ticks, turns);
     UpdateDisplay();
     return res;
+  }
+
+  void BlinkOn() {
+    rgb_led_.SetOn(true);
+    rgb_led_.SetColor(kUnselectedBlinkColor);
+  }
+  void BlinkOff() { rgb_led_.SetOn(false); }
+  void Blink(bool on) {
+    if (on) {
+      BlinkOn();
+    } else {
+      BlinkOff();
+    }
   }
 };
 
@@ -529,6 +556,7 @@ class RadioButtons {
   }
 
   const std::optional<Held>& held() const { return held_; }
+  const uint8_t selected() const { return selected_; }
 
   void StartBlinking() { leds_[selected_].SetOn(false); }
   void StopBlinking() {
@@ -558,10 +586,24 @@ struct HeadKnobs {
   CieInterpKnob<SingleTurn> read_amount;
   CieInterpKnob<SingleTurn> erase_amount;
   FeedbackKnob feedback;
+  // NOTE: If you add new knobs here, remember to also add them under
+  // EACH_HEAD_KNOB!
 
   void Select(const config::Head& head);
   config::Head Config() const;
+
+  void StartBlinking();
+  void StopBlinking();
 };
+
+#define EACH_HEAD_KNOB(head_knobs, f) \
+  {                                   \
+    f(&head_knobs->position);         \
+    f(&head_knobs->write_amount);     \
+    f(&head_knobs->read_amount);      \
+    f(&head_knobs->erase_amount);     \
+    f(&head_knobs->feedback);         \
+  }
 
 struct LFOKnobs {
   CieInterpKnob<Position> range;
@@ -572,10 +614,27 @@ struct LFOKnobs {
   CieInterpKnob<SingleTurn> pitch_shift_chance;
   CieInterpKnob<SingleTurn> low_octave_chance;
   CieInterpKnob<SingleTurn> high_octave_chance;
+  // NOTE: If you add new knobs here, remember to also add them under
+  // EACH_LFO_KNOB!
 
   void Select(const config::LFO& lfo);
   config::LFO Config() const;
+
+  void StartBlinking();
+  void StopBlinking();
 };
+
+#define EACH_LFO_KNOB(lfo_knobs, f)    \
+  {                                    \
+    f(&lfo_knobs->range);              \
+    f(&lfo_knobs->max_grain_size);     \
+    f(&lfo_knobs->min_grain_size);     \
+    f(&lfo_knobs->reverse_chance);     \
+    f(&lfo_knobs->teleport_chance);    \
+    f(&lfo_knobs->pitch_shift_chance); \
+    f(&lfo_knobs->low_octave_chance);  \
+    f(&lfo_knobs->high_octave_chance); \
+  }
 
 #ifndef UNIT_TEST
 class TempoButton {

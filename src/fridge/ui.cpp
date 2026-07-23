@@ -198,7 +198,9 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
             self->config_.heads[self->selected_head] =
                 self->head_knobs.Config();
             self->selected_head = which;
-            self->head_knobs.Select(self->config_.heads[which]);
+            if (!self->AmBlinking()) {
+              self->head_knobs.Select(self->config_.heads[which]);
+            }
           },
       .data = this,
   });
@@ -235,7 +237,7 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
 #endif
 }
 
-void ui::UI::Tick() {
+void UI::Tick() {
   auto held_lfo = lfo_select.held();
   if (held_lfo.has_value()) {
     auto now = Now();
@@ -245,6 +247,7 @@ void ui::UI::Tick() {
         blink_state_->last_toggle = Now();
       }
     } else if (now - held_lfo->since > kHoldDelayMs) {
+      head_knobs.StartBlinking();
       head_select.StartBlinking();
       blink_state_ =
           std::make_optional(BlinkState{.blink = true, .last_toggle = now});
@@ -256,11 +259,46 @@ void ui::UI::Tick() {
       }
       switch (target->object) {
       case fridge::config::TargetObject::kHead: {
+        // Blink the target head's selector
         auto target_head_idx = target->object_idx;
         if (blink_state_->blink) {
           head_select.BlinkOn(target_head_idx);
         } else {
           head_select.BlinkOff(target_head_idx);
+        }
+
+        // If the head is selected currently, also blink the relevant knob
+        if (head_select.selected() == target_head_idx) {
+          switch (target->parameter) {
+          case config::TargetParameter::kPosition:
+            head_knobs.position.Blink(blink_state_->blink);
+            break;
+          case config::TargetParameter::kWriteAmount:
+            head_knobs.write_amount.Blink(blink_state_->blink);
+            break;
+          case config::TargetParameter::kReadAmount:
+            head_knobs.read_amount.Blink(blink_state_->blink);
+            break;
+          case config::TargetParameter::kEraseAmount:
+            head_knobs.erase_amount.Blink(blink_state_->blink);
+            break;
+          case config::TargetParameter::kFeedbackAmount:
+            head_knobs.feedback.Blink(blink_state_->blink);
+            break;
+          case config::TargetParameter::kRange:
+          case config::TargetParameter::kMaxGrainSize:
+          case config::TargetParameter::kMinGrainSize:
+          case config::TargetParameter::kReverseChance:
+          case config::TargetParameter::kTeleportChance:
+          case config::TargetParameter::kPitchShiftChance:
+          case config::TargetParameter::kLowOctaveChance:
+          case config::TargetParameter::kHighOctaveChance:
+          case config::TargetParameter::kPan:
+          case config::TargetParameter::kDry:
+          case config::TargetParameter::kWet:
+            // Remaining are not head parameters
+            break;
+          }
         }
         break;
       }
@@ -272,10 +310,27 @@ void ui::UI::Tick() {
     }
   } else {
     if (blink_state_.has_value()) {
+      head_knobs.StopBlinking();
       head_select.StopBlinking();
     }
     blink_state_ = std::nullopt;
   }
+}
+
+void HeadKnobs::StartBlinking() {
+  EACH_HEAD_KNOB(this, [](const auto knob) { knob->BlinkOff(); });
+}
+
+void HeadKnobs::StopBlinking() {
+  EACH_HEAD_KNOB(this, [](const auto knob) { knob->UpdateDisplay(); });
+}
+
+void LFOKnobs::StartBlinking() {
+  EACH_LFO_KNOB(this, [](const auto knob) { knob->BlinkOff(); });
+}
+
+void LFOKnobs::StopBlinking() {
+  EACH_LFO_KNOB(this, [](const auto knob) { knob->UpdateDisplay(); });
 }
 
 #ifndef UNIT_TEST
