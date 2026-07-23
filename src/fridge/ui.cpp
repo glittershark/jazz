@@ -171,6 +171,12 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
           // TODO(aspen): Pick a real color. Or use the color to indicate
           // something (like the lfo moving?)
           color::RGB(0, 255, 0)) {
+  // Load initial config into the knobs BEFORE the head_select/lfo_select
+  // calls below — those fire on_change which saves-then-loads, and would
+  // overwrite the initial config with the default (zero) knob values if the
+  // knobs hadn't been loaded first.
+  head.Select(config_.heads[selected_head]);
+  lfo.Select(config_.lfos[selected_lfo]);
   dry.Set(initial_config.dry);
   wet.Set(initial_config.wet);
 

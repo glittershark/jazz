@@ -478,16 +478,21 @@ class RadioButtons {
   void OnChange(Callback<uint8_t> on_change) { on_change_ = on_change; }
 
   void Select(std::uint8_t which) {
-    if (which == selected_) {
-      return;
-    }
+    const bool changed = which != selected_;
+
+    // Always sync the LEDs — this makes it safe to call Select(selected_)
+    // at construction to light up the initial radio-button LED.
     leds_[selected_].SetOn(false);
     leds_[which].SetOn(true);
     leds_[which].SetColor(selected_color_);
 
     selected_ = which;
 
-    if (on_change_) {
+    // Only fire on_change when the selection actually moved — the callback
+    // does a destructive save-then-load of knob state, so firing it on
+    // no-op selects (including the boot-time Select(0)) would clobber the
+    // just-loaded initial config.
+    if (changed && on_change_) {
       on_change_(which);
     }
   }
