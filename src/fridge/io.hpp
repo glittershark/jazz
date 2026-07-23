@@ -40,7 +40,6 @@ class Address {
 template <std::size_t kNumChannels, typename CB>
 class ChannelScan {
   Address address_;
-  TimerHandle timer_;
   CB* callback_;
 
   // We scan through the mux one channel every 100 microseconds
