@@ -171,8 +171,6 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
           // TODO(aspen): Pick a real color. Or use the color to indicate
           // something (like the lfo moving?)
           color::RGB(0, 255, 0)) {
-  head.Select(config_.heads[selected_head]);
-  lfo.Select(config_.lfos[selected_lfo]);
   dry.Set(initial_config.dry);
   wet.Set(initial_config.wet);
 
@@ -201,6 +199,9 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
           },
       .data = this,
   });
+
+  head_select.Select(selected_head);
+  lfo_select.Select(selected_lfo);
 }
 
 #ifndef UNIT_TEST
