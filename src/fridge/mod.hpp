@@ -161,10 +161,10 @@ class Modulator {
   const config::Config& virtual_config();
 
   struct Fade {
-    config::Head old_head{};   // unscaled head params at the moment of the jump
-    float old_position = 0.0f; // keeps moving with the old motion during fade
-    float old_velocity = 0.0f; // signed samples per sample
-    uint32_t remaining = 0;    // samples left; 0 → inactive
+    config::Head old_head{};  // unscaled head params at the moment of the jump
+    float old_position = 0.0f;  // keeps moving with the old motion during fade
+    float old_velocity = 0.0f;  // signed samples per sample
+    uint32_t remaining = 0;     // samples left; 0 → inactive
   };
 
   const Frame& frame() const { return frame_; }
@@ -205,7 +205,7 @@ class Modulator {
   std::array<Patch, MAX_PATCHES> patches_{};  // compiled active routes
   size_t patch_count_ = 0;
   uint32_t modulated_heads_ = 0;  // bitmask: heads with a modulated param
-  uint32_t modulated_lfos_ = 0;   // bitmask: LFOs whose own params are modulated
+  uint32_t modulated_lfos_ = 0;  // bitmask: LFOs whose own params are modulated
   bool mixer_modulated_ = false;
 
   std::array<float, kParamCount> mod_{};  // summed LFO deltas per param

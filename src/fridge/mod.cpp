@@ -224,8 +224,8 @@ std::optional<LFOTransition> LFOEngine::StartNewGrain(bool initial_grain) {
 uint32_t LFOEngine::SampleGrainSize() {
   const uint32_t lo = static_cast<uint32_t>(std::max<size_t>(
       1, std::min(params_.min_grain_size, params_.max_grain_size)));
-  const uint32_t hi = static_cast<uint32_t>(std::max<size_t>(
-      {lo, params_.min_grain_size, params_.max_grain_size}));
+  const uint32_t hi = static_cast<uint32_t>(
+      std::max<size_t>({lo, params_.min_grain_size, params_.max_grain_size}));
   return rng_.Between(lo, hi);
 }
 
@@ -510,8 +510,7 @@ void Modulator::BeginFades(size_t lfo_idx, const LFOTransition& transition) {
 
   for (const std::optional<config::Target>& target :
        base_.lfos[lfo_idx].targets) {
-    if (!target.has_value() ||
-        target->object != config::TargetObject::kHead ||
+    if (!target.has_value() || target->object != config::TargetObject::kHead ||
         target->parameter != config::TargetParameter::kPosition ||
         target->object_idx >= NUM_HEADS) {
       continue;
@@ -523,8 +522,8 @@ void Modulator::BeginFades(size_t lfo_idx, const LFOTransition& transition) {
     fades_[head_idx] = Fade{
         .old_head = eff_heads_[head_idx],
         .old_position = static_cast<float>(eff_heads_[head_idx].position),
-        .old_velocity =
-            transition.old_speed * DirectionMultiplier(transition.old_direction),
+        .old_velocity = transition.old_speed *
+                        DirectionMultiplier(transition.old_direction),
         .remaining = static_cast<uint32_t>(fade_time_),
     };
   }
@@ -565,8 +564,8 @@ void Modulator::BuildFrame() {
       continue;
     }
 
-    const float old_weight = static_cast<float>(fade.remaining) /
-                             static_cast<float>(fade_time_);
+    const float old_weight =
+        static_cast<float>(fade.remaining) / static_cast<float>(fade_time_);
     config::Head old_head = fade.old_head;
     old_head.position = WrapBufferPosition(fade.old_position);
     AddHead(old_head, old_weight);

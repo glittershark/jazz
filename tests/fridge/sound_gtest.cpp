@@ -227,7 +227,8 @@ TEST_F(FridgeSoundTest, DestructorCleansUpSlabs) {
   {
     auto sound = std::make_unique<Sound>();
     for (size_t i = 0; i <= FADE_TIME; ++i) {
-      reference.push_back(sound->ProcessSample(config, StereoSample::OfMono(1.0f)));
+      reference.push_back(
+          sound->ProcessSample(config, StereoSample::OfMono(1.0f)));
     }
   }
 
@@ -236,7 +237,8 @@ TEST_F(FridgeSoundTest, DestructorCleansUpSlabs) {
   for (int j = 0; j < 20; ++j) {
     auto sound = std::make_unique<Sound>();
     for (size_t i = 0; i <= FADE_TIME; ++i) {
-      ASSERT_EQ(sound->ProcessSample(config, StereoSample::OfMono(1.0f)), reference[i])
+      ASSERT_EQ(sound->ProcessSample(config, StereoSample::OfMono(1.0f)),
+                reference[i])
           << "output mismatch at iteration " << j << ", sample " << i;
     }
   }
