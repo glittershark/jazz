@@ -49,22 +49,22 @@ class Timer {
 };
 
 struct HeadKnobs {
-  io::QuadratureEncoder position;
-  io::QuadratureEncoder write_amount;
-  io::QuadratureEncoder read_amount;
-  io::QuadratureEncoder erase_amount;
-  io::QuadratureEncoder feedback;
+  io::PushbuttonQuadratureEncoder position;
+  io::PushbuttonQuadratureEncoder write_amount;
+  io::PushbuttonQuadratureEncoder read_amount;
+  io::PushbuttonQuadratureEncoder erase_amount;
+  io::PushbuttonQuadratureEncoder feedback;
 };
 
 struct LfoKnobs {
-  io::QuadratureEncoder range;
-  io::QuadratureEncoder max_grain_size;
-  io::QuadratureEncoder min_grain_size;
-  io::QuadratureEncoder reverse_chance;
-  io::QuadratureEncoder teleport_chance;
-  io::QuadratureEncoder pitch_shift_chance;
-  io::QuadratureEncoder low_octave_chance;
-  io::QuadratureEncoder high_octave_chance;
+  io::PushbuttonQuadratureEncoder range;
+  io::PushbuttonQuadratureEncoder max_grain_size;
+  io::PushbuttonQuadratureEncoder min_grain_size;
+  io::PushbuttonQuadratureEncoder reverse_chance;
+  io::PushbuttonQuadratureEncoder teleport_chance;
+  io::PushbuttonQuadratureEncoder pitch_shift_chance;
+  io::PushbuttonQuadratureEncoder low_octave_chance;
+  io::PushbuttonQuadratureEncoder high_octave_chance;
 };
 
 class Engine {
@@ -80,8 +80,8 @@ class Engine {
   Timer timer_;
 
   // see constructor for mux assignments
-  io::QuadratureEncoder dry_;
-  io::QuadratureEncoder wet_;
+  io::PushbuttonQuadratureEncoder dry_;
+  io::PushbuttonQuadratureEncoder wet_;
   HeadKnobs head_;
   LfoKnobs lfo_;
   std::array<io::Button, NUM_HEADS> head_select_;

@@ -1,5 +1,7 @@
 #include "io.hpp"
 
+#include "callback.hpp"
+
 #ifndef UNIT_TEST
 
 namespace fridge::io {
@@ -108,6 +110,11 @@ Button::Button(mux::GpioInMux::Channel c) : c_(c) {
 
 void Button::OnChange(Callback<bool> on_change) {
   on_change_ = on_change;
+}
+
+void PushbuttonQuadratureEncoder::OnPressChanged(
+    Callback<bool> on_press_changed) {
+  button_.OnChange(on_press_changed);
 }
 
 }  // namespace fridge::io

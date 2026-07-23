@@ -211,6 +211,23 @@ class Button {
   void OnChange(Callback<bool>);
 };
 
+class PushbuttonQuadratureEncoder : public QuadratureEncoder {
+  Button button_;
+
+ public:
+  PushbuttonQuadratureEncoder(const PushbuttonQuadratureEncoder&) = delete;
+  PushbuttonQuadratureEncoder& operator=(const PushbuttonQuadratureEncoder&) =
+      delete;
+  struct Channels {
+    mux::GpioInMux::Channel a, b, button;
+  };
+
+  PushbuttonQuadratureEncoder(Channels channels)
+      : QuadratureEncoder(channels.a, channels.b), button_(channels.button) {}
+
+  void OnPressChanged(Callback<bool>);
+};
+
 }  // namespace fridge::io
 
 #endif  // UNIT_TEST
