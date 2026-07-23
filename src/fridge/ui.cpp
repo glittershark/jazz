@@ -13,7 +13,7 @@ using namespace daisy;
 using namespace fridge;
 using namespace fridge::ui;
 
-config::Head Head::Config() const {
+config::Head HeadKnobs::Config() const {
   return {
       .position = position.Get(),
       .write_amount = write_amount.Get(),
@@ -23,7 +23,7 @@ config::Head Head::Config() const {
   };
 };
 
-void Head::Select(const fridge::config::Head& head) {
+void HeadKnobs::Select(const fridge::config::Head& head) {
   position.Set(head.position);
   write_amount.Set(head.write_amount);
   read_amount.Set(head.read_amount);
@@ -31,7 +31,7 @@ void Head::Select(const fridge::config::Head& head) {
   feedback.Set(head.feedback);
 }
 
-fridge::config::LFO LFO::Config() const {
+fridge::config::LFO LFOKnobs::Config() const {
   return {
       .range = range.Get(),
       .max_grain_size = max_grain_size.Get(),
@@ -44,7 +44,7 @@ fridge::config::LFO LFO::Config() const {
   };
 }
 
-void LFO::Select(const fridge::config::LFO& lfo) {
+void LFOKnobs::Select(const fridge::config::LFO& lfo) {
   range.Set(lfo.range);
   max_grain_size.Set(lfo.max_grain_size);
   min_grain_size.Set(lfo.min_grain_size);
@@ -175,6 +175,26 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
   lfo.Select(config_.lfos[selected_lfo]);
   dry.Set(initial_config.dry);
   wet.Set(initial_config.wet);
+
+  head_select.OnChange(TypedCallback<UI, size_t>{
+      .callback =
+          +[](UI* self, size_t which) {
+            self->config_.heads[self->selected_head] = self->head.Config();
+            self->selected_head = which;
+            self->head.Select(self->config_.heads[which]);
+          },
+      .data = this,
+  });
+
+  lfo_select.OnChange(TypedCallback<UI, size_t>{
+      .callback =
+          +[](UI* self, size_t which) {
+            self->config_.lfos[self->selected_lfo] = self->lfo.Config();
+            self->selected_lfo = which;
+            self->lfo.Select(self->config_.lfos[which]);
+          },
+      .data = this,
+  });
 }
 
 #ifndef UNIT_TEST

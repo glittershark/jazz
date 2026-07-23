@@ -423,17 +423,7 @@ class RadioButtons {
   std::size_t selected_;
   std::array<RgbLed, N> leds_;
   color::RGB selected_color_;
-
-  void Select(std::size_t which) {
-    if (which == selected_) {
-      return;
-    }
-    leds_[selected_].SetOn(false);
-    leds_[which].SetOn(true);
-    leds_[which].SetColor(selected_color_);
-
-    selected_ = which;
-  }
+  Callback<size_t> on_change_;
 
   struct Selector {
     RadioButtons* rb;
@@ -480,12 +470,29 @@ class RadioButtons {
     }
   }
 #endif  // UNIT_TEST
+
+  void OnChange(Callback<size_t> on_change) { on_change_ = on_change; }
+
+  void Select(std::size_t which) {
+    if (which == selected_) {
+      return;
+    }
+    leds_[selected_].SetOn(false);
+    leds_[which].SetOn(true);
+    leds_[which].SetColor(selected_color_);
+
+    selected_ = which;
+
+    if (on_change_) {
+      on_change_(which);
+    }
+  }
 };
 
 template <DisplayableBackingValue V>
 using CieInterpKnob = KnobWithDisplay<V, value_display::CieInterp>;
 
-struct Head {
+struct HeadKnobs {
   CieInterpKnob<Position> position;
   CieInterpKnob<SingleTurn> write_amount;
   CieInterpKnob<SingleTurn> read_amount;
@@ -496,7 +503,7 @@ struct Head {
   config::Head Config() const;
 };
 
-struct LFO {
+struct LFOKnobs {
   CieInterpKnob<Position> range;
   CieInterpKnob<Size> max_grain_size;
   CieInterpKnob<Size> min_grain_size;
@@ -559,8 +566,8 @@ struct UI {
   size_t selected_head = 0;
   size_t selected_lfo = 0;
 
-  Head head;
-  LFO lfo;
+  HeadKnobs head;
+  LFOKnobs lfo;
 
   CieInterpKnob<SingleTurn> dry;
   CieInterpKnob<SingleTurn> wet;

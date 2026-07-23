@@ -231,4 +231,32 @@ TEST_F(UITest, dry_and_wet_come_from_initial_config) {
   EXPECT_FLOAT_EQ(new_config.wet, initial_config.wet);
 }
 
+TEST_F(UITest, change_selected_head_via_radio_buttons) {
+  ui::UI ui(leds);
+
+  ui.head_select.Select(2);
+  EXPECT_EQ(ui.selected_head, 2);
+
+  EXPECT_EQ(ui.Config().heads[2].position, 0);
+
+  ui.head.position.GetCallback()(47, 21307);
+
+  auto config = ui.Config();
+  EXPECT_EQ(config.heads[2].position, 47);
+}
+
+TEST_F(UITest, change_selected_lfo_via_radio_buttons) {
+  ui::UI ui(leds);
+
+  ui.lfo_select.Select(2);
+  EXPECT_EQ(ui.selected_lfo, 2);
+
+  EXPECT_EQ(ui.Config().lfos[2].high_octave_chance, 0);
+
+  ui.lfo.high_octave_chance.GetCallback()(21, 21307);
+
+  auto config = ui.Config();
+  EXPECT_EQ(config.lfos[2].high_octave_chance, 21);
+}
+
 }  // namespace
