@@ -2,7 +2,7 @@
 
 * TODO MCU
 looking at either:
-- the R7KA8M2JFLCA (e.g., [[https://www.digikey.com/en/products/detail/renesas-electronics-corporation/R7KA8M2JFLCAB-UC0/27569004][this one]]), which is a hawss w/ ARM Helium & two cores;
+- the R7KA8M2JFLCAC (e.g., [[https://www.digikey.com/en/products/detail/renesas-electronics-corporation/R7KA8M2JFLCAC-UC0/27569003][this one]]), which is a hawss w/ ARM Helium & two cores;
 - the STM32N645A0, which also supports Helium but is a bit slower and has some
   stuff we won't use.
 
