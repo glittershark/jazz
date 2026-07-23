@@ -41,8 +41,8 @@ constexpr const size_t kKNOB_S1 = 7;
 
 enum class KnobBank { K0, K1 };
 
-static size_t knob_a(KnobBank mux) {
-  switch (mux) {
+static size_t knob_a(KnobBank bank) {
+  switch (bank) {
   case KnobBank::K0:
     return kKNOB_A0;
   case KnobBank::K1:
@@ -52,8 +52,8 @@ static size_t knob_a(KnobBank mux) {
   }
 }
 
-static size_t knob_b(KnobBank mux) {
-  switch (mux) {
+static size_t knob_b(KnobBank bank) {
+  switch (bank) {
   case KnobBank::K0:
     return kKNOB_B0;
   case KnobBank::K1:
@@ -63,10 +63,25 @@ static size_t knob_b(KnobBank mux) {
   }
 }
 
-static io::QuadratureEncoder knob(io::mux::MultiGpioInMux<Engine::kMuxes>* mux,
-                                  KnobBank bank, size_t channel) {
-  return {mux->channel(knob_a(bank), channel),
-          mux->channel(knob_b(bank), channel)};
+static size_t knob_s(KnobBank bank) {
+  switch (bank) {
+  case KnobBank::K0:
+    return kKNOB_S0;
+  case KnobBank::K1:
+    return kKNOB_S1;
+  default:
+    assert(false);
+  }
+}
+
+static io::PushbuttonQuadratureEncoder knob(
+    io::mux::MultiGpioInMux<Engine::kMuxes>* mux, KnobBank bank,
+    size_t channel) {
+  return io::PushbuttonQuadratureEncoder({
+      .a = mux->channel(knob_a(bank), channel),
+      .b = mux->channel(knob_b(bank), channel),
+      .button = mux->channel(knob_s(bank), channel),
+  });
 }
 }  // namespace
 
