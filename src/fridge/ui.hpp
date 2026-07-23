@@ -438,7 +438,11 @@ class RadioButtons {
     }
 
     void Select(bool state) {
-      if (state && rb) {
+      if (
+          /* NB: the buttons are pull-up and short to *ground* when pressed, so
+             "true" is the steady state and "false" means the button is
+             currently held */
+          !state && rb) {
         rb->Select(which);
       }
     }
