@@ -5,9 +5,13 @@ CLOSED: [2026-07-20 Mon 20:56]
 * DONE test UI
 CLOSED: [2026-07-20 Mon 20:56]
 
-* Board bringup [1/4]
+* Board bringup [4/5]
 ** DONE knob status LEDs for each of the knobs
 CLOSED: [2026-07-20 Mon 21:53]
-** TODO Ensure the knob status LEDs actually work
-** TODO actual head + lfo selectors
-** TODO LED indicators for head + lfo selection
+** DONE actual head + lfo selectors
+CLOSED: [2026-07-22 Wed 22:06]
+** DONE LED indicators for head + lfo selection
+CLOSED: [2026-07-22 Wed 22:06]
+** DONE Ensure the knob status LEDs actually work
+CLOSED: [2026-07-22 Wed 22:06]
+** TODO range, grain max, and grain min don't work
