@@ -646,12 +646,12 @@ struct UI {
   uint8_t selected_head = 0;
   uint8_t selected_lfo = 0;
 
-  HeadKnobs head;
-  LFOKnobs lfo;
+  HeadKnobs head_knobs;
+  LFOKnobs lfo_knobs;
 
-  CieInterpKnob<SingleTurn> dry;
-  CieInterpKnob<SingleTurn> wet;
-  TempoButton tempo;
+  CieInterpKnob<SingleTurn> dry_knob;
+  CieInterpKnob<SingleTurn> wet_knob;
+  TempoButton tempo_button;
 
   RadioButtons<NUM_HEADS> head_select;
   RadioButtons<NUM_LFOS> lfo_select;

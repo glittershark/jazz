@@ -148,23 +148,26 @@ Engine::Engine(config::Config initial_config)
       ui_(leds_, initial_config) {
   modulator_.SetConfig(initial_config);
   // assign physical controls to UI controls
-  head_.position.OnChange(ui_.head.position.GetCallback());
-  head_.write_amount.OnChange(ui_.head.write_amount.GetCallback());
-  head_.read_amount.OnChange(ui_.head.read_amount.GetCallback());
-  head_.erase_amount.OnChange(ui_.head.erase_amount.GetCallback());
-  head_.feedback.OnChange(ui_.head.feedback.GetCallback());
+  head_.position.OnChange(ui_.head_knobs.position.GetCallback());
+  head_.write_amount.OnChange(ui_.head_knobs.write_amount.GetCallback());
+  head_.read_amount.OnChange(ui_.head_knobs.read_amount.GetCallback());
+  head_.erase_amount.OnChange(ui_.head_knobs.erase_amount.GetCallback());
+  head_.feedback.OnChange(ui_.head_knobs.feedback.GetCallback());
 
-  dry_.OnChange(ui_.dry.GetCallback());
-  wet_.OnChange(ui_.wet.GetCallback());
+  dry_.OnChange(ui_.dry_knob.GetCallback());
+  wet_.OnChange(ui_.wet_knob.GetCallback());
 
-  lfo_.range.OnChange(ui_.lfo.range.GetCallback());
-  lfo_.max_grain_size.OnChange(ui_.lfo.max_grain_size.GetCallback());
-  lfo_.min_grain_size.OnChange(ui_.lfo.min_grain_size.GetCallback());
-  lfo_.reverse_chance.OnChange(ui_.lfo.reverse_chance.GetCallback());
-  lfo_.teleport_chance.OnChange(ui_.lfo.teleport_chance.GetCallback());
-  lfo_.pitch_shift_chance.OnChange(ui_.lfo.pitch_shift_chance.GetCallback());
-  lfo_.low_octave_chance.OnChange(ui_.lfo.low_octave_chance.GetCallback());
-  lfo_.high_octave_chance.OnChange(ui_.lfo.high_octave_chance.GetCallback());
+  lfo_.range.OnChange(ui_.lfo_knobs.range.GetCallback());
+  lfo_.max_grain_size.OnChange(ui_.lfo_knobs.max_grain_size.GetCallback());
+  lfo_.min_grain_size.OnChange(ui_.lfo_knobs.min_grain_size.GetCallback());
+  lfo_.reverse_chance.OnChange(ui_.lfo_knobs.reverse_chance.GetCallback());
+  lfo_.teleport_chance.OnChange(ui_.lfo_knobs.teleport_chance.GetCallback());
+  lfo_.pitch_shift_chance.OnChange(
+      ui_.lfo_knobs.pitch_shift_chance.GetCallback());
+  lfo_.low_octave_chance.OnChange(
+      ui_.lfo_knobs.low_octave_chance.GetCallback());
+  lfo_.high_octave_chance.OnChange(
+      ui_.lfo_knobs.high_octave_chance.GetCallback());
 
   // and then physical buttons (registers in the order you would expect)
   ui_.head_select.RegisterCallbacks(head_select_);
