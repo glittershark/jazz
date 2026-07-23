@@ -253,10 +253,10 @@ TEST_F(UITest, change_selected_lfo_via_radio_buttons) {
 
   EXPECT_EQ(ui.Config().lfos[2].high_octave_chance, 0);
 
-  ui.lfo.high_octave_chance.GetCallback()(21, 21307);
+  ui.lfo.high_octave_chance.GetCallback()(0, 0.5f);
 
   auto config = ui.Config();
-  EXPECT_EQ(config.lfos[2].high_octave_chance, 21);
+  EXPECT_FLOAT_EQ(config.lfos[2].high_octave_chance, 0.5f);
 }
 
 }  // namespace
