@@ -418,21 +418,21 @@ using Size = Bounded<Ticks<size_t>, 0, BUFFER_LEN>;
 // TODO(nausicaa): is this sane?
 // aspen: no. consider merging position and size?
 
-template <std::size_t N>
+template <std::uint8_t N>
 class RadioButtons {
-  std::size_t selected_;
+  std::uint8_t selected_;
   std::array<RgbLed, N> leds_;
   color::RGB selected_color_;
-  Callback<size_t> on_change_;
+  Callback<uint8_t> on_change_;
 
   struct Selector {
     RadioButtons* rb;
-    std::size_t which;
+    std::uint8_t which;
 
     Selector() : rb(nullptr), which(0) {}
 
     // because doing this at construction is too hard
-    void Configure(RadioButtons* rb, std::size_t which) {
+    void Configure(RadioButtons* rb, std::uint8_t which) {
       this->rb = rb;
       this->which = which;
     }
@@ -461,7 +461,7 @@ class RadioButtons {
  public:
   RadioButtons(std::array<RgbLed, N> leds, color::RGB selected_color)
       : selected_(0), leds_(leds), selected_color_(selected_color) {
-    for (std::size_t i = 0; i < N; ++i) {
+    for (std::uint8_t i = 0; i < N; ++i) {
       selectors_[i].Configure(this, i);
     }
   }
@@ -469,15 +469,15 @@ class RadioButtons {
 #ifndef UNIT_TEST
   void RegisterCallbacks(std::array<io::Button, N>& buttons) {
     // i miss rust and zip()
-    for (std::size_t i = 0; i < N; ++i) {
+    for (std::uint8_t i = 0; i < N; ++i) {
       buttons[i].OnChange(selectors_[i].GetCallback());
     }
   }
 #endif  // UNIT_TEST
 
-  void OnChange(Callback<size_t> on_change) { on_change_ = on_change; }
+  void OnChange(Callback<uint8_t> on_change) { on_change_ = on_change; }
 
-  void Select(std::size_t which) {
+  void Select(std::uint8_t which) {
     if (which == selected_) {
       return;
     }
@@ -567,8 +567,8 @@ struct UI {
   config::Config config_;
 
  public:
-  size_t selected_head = 0;
-  size_t selected_lfo = 0;
+  uint8_t selected_head = 0;
+  uint8_t selected_lfo = 0;
 
   HeadKnobs head;
   LFOKnobs lfo;

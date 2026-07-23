@@ -176,9 +176,9 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
   dry.Set(initial_config.dry);
   wet.Set(initial_config.wet);
 
-  head_select.OnChange(TypedCallback<UI, size_t>{
+  head_select.OnChange(TypedCallback<UI, uint8_t>{
       .callback =
-          +[](UI* self, size_t which) {
+          +[](UI* self, uint8_t which) {
             self->config_.heads[self->selected_head] = self->head.Config();
             self->selected_head = which;
             self->head.Select(self->config_.heads[which]);
@@ -186,9 +186,9 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
       .data = this,
   });
 
-  lfo_select.OnChange(TypedCallback<UI, size_t>{
+  lfo_select.OnChange(TypedCallback<UI, uint8_t>{
       .callback =
-          +[](UI* self, size_t which) {
+          +[](UI* self, uint8_t which) {
             self->config_.lfos[self->selected_lfo] = self->lfo.Config();
             self->selected_lfo = which;
             self->lfo.Select(self->config_.lfos[which]);
