@@ -24,7 +24,17 @@ BufferValue::~BufferValue() {
   }
 }
 
+namespace {
+inline float ComputeEraseFracOffset(float value) {
+  return (FADE_TIME * value) / (1 - value);
+}
+}  // namespace
+
 Update* BufferValue::PushBack(Update&& update) {
+  if (update.kind == Update::Kind::kErase) {
+    update.erase_frac_offset = ComputeEraseFracOffset(update.value);
+  }
+
   if (isSampleWithUpdates()) {
     auto head = asSampleWithUpdates();
 
@@ -33,6 +43,8 @@ Update* BufferValue::PushBack(Update&& update) {
     // so the final result is the same.
     if (update.kind == Update::Kind::kErase && head->erase_update != nullptr) {
       head->erase_update->value *= update.value;
+      head->erase_update->erase_frac_offset =
+          ComputeEraseFracOffset(head->erase_update->value);
       return head->erase_update;
     }
 
@@ -118,41 +130,50 @@ void Sound::DoUpdate(size_t index) {
   for (auto buffer : {&left_buffer_, &right_buffer_}) {
     auto content = &((*buffer)[index]);
 
-    // Apply erases
+    // Single walk. The list is sorted by finished_at (updates are appended
+    // at the tail with monotonically-increasing global_clock_+FADE_TIME
+    // values; erase merges don't reorder), so once we see a non-ripe update
+    // we're done. Erase-before-write ordering is preserved by deferring the
+    // sample math until the walk completes.
+    Update* ripe_erase = nullptr;
+    float ripe_write_sum = 0.0f;
+    auto have_ripe_writes = false;
+
     auto update_ptr = content->FirstUpdate();
     while (update_ptr != nullptr && *update_ptr != nullptr) {
       auto update = *update_ptr;
-      if (update->kind == Update::Kind::kErase) {
-        auto time_till_ripe =
-            (update->finished_at - global_clock_) % global_clock_max_;
-        if (time_till_ripe == 0) {
-          content->setSample(content->sample() * update->value);
-          *update_ptr = update->next_;
-          content->OnUpdateFreed(update);
-          UPDATES.Free(update);
-          continue;
-        }
+      if (update->finished_at > global_clock_) {
+        break;
       }
+      if (update->finished_at == global_clock_) {
+        if (update->kind == Update::Kind::kErase) {
+          ripe_erase = update;
+        } else {
+          ripe_write_sum += update->value;
+          have_ripe_writes = true;
+        }
+        *update_ptr = update->next_;
+        content->OnUpdateFreed(update);
+        // Defer freeing the erase until we've applied its value.
+        if (update->kind == Update::Kind::kWrite) {
+          UPDATES.Free(update);
+        }
+        continue;
+      }
+      // finished_at < global_clock_ shouldn't happen (would mean we missed
+      // a tick) — skip defensively.
       update_ptr = &update->next_;
     }
 
-    // Apply writes
-    update_ptr = content->FirstUpdate();
-    while (update_ptr != nullptr && *update_ptr != nullptr) {
-      auto update = *update_ptr;
-      if (update->kind == Update::Kind::kWrite) {
-        auto time_till_ripe =
-            ((update->finished_at - global_clock_) + global_clock_max_) %
-            global_clock_max_;
-        if (time_till_ripe == 0) {
-          *update_ptr = update->next_;
-          content->OnUpdateFreed(update);
-          UPDATES.Free(update);
-          content->setSample(content->sample() + update->value);
-          continue;
-        }
+    if (ripe_erase != nullptr) {
+      float new_sample = content->sample() * ripe_erase->value;
+      if (have_ripe_writes) {
+        new_sample += ripe_write_sum;
       }
-      update_ptr = &update->next_;
+      content->setSample(new_sample);
+      UPDATES.Free(ripe_erase);
+    } else if (have_ripe_writes) {
+      content->setSample(content->sample() + ripe_write_sum);
     }
 
     content->Housekeep();
@@ -177,42 +198,32 @@ StereoSample Sound::Read(size_t position) {
     auto content = &((*buffer)[position]);
     auto value = content->sample();
 
-    // Apply erases
     auto maybe_update = content->FirstUpdate();
     if (maybe_update == nullptr) {
       return value;
     }
-    auto update = *maybe_update;
 
-    while (update != nullptr) {
+    // Single walk: accumulate the (at-most-one) erase factor and the sum of
+    // fading-in writes.
+    //
+    // `time_till_ripe` is bounded by FADE_TIME (DoUpdate removes updates when
+    // ripe), so the subtraction is safe without a modulo.
+    float erase_factor = 1.0f;
+    float write_sum = 0.0f;
+    for (auto update = *maybe_update; update != nullptr;
+         update = update->next_) {
+      auto time_till_ripe = update->finished_at - global_clock_;
       if (update->kind == Update::Kind::kErase) {
-        auto time_till_ripe =
-            ((update->finished_at - global_clock_) + global_clock_max_) %
-            global_clock_max_;
-        auto frac_offset = (FADE_TIME * update->value) / (1 - update->value);
-        auto factor =
-            frac_offset / ((FADE_TIME - time_till_ripe) + frac_offset + 1);
-        value *= factor;
+        // erase_frac_offset is precomputed in BufferValue::PushBack.
+        erase_factor =
+            update->erase_frac_offset /
+            ((FADE_TIME - time_till_ripe) + update->erase_frac_offset + 1);
+      } else {
+        write_sum += update->value * (FADE_TIME - time_till_ripe) / FADE_TIME;
       }
-      update = update->next_;
     }
 
-    // Apply writes
-    update = *content->FirstUpdate();
-    while (update != nullptr) {
-      if (update->kind == Update::Kind::kWrite) {
-        auto time_till_ripe =
-            ((update->finished_at - global_clock_) + global_clock_max_) %
-            global_clock_max_;
-        auto target_val = update->value;
-        auto fading_in_val =
-            target_val * (FADE_TIME - time_till_ripe) / FADE_TIME;
-        value += fading_in_val;
-      }
-      update = update->next_;
-    }
-
-    return value;
+    return value * erase_factor + write_sum;
   };
 
   return StereoSample{

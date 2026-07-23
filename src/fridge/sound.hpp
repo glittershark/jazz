@@ -20,6 +20,10 @@ struct Update {
   enum Kind { kErase, kWrite } kind;
   size_t finished_at;
   float value;
+  // For erases only: precomputed (FADE_TIME * value) / (1 - value). Cached
+  // here so Read doesn't recompute it every sample. Updated whenever `value`
+  // changes (see BufferValue::PushBack). Unused for writes.
+  float erase_frac_offset;
   Update* next_;
 
   class Iterator {
