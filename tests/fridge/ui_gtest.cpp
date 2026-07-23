@@ -50,8 +50,8 @@ TEST_F(UITest, update_head_knobs_via_callbacks) {
     EXPECT_EQ(target, increment);
   };
 
-  test_position_knob(ui.head.position, config.heads[selected_head].position,
-                     47);
+  test_position_knob(ui.head_knobs.position,
+                     config.heads[selected_head].position, 47);
 
   auto test_single_turn_knob = [&](ui::Knob<ui::SingleTurn>& knob,
                                    const float& target, float increment) {
@@ -64,19 +64,19 @@ TEST_F(UITest, update_head_knobs_via_callbacks) {
     EXPECT_FLOAT_EQ(target, increment);
   };
 
-  test_single_turn_knob(ui.head.write_amount,
+  test_single_turn_knob(ui.head_knobs.write_amount,
                         config.heads[selected_head].write_amount, 0.1f);
-  test_single_turn_knob(ui.head.read_amount,
+  test_single_turn_knob(ui.head_knobs.read_amount,
                         config.heads[selected_head].read_amount, 0.2f);
-  test_single_turn_knob(ui.head.erase_amount,
+  test_single_turn_knob(ui.head_knobs.erase_amount,
                         config.heads[selected_head].erase_amount, 0.35f);
 
   {
     const float feedback_increment = -0.3f;
 
-    ASSERT_EQ(ui.head.feedback.Get(), config::Feedback{});
+    ASSERT_EQ(ui.head_knobs.feedback.Get(), config::Feedback{});
 
-    auto callback = ui.head.feedback.GetCallback();
+    auto callback = ui.head_knobs.feedback.GetCallback();
     callback(garbage, feedback_increment);
     config = ui.Config();
 
@@ -117,10 +117,10 @@ TEST_F(UITest, update_lfo_knobs_via_callbacks) {
     EXPECT_EQ(target, increment);
   };
 
-  test_position_knob(ui.lfo.range, config.lfos[selected_lfo].range, 9);
-  test_size_knob(ui.lfo.max_grain_size,
+  test_position_knob(ui.lfo_knobs.range, config.lfos[selected_lfo].range, 9);
+  test_size_knob(ui.lfo_knobs.max_grain_size,
                  config.lfos[selected_lfo].max_grain_size, 17);
-  test_size_knob(ui.lfo.min_grain_size,
+  test_size_knob(ui.lfo_knobs.min_grain_size,
                  config.lfos[selected_lfo].min_grain_size, 33);
 
   auto test_single_turn_knob = [&](ui::Knob<ui::SingleTurn>& knob,
@@ -134,15 +134,15 @@ TEST_F(UITest, update_lfo_knobs_via_callbacks) {
     EXPECT_FLOAT_EQ(target, increment);
   };
 
-  test_single_turn_knob(ui.lfo.reverse_chance,
+  test_single_turn_knob(ui.lfo_knobs.reverse_chance,
                         config.lfos[selected_lfo].reverse_chance, 0.7f);
-  test_single_turn_knob(ui.lfo.teleport_chance,
+  test_single_turn_knob(ui.lfo_knobs.teleport_chance,
                         config.lfos[selected_lfo].teleport_chance, 0.6f);
-  test_single_turn_knob(ui.lfo.pitch_shift_chance,
+  test_single_turn_knob(ui.lfo_knobs.pitch_shift_chance,
                         config.lfos[selected_lfo].pitch_shift_chance, 0.5f);
-  test_single_turn_knob(ui.lfo.low_octave_chance,
+  test_single_turn_knob(ui.lfo_knobs.low_octave_chance,
                         config.lfos[selected_lfo].low_octave_chance, 0.4f);
-  test_single_turn_knob(ui.lfo.high_octave_chance,
+  test_single_turn_knob(ui.lfo_knobs.high_octave_chance,
                         config.lfos[selected_lfo].high_octave_chance, 0.3f);
 }
 
@@ -185,7 +185,7 @@ TEST_F(UITest, position_knob_saturates) {
 TEST_F(UITest, wet_knob_uses_led_to_display) {
   ui::UI ui(leds);
 
-  auto& knob = ui.wet;
+  auto& knob = ui.wet_knob;
 
   knob.Set(0.7);
 
@@ -239,7 +239,7 @@ TEST_F(UITest, change_selected_head_via_radio_buttons) {
 
   EXPECT_EQ(ui.Config().heads[2].position, 0);
 
-  ui.head.position.GetCallback()(47, 21307);
+  ui.head_knobs.position.GetCallback()(47, 21307);
 
   auto config = ui.Config();
   EXPECT_EQ(config.heads[2].position, 47);
@@ -253,7 +253,7 @@ TEST_F(UITest, change_selected_lfo_via_radio_buttons) {
 
   EXPECT_EQ(ui.Config().lfos[2].high_octave_chance, 0);
 
-  ui.lfo.high_octave_chance.GetCallback()(0, 0.5f);
+  ui.lfo_knobs.high_octave_chance.GetCallback()(0, 0.5f);
 
   auto config = ui.Config();
   EXPECT_FLOAT_EQ(config.lfos[2].high_octave_chance, 0.5f);

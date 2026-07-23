@@ -59,16 +59,16 @@ void LFOKnobs::Select(const fridge::config::LFO& lfo) {
 }
 
 const config::Config& ui::UI::Config() {
-  config_.heads[selected_head] = head.Config();
+  config_.heads[selected_head] = head_knobs.Config();
 
   // HACK: keep the targets unchanged. Fix this once we have actual target
   // selection
   auto prev_targets = config_.lfos[selected_lfo].targets;
-  config_.lfos[selected_lfo] = lfo.Config();
+  config_.lfos[selected_lfo] = lfo_knobs.Config();
   config_.lfos[selected_lfo].targets = prev_targets;
 
-  config_.dry = dry.Get();
-  config_.wet = wet.Get();
+  config_.dry = dry_knob.Get();
+  config_.wet = wet_knob.Get();
   return config_;
 }
 
@@ -96,7 +96,7 @@ uint32_t Now() {
 
 ui::UI::UI(io::led::Controller& led, config::Config initial_config)
     : config_(initial_config),
-      head{
+      head_knobs{
           // D16
           .position = knob<Position>(
               "Position", RgbLed(led.B(2, 0), led.B(2, 1), led.B(2, 2))),
@@ -117,7 +117,7 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
                                .max_erase_color = color::RGB(255, 0, 0),
                            }),
       },
-      lfo{
+      lfo_knobs{
           // D5
           .range = knob<Position>(
               "Range", RgbLed(led.B(0, 3), led.B(0, 4), led.B(0, 5))),
@@ -147,11 +147,11 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
                                RgbLed(led.B(7, 3), led.B(7, 4), led.B(7, 5))),
       },
       // D4
-      dry(knob<SingleTurn>("Dry",
-                           RgbLed(led.B(0, 0), led.B(0, 1), led.B(0, 2)))),
+      dry_knob(knob<SingleTurn>("Dry",
+                                RgbLed(led.B(0, 0), led.B(0, 1), led.B(0, 2)))),
       // D10
-      wet(knob<SingleTurn>("Wet",
-                           RgbLed(led.B(1, 0), led.B(1, 1), led.B(1, 2)))),
+      wet_knob(knob<SingleTurn>("Wet",
+                                RgbLed(led.B(1, 0), led.B(1, 1), led.B(1, 2)))),
 
       // D1, D7, D13, D19, D25, D31, D37, D43
       head_select(
@@ -187,17 +187,18 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
   // calls below — those fire on_change which saves-then-loads, and would
   // overwrite the initial config with the default (zero) knob values if the
   // knobs hadn't been loaded first.
-  head.Select(config_.heads[selected_head]);
-  lfo.Select(config_.lfos[selected_lfo]);
-  dry.Set(initial_config.dry);
-  wet.Set(initial_config.wet);
+  head_knobs.Select(config_.heads[selected_head]);
+  lfo_knobs.Select(config_.lfos[selected_lfo]);
+  dry_knob.Set(initial_config.dry);
+  wet_knob.Set(initial_config.wet);
 
   head_select.OnChange(TypedCallback<UI, uint8_t>{
       .callback =
           +[](UI* self, uint8_t which) {
-            self->config_.heads[self->selected_head] = self->head.Config();
+            self->config_.heads[self->selected_head] =
+                self->head_knobs.Config();
             self->selected_head = which;
-            self->head.Select(self->config_.heads[which]);
+            self->head_knobs.Select(self->config_.heads[which]);
           },
       .data = this,
   });
@@ -210,10 +211,10 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
             // back naively would wipe modulation routes. Same trick as the
             // HACK in UI::Config above.
             auto prev_targets = self->config_.lfos[self->selected_lfo].targets;
-            self->config_.lfos[self->selected_lfo] = self->lfo.Config();
+            self->config_.lfos[self->selected_lfo] = self->lfo_knobs.Config();
             self->config_.lfos[self->selected_lfo].targets = prev_targets;
             self->selected_lfo = which;
-            self->lfo.Select(self->config_.lfos[which]);
+            self->lfo_knobs.Select(self->config_.lfos[which]);
           },
       .data = this,
   });
