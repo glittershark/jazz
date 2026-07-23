@@ -189,7 +189,13 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
   lfo_select.OnChange(TypedCallback<UI, uint8_t>{
       .callback =
           +[](UI* self, uint8_t which) {
+            // HACK: Preserve the outgoing LFO's targets — LFOKnobs::Config()
+            // doesn't include them (no target-selection UI yet), so writing
+            // back naively would wipe modulation routes. Same trick as the
+            // HACK in UI::Config above.
+            auto prev_targets = self->config_.lfos[self->selected_lfo].targets;
             self->config_.lfos[self->selected_lfo] = self->lfo.Config();
+            self->config_.lfos[self->selected_lfo].targets = prev_targets;
             self->selected_lfo = which;
             self->lfo.Select(self->config_.lfos[which]);
           },
