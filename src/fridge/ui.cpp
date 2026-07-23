@@ -1,5 +1,7 @@
 #include "ui.hpp"
 
+#include <optional>
+
 #include "config.hpp"
 #include "led.hpp"
 #include "libjazz/color.hpp"
@@ -7,6 +9,7 @@
 #include "value_display.hpp"
 
 #ifndef UNIT_TEST
+#include "per/tim.h"
 using namespace daisy;
 #endif  // UNIT_TEST
 
@@ -81,6 +84,15 @@ CieInterpKnob<V> knob(const char* name, fridge::ui::RgbLed rgb_led) {
 }
 
 }  // namespace
+
+namespace fridge::ui {
+uint32_t Now() {
+#ifdef UNIT_TEST
+  return 0;
+#else
+  return daisy::System::GetNow();
+#endif
+}
 
 ui::UI::UI(io::led::Controller& led, config::Config initial_config)
     : config_(initial_config),
@@ -208,6 +220,61 @@ ui::UI::UI(io::led::Controller& led, config::Config initial_config)
 
   head_select.Select(selected_head);
   lfo_select.Select(selected_lfo);
+
+#ifndef UNIT_TEST
+  {
+    daisy::TimerHandle::Config timer_config;
+    timer_config.periph = daisy::TimerHandle::Config::Peripheral::TIM_4;
+    timer_config.enable_irq = true;
+    timer_.Init(timer_config);
+    timer_.SetCallback(UI::timer_callback_, this);
+    timer_.SetPeriod(timer_.GetFreq());
+    timer_.Start();
+  };
+#endif
+}
+
+void ui::UI::Tick() {
+  auto held_lfo = lfo_select.held();
+  if (held_lfo.has_value()) {
+    auto now = Now();
+    if (blink_state_.has_value()) {
+      if (now - blink_state_->last_toggle > kBlinkFreqMs) {
+        blink_state_->blink = !blink_state_->blink;
+        blink_state_->last_toggle = Now();
+      }
+    } else if (now - held_lfo->since > kHoldDelayMs) {
+      head_select.StartBlinking();
+      blink_state_ =
+          std::make_optional(BlinkState{.blink = true, .last_toggle = now});
+    }
+
+    for (const auto& target : config_.lfos[held_lfo->which].targets) {
+      if (!target.has_value()) {
+        continue;
+      }
+      switch (target->object) {
+      case fridge::config::TargetObject::kHead: {
+        auto target_head_idx = target->object_idx;
+        if (blink_state_->blink) {
+          head_select.BlinkOn(target_head_idx);
+        } else {
+          head_select.BlinkOff(target_head_idx);
+        }
+        break;
+      }
+      case fridge::config::TargetObject::kLFO:
+      case fridge::config::TargetObject::kMixer:
+        // TODO
+        break;
+      }
+    }
+  } else {
+    if (blink_state_.has_value()) {
+      head_select.StopBlinking();
+    }
+    blink_state_ = std::nullopt;
+  }
 }
 
 #ifndef UNIT_TEST
@@ -258,3 +325,5 @@ void TempoButton::Tick(bool state) {
 }
 
 #endif  // UNIT_TEST
+
+}  // namespace fridge::ui

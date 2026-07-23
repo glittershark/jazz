@@ -9,7 +9,9 @@
 #include <cmath>
 #include <concepts>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
+#include <optional>
 #include <type_traits>
 
 #include "callback.hpp"
@@ -24,8 +26,17 @@ namespace fridge::ui {
 
 #ifndef UNIT_TEST
 #include "daisy_seed.h"
+#include "per/tim.h"
 extern daisy::DaisySeed hw;
 #endif
+
+constexpr const size_t kHoldDelayMs = 500;
+constexpr const size_t kBlinkFreqMs = 500;
+// TODO
+constexpr const color::RGB kSelectedBlinkColor = color::RGB(0, 150, 0);
+constexpr const color::RGB kUnselectedBlinkColor = color::RGB(150, 0, 0);
+
+uint32_t Now();
 
 template <typename V>
 concept BackingValue =
@@ -421,6 +432,15 @@ using Size = Bounded<Ticks<size_t>, 0, BUFFER_LEN>;
 template <std::uint8_t N>
 class RadioButtons {
   std::uint8_t selected_;
+
+ public:
+  struct Held {
+    std::uint8_t which;
+    std::uint32_t since;
+  };
+
+ private:
+  std::optional<Held> held_;
   std::array<RgbLed, N> leds_;
   color::RGB selected_color_;
   Callback<uint8_t> on_change_;
@@ -438,12 +458,23 @@ class RadioButtons {
     }
 
     void Select(bool state) {
-      if (
-          /* NB: the buttons are pull-up and short to *ground* when pressed, so
-             "true" is the steady state and "false" means the button is
-             currently held */
-          !state && rb) {
-        rb->Select(which);
+      if (rb) {
+        /* NB: the buttons are pull-up and short to *ground* when pressed, so
+           "true" is the steady state and "false" means the button is
+           currently held */
+        auto pressed = !state;
+
+        if (pressed) {
+          if (rb->selected_ != which) {
+            rb->Select(which);
+            rb->held_ = Held{.which = which, .since = Now()};
+          }
+        } else if (rb->selected_ == which) {
+          // If we just released the button for the *currently selected*
+          // selector (which must have been the last pressed one), then reset
+          // the held item to nothing
+          rb->held_ = std::nullopt;
+        }
       }
     }
 
@@ -496,6 +527,26 @@ class RadioButtons {
       on_change_(which);
     }
   }
+
+  const std::optional<Held>& held() const { return held_; }
+
+  void StartBlinking() { leds_[selected_].SetOn(false); }
+  void StopBlinking() {
+    for (size_t i = 0; i < N; ++i) {
+      leds_[i].SetOn(false);
+    }
+    leds_[selected_].SetOn(true);
+    leds_[selected_].SetColor(selected_color_);
+  }
+
+  void BlinkOn(uint8_t which) {
+    leds_[which].SetOn(true);
+    auto color =
+        which == selected_ ? kSelectedBlinkColor : kUnselectedBlinkColor;
+    leds_[which].SetColor(color);
+  }
+
+  void BlinkOff(uint8_t which) { leds_[which].SetOn(false); }
 };
 
 template <DisplayableBackingValue V>
@@ -569,7 +620,27 @@ struct TempoButton {
 
 struct UI {
  private:
+  // The authoritative, live config of the effect.
   config::Config config_;
+
+  struct BlinkState {
+    bool blink;
+    uint32_t last_toggle;
+  };
+
+  // If anything is blinking, whether it is currently on or off.
+  std::optional<BlinkState> blink_state_ = std::nullopt;
+  bool AmBlinking() const { return blink_state_.has_value(); }
+
+#ifndef UNIT_TEST
+  daisy::TimerHandle timer_;
+#endif  // UNIT_TEST
+
+ public:
+  void Tick();
+
+ private:
+  static void timer_callback_(void* self) { static_cast<UI*>(self)->Tick(); }
 
  public:
   uint8_t selected_head = 0;
