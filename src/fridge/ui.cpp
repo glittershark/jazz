@@ -1,7 +1,9 @@
 #include "ui.hpp"
 
+#include <cstdint>
 #include <optional>
 
+#include "callback.hpp"
 #include "config.hpp"
 #include "led.hpp"
 #include "libjazz/color.hpp"
@@ -94,7 +96,7 @@ uint32_t Now() {
 #endif
 }
 
-ui::UI::UI(io::led::Controller& led, config::Config initial_config)
+UI::UI(io::led::Controller& led, config::Config initial_config)
     : config_(initial_config),
       head_knobs{
           // D16
@@ -314,6 +316,36 @@ void UI::Tick() {
       head_select.StopBlinking();
     }
     blink_state_ = std::nullopt;
+  }
+}
+
+config::Target UI::TargetForSelected(config::TargetParameter param) const {
+  auto object = config::object_for_parameter(param);
+  uint8_t object_idx = 0;
+  switch (object) {
+  case config::TargetObject::kHead:
+    object_idx = selected_head;
+    break;
+  case config::TargetObject::kLFO:
+    object_idx = selected_lfo;
+    break;
+  case config::TargetObject::kMixer:
+    break;
+  }
+
+  return {
+      .object = object,
+      .parameter = param,
+      .object_idx = object_idx,
+  };
+}
+
+void UI::KnobPressed(config::TargetParameter param, bool pressed) {
+  if (!pressed) {
+    auto held_lfo = lfo_select.held();
+    if (held_lfo.has_value()) {
+      config_.lfos[held_lfo->which].ToggleTarget(TargetForSelected(param));
+    }
   }
 }
 
