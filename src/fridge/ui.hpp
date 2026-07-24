@@ -695,6 +695,8 @@ struct UI {
   daisy::TimerHandle timer_;
 #endif  // UNIT_TEST
 
+  config::Target TargetForSelected(config::TargetParameter param) const;
+
  public:
   void Tick();
 
@@ -722,6 +724,8 @@ struct UI {
 
   UI(io::led::Controller& led_controller,
      config::Config initial_config = config::Config{});
+
+  void KnobPressed(config::TargetParameter param, bool pressed);
 };
 
 }  // namespace fridge::ui
