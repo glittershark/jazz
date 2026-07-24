@@ -1,0 +1,124 @@
+#include <cstddef>
+
+#include "config.hpp"
+#include "gtest/gtest.h"
+
+namespace {
+
+using fridge::config::LFO;
+using fridge::config::Target;
+using fridge::config::TargetObject;
+using fridge::config::TargetParameter;
+
+void check_invariant(const LFO& lfo) {
+  bool found_null = false;
+  for (auto& target : lfo.targets) {
+    if (found_null) {
+      EXPECT_EQ(target, std::nullopt);
+    }
+    if (!target.has_value()) {
+      found_null = true;
+    }
+  }
+}
+
+static LFO lfo_with_targets() {
+  LFO lfo;
+  lfo.targets[0] = Target{
+      .object = TargetObject::kHead,
+      .parameter = TargetParameter::kPosition,
+      .object_idx = 0,
+  };
+  lfo.targets[1] = Target{
+      .object = TargetObject::kHead,
+      .parameter = TargetParameter::kReadAmount,
+      .object_idx = 1,
+  };
+  lfo.targets[2] = Target{
+      .object = TargetObject::kHead,
+      .parameter = TargetParameter::kPosition,
+      .object_idx = 3,
+  };
+
+  check_invariant(lfo);
+
+  return lfo;
+};
+
+TEST(ToggleTargetTest, removes_target_at_end_of_array) {
+  const auto prev = lfo_with_targets();
+  auto lfo = prev;
+  lfo.ToggleTarget(Target{
+      .object = TargetObject::kHead,
+      .parameter = TargetParameter::kPosition,
+      .object_idx = 3,
+  });
+  check_invariant(lfo);
+
+  EXPECT_EQ(lfo.targets[0], prev.targets[0]);
+  EXPECT_EQ(lfo.targets[1], prev.targets[1]);
+  for (size_t i = 2; i < lfo.targets.size(); ++i) {
+    EXPECT_EQ(lfo.targets[i], std::nullopt);
+  }
+}
+
+TEST(ToggleTargetTest, removes_target_not_at_end_of_array) {
+  const auto prev = lfo_with_targets();
+  auto lfo = prev;
+  lfo.ToggleTarget(Target{
+      .object = TargetObject::kHead,
+      .parameter = TargetParameter::kReadAmount,
+      .object_idx = 1,
+  });
+  check_invariant(lfo);
+
+  EXPECT_EQ(lfo.targets[0], prev.targets[0]);
+  EXPECT_EQ(lfo.targets[1], prev.targets[2]);
+  for (size_t i = 2; i < lfo.targets.size(); ++i) {
+    EXPECT_EQ(lfo.targets[i], std::nullopt);
+  }
+}
+
+TEST(ToggleTargetTest, adds_target_when_not_full) {
+  const auto prev = lfo_with_targets();
+  auto lfo = prev;
+
+  Target new_target{
+      .object = TargetObject::kLFO,
+      .parameter = TargetParameter::kMaxGrainSize,
+      .object_idx = 4,
+  };
+  lfo.ToggleTarget(new_target);
+  check_invariant(lfo);
+
+  for (size_t i = 0; i <= 2; ++i) {
+    EXPECT_EQ(lfo.targets[i], prev.targets[i]);
+  }
+  EXPECT_EQ(lfo.targets[3], new_target);
+}
+
+TEST(ToggleTargetTest, does_nothing_when_full) {
+  auto prev = lfo_with_targets();
+
+  for (uint8_t i = 3; static_cast<size_t>(i) < prev.targets.size(); ++i) {
+    prev.targets[i] = {
+        .object = TargetObject::kHead,
+        .parameter = TargetParameter::kPosition,
+        .object_idx = i,
+    };
+  }
+
+  auto lfo = prev;
+  lfo.ToggleTarget({
+      .object = TargetObject::kLFO,
+      .parameter = TargetParameter::kMaxGrainSize,
+      .object_idx = 4,
+  });
+  check_invariant(lfo);
+
+  for (size_t i = 0; i <= lfo.targets.size(); ++i) {
+    EXPECT_EQ(lfo.targets[i], prev.targets[i]);
+  }
+}
+
+}  // namespace

@@ -77,6 +77,8 @@ enum class TargetParameter : uint8_t {
   kWet,
 };
 
+TargetObject object_for_parameter(TargetParameter param);
+
 // Packed to 3 bytes so a full target list stays small; an
 // std::optional<Target> is 4 bytes.
 struct Target {
@@ -99,6 +101,8 @@ struct LFO {
   std::array<std::optional<Target>, MAX_TARGET_PARAMS> targets{};
 
   bool operator==(const LFO& rhs) const = default;
+
+  void ToggleTarget(const Target& target);
 };
 
 struct Config {

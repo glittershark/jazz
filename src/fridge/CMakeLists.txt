@@ -9,6 +9,7 @@ jazz_add_firmware(fridge SOURCES
   led.cpp
   rgb_led.cpp
   engine.cpp
+  config.cpp
 )
 
 if(NOT CMAKE_CROSSCOMPILING AND TARGET fridge)
