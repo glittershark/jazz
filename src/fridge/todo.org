@@ -19,5 +19,7 @@ CLOSED: [2026-07-22 Wed 22:06]
 * Misc todos
 ** TODO prevent heads whose position isn't modulated by an LFO from doing anything
 ** TODO invert pressed for buttons
-** TODO can't press and hold the current lfo
+** DONE can't press and hold the current lfo
+CLOSED: [2026-07-23 Thu 20:53]
 ** TODO if you toggle off a parameter, it should always turn off (currently it keeps its previous state)
+** TODO you shouldn't be able to turn knobs while holding an LFO

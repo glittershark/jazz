@@ -494,6 +494,8 @@ class RadioButtons {
         if (pressed) {
           if (rb->selected_ != which) {
             rb->Select(which);
+          }
+          if (!rb->held_.has_value()) {
             rb->held_ = Held{.which = which, .since = Now()};
           }
         } else if (rb->selected_ == which) {
