@@ -315,8 +315,62 @@ class Turns {
 #endif
   }
 };
-
 static_assert(BackingValue<Turns>);
+
+/**
+ * Scales each turn by some integral quantity, backed by an integral value
+ *
+ * One turn is always equal to SCALE
+ * */
+template <typename V, V SCALE>
+  requires std::is_integral_v<V>
+class ScaledIntegralTurns {
+  V value_;
+
+  static V ScaleTurns(float turns) { return static_cast<V>(turns * SCALE); };
+
+ public:
+  using Raw_type = V;
+  ScaledIntegralTurns() = default;
+  ScaledIntegralTurns(const int, const float turns) : value_(turns) {}
+  ScaledIntegralTurns(const Raw_type& raw) : value_(raw) {}
+
+  ScaledIntegralTurns<V, SCALE>& Increment(const int, const float turns) {
+    if (turns > 0) {
+      value_ += static_cast<V>(turns * SCALE);
+    } else if (turns < 0) {
+      auto scaled = static_cast<V>(-turns * SCALE);
+      if (scaled >= value_) {
+        value_ = 0;
+      } else {
+        value_ -= scaled;
+      }
+    }
+    return *this;
+  }
+
+  operator Raw_type() const { return value_; }
+
+  ScaledIntegralTurns<V, SCALE> operator+(
+      const ScaledIntegralTurns<V, SCALE>& rhs) const {
+    return ScaledIntegralTurns<V, SCALE>(value_ + rhs.value_);
+  }
+
+  ScaledIntegralTurns<V, SCALE>& operator=(
+      const ScaledIntegralTurns<V, SCALE>& rhs) = default;
+
+  ScaledIntegralTurns<V, SCALE>& operator+=(const Raw_type& rhs) {
+    value_ += rhs;
+    return *this;
+  }
+
+  void Print(const char* key) const {
+#ifndef UNIT_TEST
+    hw.PrintLine("%s = %d", key, value_);
+#endif
+  }
+};
+static_assert(BackingValue<ScaledIntegralTurns<size_t, 44100>>);
 
 class Feedback {
   using V = Bounded<Turns, -1.0f, 1.0f>;
@@ -451,10 +505,9 @@ class FeedbackKnob : public Knob<Feedback> {
 };
 
 using SingleTurn = Bounded<Turns, 0.0f, 1.0f>;
-using Position = Bounded<Ticks<size_t>, 0, BUFFER_LEN>;
-using Size = Bounded<Ticks<size_t>, 0, BUFFER_LEN>;
-// TODO(nausicaa): is this sane?
-// aspen: no. consider merging position and size?
+
+using OneTurnIsBufferLen =
+    Bounded<ScaledIntegralTurns<size_t, BUFFER_LEN>, 0, BUFFER_LEN>;
 
 template <std::uint8_t N>
 class RadioButtons {
@@ -583,7 +636,7 @@ template <DisplayableBackingValue V>
 using CieInterpKnob = KnobWithDisplay<V, value_display::CieInterp>;
 
 struct HeadKnobs {
-  CieInterpKnob<Position> position;
+  CieInterpKnob<OneTurnIsBufferLen> position;
   CieInterpKnob<SingleTurn> write_amount;
   CieInterpKnob<SingleTurn> read_amount;
   CieInterpKnob<SingleTurn> erase_amount;
@@ -608,9 +661,9 @@ struct HeadKnobs {
   }
 
 struct LFOKnobs {
-  CieInterpKnob<Position> range;
-  CieInterpKnob<Size> max_grain_size;
-  CieInterpKnob<Size> min_grain_size;
+  CieInterpKnob<OneTurnIsBufferLen> range;
+  CieInterpKnob<OneTurnIsBufferLen> max_grain_size;
+  CieInterpKnob<OneTurnIsBufferLen> min_grain_size;
   CieInterpKnob<SingleTurn> reverse_chance;
   CieInterpKnob<SingleTurn> teleport_chance;
   CieInterpKnob<SingleTurn> pitch_shift_chance;
