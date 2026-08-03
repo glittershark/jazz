@@ -100,7 +100,7 @@ UI::UI(io::led::Controller& led, config::Config initial_config)
     : config_(initial_config),
       head_knobs{
           // D16
-          .position = knob<Position>(
+          .position = knob<OneTurnIsBufferLen>(
               "Position", RgbLed(led.B(2, 0), led.B(2, 1), led.B(2, 2))),
           // D22
           .write_amount = knob<SingleTurn>(
@@ -121,13 +121,13 @@ UI::UI(io::led::Controller& led, config::Config initial_config)
       },
       lfo_knobs{
           // D5
-          .range = knob<Position>(
+          .range = knob<OneTurnIsBufferLen>(
               "Range", RgbLed(led.B(0, 3), led.B(0, 4), led.B(0, 5))),
           // D11
-          .max_grain_size = knob<Size>(
+          .max_grain_size = knob<OneTurnIsBufferLen>(
               "Max Grain Size", RgbLed(led.B(1, 3), led.B(1, 4), led.B(1, 5))),
           // D17
-          .min_grain_size = knob<Size>(
+          .min_grain_size = knob<OneTurnIsBufferLen>(
               "Min Grain Size", RgbLed(led.B(2, 3), led.B(2, 4), led.B(2, 5))),
           // D23
           .reverse_chance = knob<SingleTurn>(

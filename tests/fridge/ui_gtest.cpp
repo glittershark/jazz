@@ -39,19 +39,20 @@ TEST_F(UITest, update_head_knobs_via_callbacks) {
   ui.selected_head = selected_head;
   config::Config config;
 
-  auto test_position_knob = [&](ui::Knob<ui::Position>& knob,
-                                const size_t& target, size_t increment) {
-    ASSERT_EQ(target, 0);
+  auto test_one_turn_is_buffer_len_knob =
+      [&](ui::Knob<ui::OneTurnIsBufferLen>& knob, const size_t& target,
+          float turn) {
+        ASSERT_EQ(target, 0);
 
-    auto callback = knob.GetCallback();
-    callback(increment, garbage);
-    config = ui.Config();
+        auto callback = knob.GetCallback();
+        callback(garbage, turn);
+        config = ui.Config();
 
-    EXPECT_EQ(target, increment);
-  };
+        EXPECT_EQ(target, turn * BUFFER_LEN);
+      };
 
-  test_position_knob(ui.head_knobs.position,
-                     config.heads[selected_head].position, 47);
+  test_one_turn_is_buffer_len_knob(ui.head_knobs.position,
+                                   config.heads[selected_head].position, .32);
 
   auto test_single_turn_knob = [&](ui::Knob<ui::SingleTurn>& knob,
                                    const float& target, float increment) {
@@ -95,33 +96,26 @@ TEST_F(UITest, update_lfo_knobs_via_callbacks) {
   ui.selected_lfo = selected_lfo;
   config::Config config;
 
-  auto test_size_knob = [&](ui::Knob<ui::Size>& knob, const size_t& target,
-                            size_t increment) {
-    ASSERT_EQ(target, 0);
+  auto test_one_turn_is_buffer_len_knob =
+      [&](ui::Knob<ui::OneTurnIsBufferLen>& knob, const size_t& target,
+          float turn) {
+        ASSERT_EQ(target, 0);
 
-    auto callback = knob.GetCallback();
-    callback(increment, garbage);
-    config = ui.Config();
+        auto callback = knob.GetCallback();
+        callback(garbage, turn);
+        config = ui.Config();
 
-    EXPECT_EQ(target, increment);
-  };
+        EXPECT_EQ(target, turn * BUFFER_LEN);
+      };
 
-  auto test_position_knob = [&](ui::Knob<ui::Position>& knob,
-                                const size_t& target, size_t increment) {
-    ASSERT_EQ(target, 0);
-
-    auto callback = knob.GetCallback();
-    callback(increment, garbage);
-    config = ui.Config();
-
-    EXPECT_EQ(target, increment);
-  };
-
-  test_position_knob(ui.lfo_knobs.range, config.lfos[selected_lfo].range, 9);
-  test_size_knob(ui.lfo_knobs.max_grain_size,
-                 config.lfos[selected_lfo].max_grain_size, 17);
-  test_size_knob(ui.lfo_knobs.min_grain_size,
-                 config.lfos[selected_lfo].min_grain_size, 33);
+  test_one_turn_is_buffer_len_knob(ui.lfo_knobs.range,
+                                   config.lfos[selected_lfo].range, .5);
+  test_one_turn_is_buffer_len_knob(ui.lfo_knobs.max_grain_size,
+                                   config.lfos[selected_lfo].max_grain_size,
+                                   .17);
+  test_one_turn_is_buffer_len_knob(ui.lfo_knobs.min_grain_size,
+                                   config.lfos[selected_lfo].min_grain_size,
+                                   .33);
 
   auto test_single_turn_knob = [&](ui::Knob<ui::SingleTurn>& knob,
                                    const float& target, float increment) {
@@ -166,19 +160,18 @@ TEST_F(UITest, single_turn_knob_saturates) {
   EXPECT_FLOAT_EQ(knob.Get(), 0.0f);
 }
 
-TEST_F(UITest, position_knob_saturates) {
-  const int third_of_buffer = static_cast<int>(BUFFER_LEN) / 3;
-  ui::Knob<ui::Position> knob("test knob");
+TEST_F(UITest, one_turn_is_buffer_len_knob_saturates) {
+  ui::Knob<ui::OneTurnIsBufferLen> knob("test knob");
 
   ASSERT_EQ(knob.Get(), 0);
 
-  knob.GetCallback()(third_of_buffer, 0);
-  EXPECT_EQ(knob.Get(), third_of_buffer);
+  knob.GetCallback()(0, .25);
+  EXPECT_EQ(knob.Get(), .25 * BUFFER_LEN);
 
-  knob.GetCallback()(-2 * third_of_buffer, 0);
+  knob.GetCallback()(0, -.5);
   EXPECT_EQ(knob.Get(), 0);
 
-  knob.GetCallback()(4 * third_of_buffer, 0);
+  knob.GetCallback()(0, 1.25);
   EXPECT_EQ(knob.Get(), BUFFER_LEN);
 }
 
@@ -239,10 +232,10 @@ TEST_F(UITest, change_selected_head_via_radio_buttons) {
 
   EXPECT_EQ(ui.Config().heads[2].position, 0);
 
-  ui.head_knobs.position.GetCallback()(47, 21307);
+  ui.head_knobs.position.GetCallback()(0, 0.5);
 
   auto config = ui.Config();
-  EXPECT_EQ(config.heads[2].position, 47);
+  EXPECT_EQ(config.heads[2].position, 0.5 * BUFFER_LEN);
 }
 
 TEST_F(UITest, change_selected_lfo_via_radio_buttons) {
