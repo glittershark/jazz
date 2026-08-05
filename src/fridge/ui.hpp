@@ -608,7 +608,7 @@ class RadioButtons {
   const std::optional<Held>& held() const { return held_; }
   const uint8_t selected() const { return selected_; }
 
-  void StartBlinking() { leds_[selected_].SetOn(false); }
+  void StartBlinking() {}
   void StopBlinking() {
     for (size_t i = 0; i < N; ++i) {
       leds_[i].SetOn(false);
