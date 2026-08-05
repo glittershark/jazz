@@ -28,7 +28,8 @@ Controller::Controller(Pins pins, uint8_t address)
       .sda = daisy::seed::D12,
   };
 
-  assert(i2c_.Init(c) == I2CHandle::Result::OK);
+  [[maybe_unused]] auto const i2c_result = i2c_.Init(c);
+  assert(i2c_result == I2CHandle::Result::OK);
 
   // clear out every register in frame 0; most frames have extent 0xb3 (see page
   // 9, table 3) and we're only using frame 0.
