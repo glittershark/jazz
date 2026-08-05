@@ -593,7 +593,10 @@ const Frame& Modulator::TickSample() {
     engines_[i].SetParams(EffectiveLfoParams(i));
   }
 
-  std::array<std::optional<LFOTransition>, kNumLfos> transitions{};
+  // NB: We always reinitialize this array, and this is never called reentrantly
+  // in a way that matters, so it seems fine to be static (I, aspen have seen
+  // the initialization of this array show up in ad-hoc profiles)
+  static std::array<std::optional<LFOTransition>, kNumLfos> transitions{};
   for (size_t i = 0; i < kNumLfos; ++i) {
     transitions[i] = engines_[i].TickWithEvents(Samples(1u)).transition;
   }
