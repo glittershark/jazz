@@ -537,13 +537,8 @@ class RadioButtons {
       this->which = which;
     }
 
-    void Select(bool state) {
+    void Select(bool pressed) {
       if (rb) {
-        /* NB: the buttons are pull-up and short to *ground* when pressed, so
-           "true" is the steady state and "false" means the button is
-           currently held */
-        auto pressed = !state;
-
         if (pressed) {
           if (rb->selected_ != which) {
             rb->Select(which);
@@ -562,8 +557,10 @@ class RadioButtons {
 
     Callback<bool> GetCallback() {
       return {
-          .callback = +[](void* self,
-                          bool v) { static_cast<Selector*>(self)->Select(v); },
+          .callback =
+              +[](void* self, bool pressed) {
+                static_cast<Selector*>(self)->Select(pressed);
+              },
           .data = this,
       };
     }

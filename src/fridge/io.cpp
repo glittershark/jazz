@@ -103,7 +103,12 @@ void QuadratureEncoder::OnChange(Callback<int, float> on_change) {
 Button::Button(mux::GpioInMux::Channel c) : c_(c) {
   c_.OnChange({
       .callback =
-          +[](void* self, bool v) { static_cast<Button*>(self)->Changed(v); },
+          +[](void* self, bool high) {
+            /* The buttons all short to ground when pressed, so are high by
+             * default and go /low/ when pressed */
+            bool pressed = !high;
+            static_cast<Button*>(self)->Changed(pressed);
+          },
       .data = this,
   });
 }

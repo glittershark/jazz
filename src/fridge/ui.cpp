@@ -359,7 +359,7 @@ config::Target UI::TargetForSelected(config::TargetParameter param) const {
 }
 
 void UI::KnobPressed(config::TargetParameter param, bool pressed) {
-  if (!pressed) {
+  if (pressed) {
     auto held_lfo = lfo_select.held();
     if (held_lfo.has_value()) {
       config_.lfos[held_lfo->which].ToggleTarget(TargetForSelected(param));
