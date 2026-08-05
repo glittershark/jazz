@@ -8,9 +8,9 @@
 #include "libjazz/stereo_sample.hpp"
 #include "sound.hpp"
 
-using fridge::BUFFER_LEN;
-using fridge::FADE_TIME;
-using fridge::NUM_HEADS;
+using fridge::kBufferLen;
+using fridge::kFadeTime;
+using fridge::kNumHeads;
 using fridge::sound::BufferValue;
 using fridge::sound::IndicesToUpdate;
 using fridge::sound::Sound;
@@ -81,7 +81,7 @@ class FridgeSoundTest : public ::testing::Test {
     config.wet = 1.0f;
 
     // Disable other heads
-    for (size_t i = 1; i < NUM_HEADS; ++i) {
+    for (size_t i = 1; i < kNumHeads; ++i) {
       config.heads[i].read_amount = 0.0f;
       config.heads[i].write_amount = 0.0f;
       config.heads[i].erase_amount = 1.0f;
@@ -113,7 +113,7 @@ TEST_F(FridgeSoundTest, WriteAndReadAfterFadeTime) {
 
   // Advance past fade time with no writes
   config.heads[0].write_amount = 0.0f;
-  for (size_t i = 0; i < FADE_TIME; ++i) {
+  for (size_t i = 0; i < kFadeTime; ++i) {
     sound.ProcessSample(config, StereoSample::OfMono(0.0f));
   }
 
@@ -130,7 +130,7 @@ TEST_F(FridgeSoundTest, WriteNegativeSample) {
 
   // Advance past fade time
   config.heads[0].write_amount = 0.0f;
-  for (size_t i = 0; i < FADE_TIME; ++i) {
+  for (size_t i = 0; i < kFadeTime; ++i) {
     sound.ProcessSample(config, StereoSample::OfMono(0.0f));
   }
 
@@ -144,8 +144,8 @@ TEST_F(FridgeSoundTest, WriteToManyPositions) {
   // Write to multiple positions by moving the head
   config.heads[0].read_amount = 0.0f;
 
-  for (size_t i = 0; i < BUFFER_LEN + 10; ++i) {
-    config.heads[0].position = i % BUFFER_LEN;
+  for (size_t i = 0; i < kBufferLen + 10; ++i) {
+    config.heads[0].position = i % kBufferLen;
     sound.ProcessSample(config, StereoSample::OfMono(0.5f));
   }
 }
@@ -172,7 +172,7 @@ TEST_F(FridgeSoundTest, MultipleHeadsRead) {
 
   // Advance past fade time
   config.heads[0].write_amount = 0.0f;
-  for (size_t i = 0; i < FADE_TIME; ++i) {
+  for (size_t i = 0; i < kFadeTime; ++i) {
     sound.ProcessSample(config, StereoSample::OfMono(0.0f));
   }
 
@@ -195,7 +195,7 @@ TEST_F(FridgeSoundTest, EraseReducesSignal) {
 
   // Advance past fade time
   config.heads[0].write_amount = 0.0f;
-  for (size_t i = 0; i < FADE_TIME; ++i) {
+  for (size_t i = 0; i < kFadeTime; ++i) {
     sound.ProcessSample(config, StereoSample::OfMono(0.0f));
   }
 
@@ -206,7 +206,7 @@ TEST_F(FridgeSoundTest, EraseReducesSignal) {
 
   // Advance past fade time for erase
   config.heads[0].erase_amount = 1.0f;
-  for (size_t i = 0; i < FADE_TIME; ++i) {
+  for (size_t i = 0; i < kFadeTime; ++i) {
     sound.ProcessSample(config, StereoSample::OfMono(0.0f));
   }
 
@@ -223,10 +223,10 @@ TEST_F(FridgeSoundTest, DestructorCleansUpSlabs) {
 
   // Collect reference outputs from the first Sound instance.
   std::vector<StereoSample> reference;
-  reference.reserve(FADE_TIME + 1);
+  reference.reserve(kFadeTime + 1);
   {
     auto sound = std::make_unique<Sound>();
-    for (size_t i = 0; i <= FADE_TIME; ++i) {
+    for (size_t i = 0; i <= kFadeTime; ++i) {
       reference.push_back(
           sound->ProcessSample(config, StereoSample::OfMono(1.0f)));
     }
@@ -236,7 +236,7 @@ TEST_F(FridgeSoundTest, DestructorCleansUpSlabs) {
   // well past the ~6 needed to overflow either slab without the fix.
   for (int j = 0; j < 20; ++j) {
     auto sound = std::make_unique<Sound>();
-    for (size_t i = 0; i <= FADE_TIME; ++i) {
+    for (size_t i = 0; i <= kFadeTime; ++i) {
       ASSERT_EQ(sound->ProcessSample(config, StereoSample::OfMono(1.0f)),
                 reference[i])
           << "output mismatch at iteration " << j << ", sample " << i;
@@ -251,7 +251,7 @@ TEST_F(FridgeSoundTest, PanOnHeadShiftsOutput) {
 
   // Advance past fade time with no writes.
   config.heads[0].write_amount = 0.0f;
-  for (size_t i = 0; i < FADE_TIME; ++i) {
+  for (size_t i = 0; i < kFadeTime; ++i) {
     sound.ProcessSample(config, StereoSample::OfMono(0.0f));
   }
 
@@ -269,7 +269,7 @@ TEST_F(FridgeSoundTest, ZeroEraseAmountClearsSignal) {
   sound.ProcessSample(config, StereoSample::OfMono(1.0f));
 
   config.heads[0].write_amount = 0.0f;
-  for (size_t i = 0; i < FADE_TIME; ++i) {
+  for (size_t i = 0; i < kFadeTime; ++i) {
     sound.ProcessSample(config, StereoSample::OfMono(0.0f));
   }
 
@@ -278,7 +278,7 @@ TEST_F(FridgeSoundTest, ZeroEraseAmountClearsSignal) {
   sound.ProcessSample(config, StereoSample::OfMono(0.0f));
 
   config.heads[0].erase_amount = 1.0f;
-  for (size_t i = 0; i < FADE_TIME; ++i) {
+  for (size_t i = 0; i < kFadeTime; ++i) {
     sound.ProcessSample(config, StereoSample::OfMono(0.0f));
   }
 

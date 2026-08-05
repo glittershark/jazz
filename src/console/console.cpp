@@ -518,7 +518,7 @@ bool ApplyFridgeTargetParameter(const std::string& value,
 bool ApplyFridgeHeadValue(const std::string& field, const std::string& value,
                           fridge::config::Head* head, std::string* error) {
   if (field == "position") {
-    return ParseFridgeSize(value, 0, fridge::BUFFER_LEN - 1,
+    return ParseFridgeSize(value, 0, fridge::kBufferLen - 1,
                            "fridge head position", &head->position, error);
   }
   if (field == "write_amount") {
@@ -556,7 +556,7 @@ bool ApplyFridgeTargetValue(const std::string& field, const std::string& value,
   }
   if (field == "index" || field == "object_idx") {
     size_t object_idx = 0;
-    if (!ParseFridgeSize(value, 0, fridge::NUM_HEADS - 1, "fridge target index",
+    if (!ParseFridgeSize(value, 0, fridge::kNumHeads - 1, "fridge target index",
                          &object_idx, error)) {
       return false;
     }
@@ -571,16 +571,16 @@ bool ApplyFridgeTargetValue(const std::string& field, const std::string& value,
 bool ApplyFridgeLfoValue(const std::string& field, const std::string& value,
                          fridge::config::LFO* lfo, std::string* error) {
   if (field == "range") {
-    return ParseFridgeSize(value, 0, fridge::BUFFER_LEN - 1, "fridge lfo range",
+    return ParseFridgeSize(value, 0, fridge::kBufferLen - 1, "fridge lfo range",
                            &lfo->range, error);
   }
   if (field == "max_grain_size") {
-    return ParseFridgeSize(value, 1, fridge::BUFFER_LEN,
+    return ParseFridgeSize(value, 1, fridge::kBufferLen,
                            "fridge lfo max_grain_size", &lfo->max_grain_size,
                            error);
   }
   if (field == "min_grain_size") {
-    return ParseFridgeSize(value, 1, fridge::BUFFER_LEN,
+    return ParseFridgeSize(value, 1, fridge::kBufferLen,
                            "fridge lfo min_grain_size", &lfo->min_grain_size,
                            error);
   }
@@ -611,7 +611,7 @@ bool ApplyFridgeLfoValue(const std::string& field, const std::string& value,
     std::string target_field;
     if (!ParseIndexedField(field.substr(std::strlen(target_prefix)),
                            &target_idx, &target_field) ||
-        target_idx >= fridge::MAX_TARGET_PARAMS) {
+        target_idx >= fridge::kMaxTargetParams) {
       *error = "invalid fridge lfo target index";
       return false;
     }
@@ -646,7 +646,7 @@ bool ApplyFridgeConfigKV(const std::string& key, const std::string& value,
     std::string field;
     if (!ParseIndexedField(k.substr(std::strlen(head_prefix)), &head_idx,
                            &field) ||
-        head_idx >= fridge::NUM_HEADS) {
+        head_idx >= fridge::kNumHeads) {
       *error = "invalid fridge head index";
       return false;
     }
@@ -660,7 +660,7 @@ bool ApplyFridgeConfigKV(const std::string& key, const std::string& value,
     std::string field;
     if (!ParseIndexedField(k.substr(std::strlen(lfo_prefix)), &lfo_idx,
                            &field) ||
-        lfo_idx >= fridge::NUM_LFOS) {
+        lfo_idx >= fridge::kNumLfos) {
       *error = "invalid fridge lfo index";
       return false;
     }
@@ -819,7 +819,7 @@ std::vector<FridgeLfoTracePoint> CollectFridgeLfoTrace(
 bool GetFridgeLfoForChart(const Options& options,
                           const fridge::config::LFO** lfo) {
   const size_t lfo_idx = options.fridge_lfo_chart_index;
-  if (lfo_idx >= fridge::NUM_LFOS) {
+  if (lfo_idx >= fridge::kNumLfos) {
     std::cerr << "invalid --fridge-lfo-index: " << lfo_idx << "\n";
     return false;
   }

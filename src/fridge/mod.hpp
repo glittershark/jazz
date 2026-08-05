@@ -118,7 +118,7 @@ class LFOEngine {
 
 /** What Sound consumes each sample: scaled head contributions plus the mix. */
 struct Frame {
-  std::array<config::Head, NUM_HEADS * 2> heads{};
+  std::array<config::Head, kNumHeads * 2> heads{};
   size_t head_count = 0;
   float dry = 1.0f;
   float wet = 1.0f;
@@ -139,7 +139,7 @@ class Modulator {
   /** Default seed is fixed: std::random_device hard-faults on the bare-metal
    * target (newlib has no entropy source), so hosts that want per-run
    * randomness must pass their own seed. */
-  explicit Modulator(uint32_t seed = 1, size_t fade_time = FADE_TIME);
+  explicit Modulator(uint32_t seed = 1, size_t fade_time = kFadeTime);
 
   /** Replace the root config. LFO phase and current modulation offsets are
    * preserved; the new base takes effect on the next sample. */
@@ -168,7 +168,7 @@ class Modulator {
   };
 
   const Frame& frame() const { return frame_; }
-  const std::array<Fade, NUM_HEADS>& fades() const { return fades_; }
+  const std::array<Fade, kNumHeads>& fades() const { return fades_; }
   Samples<uint32_t> time() const { return time_; }
 
   // ----- Validation (shared with materialization)
@@ -183,9 +183,9 @@ class Modulator {
   // then 8 LFO params per LFO, then dry and wet.
   static constexpr size_t kHeadParamCount = 5;
   static constexpr size_t kLfoParamCount = 8;
-  static constexpr size_t kLfoParamBase = NUM_HEADS * kHeadParamCount;
+  static constexpr size_t kLfoParamBase = kNumHeads * kHeadParamCount;
   static constexpr size_t kMixerParamBase =
-      kLfoParamBase + NUM_LFOS * kLfoParamCount;
+      kLfoParamBase + kNumLfos * kLfoParamCount;
   static constexpr size_t kParamCount = kMixerParamBase + 2;
 
   struct Patch {
@@ -199,18 +199,18 @@ class Modulator {
   Samples<uint32_t> time_ = Samples(0u);
 
   config::Config base_{};  // sanitized root
-  std::array<LFOEngine, NUM_LFOS> engines_{};
-  std::array<float, NUM_LFOS> anchors_{};  // LFO value meaning "no modulation"
+  std::array<LFOEngine, kNumLfos> engines_{};
+  std::array<float, kNumLfos> anchors_{};  // LFO value meaning "no modulation"
 
-  std::array<Patch, MAX_PATCHES> patches_{};  // compiled active routes
+  std::array<Patch, kMaxPatches> patches_{};  // compiled active routes
   size_t patch_count_ = 0;
   uint32_t modulated_heads_ = 0;  // bitmask: heads with a modulated param
   uint32_t modulated_lfos_ = 0;  // bitmask: LFOs whose own params are modulated
   bool mixer_modulated_ = false;
 
   std::array<float, kParamCount> mod_{};  // summed LFO deltas per param
-  std::array<config::Head, NUM_HEADS> eff_heads_{};  // base + mod, unscaled
-  std::array<Fade, NUM_HEADS> fades_{};
+  std::array<config::Head, kNumHeads> eff_heads_{};  // base + mod, unscaled
+  std::array<Fade, kNumHeads> fades_{};
   Frame frame_{};
 
   config::Config output_config_{};  // lazy materialization for Update()

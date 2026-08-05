@@ -507,7 +507,7 @@ class FeedbackKnob : public Knob<Feedback> {
 using SingleTurn = Bounded<Turns, 0.0f, 1.0f>;
 
 using OneTurnIsBufferLen =
-    Bounded<ScaledIntegralTurns<size_t, BUFFER_LEN>, 0, BUFFER_LEN>;
+    Bounded<ScaledIntegralTurns<size_t, kBufferLen>, 0, kBufferLen>;
 
 template <std::uint8_t N>
 class RadioButtons {
@@ -769,8 +769,8 @@ struct UI {
   CieInterpKnob<SingleTurn> wet_knob;
   TempoButton tempo_button;
 
-  RadioButtons<NUM_HEADS> head_select;
-  RadioButtons<NUM_LFOS> lfo_select;
+  RadioButtons<kNumHeads> head_select;
+  RadioButtons<kNumLfos> lfo_select;
 
   // TODO(nausicaa): LEDs (there are a bunch, one for each encoder and
   // selection button)

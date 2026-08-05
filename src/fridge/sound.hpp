@@ -50,13 +50,13 @@ struct Update {
   Iterator end() const { return Iterator(nullptr); }
 };
 
-static Slab<Update, UPDATE_CAP> UPDATES;
+static Slab<Update, kUpdateCap> UPDATES;
 
 class IndicesToUpdate {
  private:
   size_t index_;
   IndicesToUpdate* next_ = nullptr;
-  static Slab<IndicesToUpdate, UPDATE_CAP> SLAB;
+  static Slab<IndicesToUpdate, kUpdateCap> SLAB;
 
  public:
   IndicesToUpdate() : index_(0) {}
@@ -143,7 +143,7 @@ class BufferValue {
           last_update(first_update),
           erase_update(nullptr) {}
   };
-  static Slab<SampleWithUpdates, UPDATE_CAP> SAMPLES;
+  static Slab<SampleWithUpdates, kUpdateCap> SAMPLES;
   using SlabPtr = decltype(SAMPLES)::Ptr<&SAMPLES>;
 
   union {
@@ -251,9 +251,9 @@ class Sound {
   static constexpr const size_t global_clock_max_ = SIZE_MAX - 1;
   size_t global_clock_ = 0;
 
-  std::array<IndicesToUpdate*, FADE_TIME> indices_to_update_{};
-  std::array<BufferValue, BUFFER_LEN> left_buffer_;
-  std::array<BufferValue, BUFFER_LEN> right_buffer_;
+  std::array<IndicesToUpdate*, kFadeTime> indices_to_update_{};
+  std::array<BufferValue, kBufferLen> left_buffer_;
+  std::array<BufferValue, kBufferLen> right_buffer_;
 
   /** Perform pre-tick housekeeping */
   void PreHousekeeping(size_t clock_time);

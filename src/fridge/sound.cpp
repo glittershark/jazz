@@ -8,8 +8,8 @@ namespace fridge::sound {
 
 using jazz::audio::StereoSample;
 
-Slab<BufferValue::SampleWithUpdates, UPDATE_CAP> BufferValue::SAMPLES;
-Slab<IndicesToUpdate, UPDATE_CAP> IndicesToUpdate::SLAB;
+Slab<BufferValue::SampleWithUpdates, kUpdateCap> BufferValue::SAMPLES;
+Slab<IndicesToUpdate, kUpdateCap> IndicesToUpdate::SLAB;
 
 BufferValue::~BufferValue() {
   if (isSampleWithUpdates()) {
@@ -26,7 +26,7 @@ BufferValue::~BufferValue() {
 
 namespace {
 inline float ComputeEraseFracOffset(float value) {
-  return (FADE_TIME * value) / (1 - value);
+  return (kFadeTime * value) / (1 - value);
 }
 }  // namespace
 
@@ -181,8 +181,8 @@ void Sound::DoUpdate(size_t index) {
 }
 
 void Sound::PreHousekeeping(size_t clock_time) {
-  auto indices_to_update = indices_to_update_[clock_time % FADE_TIME];
-  indices_to_update_[clock_time % FADE_TIME] = nullptr;
+  auto indices_to_update = indices_to_update_[clock_time % kFadeTime];
+  indices_to_update_[clock_time % kFadeTime] = nullptr;
 
   if (indices_to_update == nullptr) {
     return;
@@ -217,9 +217,9 @@ StereoSample Sound::Read(size_t position) {
         // erase_frac_offset is precomputed in BufferValue::PushBack.
         erase_factor =
             update->erase_frac_offset /
-            ((FADE_TIME - time_till_ripe) + update->erase_frac_offset + 1);
+            ((kFadeTime - time_till_ripe) + update->erase_frac_offset + 1);
       } else {
-        write_sum += update->value * (FADE_TIME - time_till_ripe) / FADE_TIME;
+        write_sum += update->value * (kFadeTime - time_till_ripe) / kFadeTime;
       }
     }
 
@@ -236,11 +236,11 @@ void Sound::Write(size_t position, StereoSample sample) {
   auto do_write = [&](auto buffer, float sample) {
     (*buffer)[position].PushBack({
         .kind = Update::Kind::kWrite,
-        .finished_at = global_clock_ + FADE_TIME,
+        .finished_at = global_clock_ + kFadeTime,
         .value = sample,
     });
     IndicesToUpdate::Prepend(
-        &indices_to_update_[(global_clock_ + FADE_TIME) % FADE_TIME], position);
+        &indices_to_update_[(global_clock_ + kFadeTime) % kFadeTime], position);
   };
 
   do_write(&left_buffer_, sample.left);
@@ -251,11 +251,11 @@ void Sound::Erase(size_t position, StereoSample amount) {
   auto do_erase = [&](auto buffer, float amount) {
     (*buffer)[position].PushBack({
         .kind = Update::Kind::kErase,
-        .finished_at = global_clock_ + FADE_TIME,
+        .finished_at = global_clock_ + kFadeTime,
         .value = amount,
     });
     IndicesToUpdate::Prepend(
-        &indices_to_update_[(global_clock_ + FADE_TIME) % FADE_TIME], position);
+        &indices_to_update_[(global_clock_ + kFadeTime) % kFadeTime], position);
   };
 
   do_erase(&left_buffer_, amount.left);
@@ -268,7 +268,7 @@ StereoSample Sound::ApplyHead(const fridge::config::Head& head,
 
   // Wrap once here so a position past the end of the tape can never index
   // out of the buffer.
-  size_t position = head.position % BUFFER_LEN;
+  size_t position = head.position % kBufferLen;
 
   if (head.read_amount > 0.f) {
     auto value = Read(position);

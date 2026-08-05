@@ -14,13 +14,13 @@ struct UITest : public testing::Test {
   config::Config initial_config;
 
   UITest() : leds(), initial_config{} {
-    for (size_t i = 0; i < NUM_HEADS; ++i) {
+    for (size_t i = 0; i < kNumHeads; ++i) {
       initial_config.heads[i].write_amount = 0.0f;
       initial_config.heads[i].read_amount = 0.0f;
       initial_config.heads[i].erase_amount = 0.0f;
     }
 
-    for (size_t i = 0; i < NUM_LFOS; ++i) {
+    for (size_t i = 0; i < kNumLfos; ++i) {
       initial_config.lfos[i].max_grain_size = 0;
       initial_config.lfos[i].min_grain_size = 0;
     }
@@ -48,7 +48,7 @@ TEST_F(UITest, update_head_knobs_via_callbacks) {
         callback(garbage, turn);
         config = ui.Config();
 
-        EXPECT_EQ(target, turn * BUFFER_LEN);
+        EXPECT_EQ(target, turn * kBufferLen);
       };
 
   test_one_turn_is_buffer_len_knob(ui.head_knobs.position,
@@ -105,7 +105,7 @@ TEST_F(UITest, update_lfo_knobs_via_callbacks) {
         callback(garbage, turn);
         config = ui.Config();
 
-        EXPECT_EQ(target, turn * BUFFER_LEN);
+        EXPECT_EQ(target, turn * kBufferLen);
       };
 
   test_one_turn_is_buffer_len_knob(ui.lfo_knobs.range,
@@ -166,13 +166,13 @@ TEST_F(UITest, one_turn_is_buffer_len_knob_saturates) {
   ASSERT_EQ(knob.Get(), 0);
 
   knob.GetCallback()(0, .25);
-  EXPECT_EQ(knob.Get(), .25 * BUFFER_LEN);
+  EXPECT_EQ(knob.Get(), .25 * kBufferLen);
 
   knob.GetCallback()(0, -.5);
   EXPECT_EQ(knob.Get(), 0);
 
   knob.GetCallback()(0, 1.25);
-  EXPECT_EQ(knob.Get(), BUFFER_LEN);
+  EXPECT_EQ(knob.Get(), kBufferLen);
 }
 
 TEST_F(UITest, wet_knob_uses_led_to_display) {
@@ -235,7 +235,7 @@ TEST_F(UITest, change_selected_head_via_radio_buttons) {
   ui.head_knobs.position.GetCallback()(0, 0.5);
 
   auto config = ui.Config();
-  EXPECT_EQ(config.heads[2].position, 0.5 * BUFFER_LEN);
+  EXPECT_EQ(config.heads[2].position, 0.5 * kBufferLen);
 }
 
 TEST_F(UITest, change_selected_lfo_via_radio_buttons) {

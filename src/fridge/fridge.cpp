@@ -79,7 +79,7 @@ constexpr const config::Config kInitialConfig{
                  }}}},
         },
         {
-            .range = BUFFER_LEN,
+            .range = kBufferLen,
             .targets{{{{
                 .object = config::TargetObject::kHead,
                 .parameter = config::TargetParameter::kPan,
@@ -87,7 +87,7 @@ constexpr const config::Config kInitialConfig{
             }}}},
         },
         {
-            .range = BUFFER_LEN,
+            .range = kBufferLen,
             .targets{{{{
                 .object = config::TargetObject::kHead,
                 .parameter = config::TargetParameter::kPan,

@@ -84,8 +84,8 @@ class Engine {
   io::PushbuttonQuadratureEncoder wet_;
   HeadKnobs head_;
   LfoKnobs lfo_;
-  std::array<io::Button, NUM_HEADS> head_select_;
-  std::array<io::Button, NUM_LFOS> lfo_select_;
+  std::array<io::Button, kNumHeads> head_select_;
+  std::array<io::Button, kNumLfos> lfo_select_;
 
   // leds_ must be declared before ui_: C++ initializes members in declaration
   // order, and the UI constructor writes to the LED controller during init.

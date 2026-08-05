@@ -13,10 +13,10 @@
 #include "mod.hpp"
 #include "sound.hpp"
 
-using fridge::BUFFER_LEN;
-using fridge::MAX_TARGET_PARAMS;
-using fridge::NUM_HEADS;
-using fridge::NUM_LFOS;
+using fridge::kBufferLen;
+using fridge::kMaxTargetParams;
+using fridge::kNumHeads;
+using fridge::kNumLfos;
 using fridge::config::Config;
 using fridge::config::Feedback;
 using fridge::config::Head;
@@ -72,7 +72,7 @@ auto ValidFeedback() {
 
 auto ValidHead() {
   return fuzztest::StructOf<Head>(
-      fuzztest::InRange<size_t>(0, BUFFER_LEN - 1), fuzztest::Finite<float>(),
+      fuzztest::InRange<size_t>(0, kBufferLen - 1), fuzztest::Finite<float>(),
       fuzztest::Finite<float>(), fuzztest::Finite<float>(), ValidFeedback(),
       fuzztest::ConstructorOf<jazz::audio::Pan>(
           fuzztest::InRange<float>(-1.0f, 1.0f)));
@@ -101,7 +101,7 @@ auto ValidTarget() {
           TargetParameter::kWet,
       }),
       fuzztest::InRange<uint8_t>(
-          0, static_cast<uint8_t>(std::min(NUM_HEADS, NUM_LFOS) - 1)));
+          0, static_cast<uint8_t>(std::min(kNumHeads, kNumLfos) - 1)));
 }
 
 auto ValidLFO() {
@@ -109,7 +109,7 @@ auto ValidLFO() {
       [](size_t range, size_t gs1, size_t gs2, float reverse_chance,
          float teleport_chance, float pitch_shift_chance,
          float low_octave_chance, float high_octave_chance,
-         std::array<std::optional<Target>, MAX_TARGET_PARAMS> targets) {
+         std::array<std::optional<Target>, kMaxTargetParams> targets) {
         return LFO{
             .range = range,
             .max_grain_size = std::max(gs1, gs2),
@@ -122,21 +122,20 @@ auto ValidLFO() {
             .targets = targets,
         };
       },
-      fuzztest::InRange<size_t>(0, BUFFER_LEN),
-      fuzztest::InRange<size_t>(1, BUFFER_LEN),
-      fuzztest::InRange<size_t>(1, BUFFER_LEN),
+      fuzztest::InRange<size_t>(0, kBufferLen),
+      fuzztest::InRange<size_t>(1, kBufferLen),
+      fuzztest::InRange<size_t>(1, kBufferLen),
       fuzztest::InRange<float>(0.0f, 1.0f),
       fuzztest::InRange<float>(0.0f, 1.0f),
       fuzztest::InRange<float>(0.0f, 1.0f),
       fuzztest::InRange<float>(0.0f, 1.0f),
       fuzztest::InRange<float>(0.0f, 1.0f),
-      fuzztest::ArrayOf<MAX_TARGET_PARAMS>(
-          fuzztest::OptionalOf(ValidTarget())));
+      fuzztest::ArrayOf<kMaxTargetParams>(fuzztest::OptionalOf(ValidTarget())));
 }
 
 auto ValidConfig() {
-  return fuzztest::StructOf<Config>(fuzztest::ArrayOf<NUM_HEADS>(ValidHead()),
-                                    fuzztest::ArrayOf<NUM_LFOS>(ValidLFO()),
+  return fuzztest::StructOf<Config>(fuzztest::ArrayOf<kNumHeads>(ValidHead()),
+                                    fuzztest::ArrayOf<kNumLfos>(ValidLFO()),
                                     fuzztest::InRange<float>(0.0f, 1.0f),
                                     fuzztest::InRange<float>(0.0f, 1.0f));
 }
@@ -160,7 +159,7 @@ void ProcessSampleDoesNotCrash(float sample, size_t position,
 
 FUZZ_TEST(FridgeSoundFuzzTest, ProcessSampleDoesNotCrash)
     .WithDomains(fuzztest::InRange<float>(-1.0f, 1.0f),
-                 fuzztest::InRange<size_t>(0, BUFFER_LEN - 1),
+                 fuzztest::InRange<size_t>(0, kBufferLen - 1),
                  fuzztest::InRange<float>(0.0f, 1.0f),
                  fuzztest::InRange<float>(0.0f, 1.0f),
                  fuzztest::InRange<float>(0.0f, 1.0f));

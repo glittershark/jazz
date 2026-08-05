@@ -45,11 +45,11 @@ void MergeTransition(LFOTickResult& result,
 
 /* Wraps a fading head's extrapolated position back into the sample buffer. */
 size_t WrapBufferPosition(float position) {
-  float wrapped = std::fmod(position, static_cast<float>(BUFFER_LEN));
+  float wrapped = std::fmod(position, static_cast<float>(kBufferLen));
   if (wrapped < 0.0f) {
-    wrapped += static_cast<float>(BUFFER_LEN);
+    wrapped += static_cast<float>(kBufferLen);
   }
-  return static_cast<size_t>(std::lround(wrapped)) % BUFFER_LEN;
+  return static_cast<size_t>(std::lround(wrapped)) % kBufferLen;
 }
 
 }  // namespace
@@ -305,7 +305,7 @@ std::optional<size_t> Modulator::ParamSlot(const config::Target& target) {
 
   switch (target.object) {
   case TargetObject::kHead: {
-    if (target.object_idx >= NUM_HEADS) {
+    if (target.object_idx >= kNumHeads) {
       return std::nullopt;
     }
     const size_t base = target.object_idx * kHeadParamCount;
@@ -325,7 +325,7 @@ std::optional<size_t> Modulator::ParamSlot(const config::Target& target) {
     }
   }
   case TargetObject::kLFO: {
-    if (target.object_idx >= NUM_LFOS) {
+    if (target.object_idx >= kNumLfos) {
       return std::nullopt;
     }
     const size_t base = kLfoParamBase + target.object_idx * kLfoParamCount;
@@ -370,7 +370,7 @@ void Modulator::CompilePatches() {
   modulated_lfos_ = 0;
   mixer_modulated_ = false;
 
-  for (size_t lfo_idx = 0; lfo_idx < NUM_LFOS; ++lfo_idx) {
+  for (size_t lfo_idx = 0; lfo_idx < kNumLfos; ++lfo_idx) {
     for (const std::optional<config::Target>& target :
          base_.lfos[lfo_idx].targets) {
       if (!target.has_value()) {
@@ -405,7 +405,7 @@ void Modulator::Initialize(const config::Config& root_config) {
   mod_ = {};
   fades_ = {};
 
-  for (size_t i = 0; i < NUM_LFOS; ++i) {
+  for (size_t i = 0; i < kNumLfos; ++i) {
     engines_[i] = LFOEngine(base_.lfos[i], seed_ + static_cast<uint32_t>(i));
     engines_[i].Reset(0.0f, Direction::kForwards);
     anchors_[i] = engines_[i].value();
@@ -427,12 +427,12 @@ void Modulator::SetConfig(const config::Config& root_config) {
   mod_ = {};
   RecomputeMods();
 
-  for (size_t i = 0; i < NUM_LFOS; ++i) {
+  for (size_t i = 0; i < kNumLfos; ++i) {
     engines_[i].SetParams(EffectiveLfoParams(i));
   }
 
   eff_heads_ = base_.heads;
-  for (size_t h = 0; h < NUM_HEADS; ++h) {
+  for (size_t h = 0; h < kNumHeads; ++h) {
     if ((modulated_heads_ & (1u << h)) != 0) {
       UpdateEffectiveHead(h);
     }
@@ -512,7 +512,7 @@ void Modulator::BeginFades(size_t lfo_idx, const LFOTransition& transition) {
        base_.lfos[lfo_idx].targets) {
     if (!target.has_value() || target->object != config::TargetObject::kHead ||
         target->parameter != config::TargetParameter::kPosition ||
-        target->object_idx >= NUM_HEADS) {
+        target->object_idx >= kNumHeads) {
       continue;
     }
 
@@ -557,7 +557,7 @@ void Modulator::BuildFrame() {
   frame_.dry = effective_dry();
   frame_.wet = effective_wet();
 
-  for (size_t h = 0; h < NUM_HEADS; ++h) {
+  for (size_t h = 0; h < kNumHeads; ++h) {
     const Fade& fade = fades_[h];
     if (fade.remaining == 0) {
       AddHead(eff_heads_[h], 1.0f);
@@ -593,15 +593,15 @@ const Frame& Modulator::TickSample() {
     engines_[i].SetParams(EffectiveLfoParams(i));
   }
 
-  std::array<std::optional<LFOTransition>, NUM_LFOS> transitions{};
-  for (size_t i = 0; i < NUM_LFOS; ++i) {
+  std::array<std::optional<LFOTransition>, kNumLfos> transitions{};
+  for (size_t i = 0; i < kNumLfos; ++i) {
     transitions[i] = engines_[i].TickWithEvents(Samples(1u)).transition;
   }
 
   RecomputeMods();
 
   // Fades capture eff_heads_ before this sample's positions land.
-  for (size_t i = 0; i < NUM_LFOS; ++i) {
+  for (size_t i = 0; i < kNumLfos; ++i) {
     if (transitions[i].has_value()) {
       BeginFades(i, *transitions[i]);
     }

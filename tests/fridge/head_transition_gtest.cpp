@@ -2,7 +2,7 @@
 #include "gtest/gtest.h"
 #include "libjazz/units.hpp"
 
-using fridge::NUM_HEADS;
+using fridge::kNumHeads;
 using fridge::config::Config;
 using fridge::config::Target;
 using fridge::config::TargetObject;
@@ -41,7 +41,7 @@ TEST(FridgeHeadFadeTest, StaticConfigProducesOneContributionPerHead) {
   modulator.Reset(config);
   const Frame& frame = modulator.TickSample();
 
-  EXPECT_EQ(frame.head_count, NUM_HEADS);
+  EXPECT_EQ(frame.head_count, kNumHeads);
   EXPECT_EQ(frame.heads[0].position, 44u);
   EXPECT_FLOAT_EQ(frame.heads[0].read_amount, 0.5f);
 }
@@ -52,20 +52,20 @@ TEST(FridgeHeadFadeTest, ReversalFadesOldMotionOutAndNewIn) {
 
   // Sample 1: LFO mid-grain, head simply tracks it forwards.
   const Frame& tracking = modulator.TickSample();
-  ASSERT_EQ(tracking.head_count, NUM_HEADS);
+  ASSERT_EQ(tracking.head_count, kNumHeads);
   EXPECT_EQ(tracking.heads[0].position, 11u);
 
   // Sample 2: grain boundary reverses the LFO. The fade starts at full
   // weight on the old motion, so the new head (weight 0) is omitted.
   const Frame& boundary = modulator.TickSample();
-  ASSERT_EQ(boundary.head_count, NUM_HEADS);
+  ASSERT_EQ(boundary.head_count, kNumHeads);
   EXPECT_EQ(boundary.heads[0].position, 11u);
   EXPECT_FLOAT_EQ(boundary.heads[0].read_amount, 1.0f);
 
   // Sample 3: the old motion keeps moving forwards (12) at weight 3/4 while
   // the reversed head (11) fades in at weight 1/4.
   const Frame& fading = modulator.TickSample();
-  ASSERT_EQ(fading.head_count, NUM_HEADS + 1);
+  ASSERT_EQ(fading.head_count, kNumHeads + 1);
   EXPECT_EQ(fading.heads[0].position, 12u);
   EXPECT_FLOAT_EQ(fading.heads[0].read_amount, 0.75f);
   EXPECT_FLOAT_EQ(fading.heads[0].write_amount, 0.375f);
@@ -91,7 +91,7 @@ TEST(FridgeHeadFadeTest, FadeEndsAfterFadeTime) {
   modulator.TickSample();  // mid-fade
   const Frame& finished = modulator.TickSample();
 
-  EXPECT_EQ(finished.head_count, NUM_HEADS);
+  EXPECT_EQ(finished.head_count, kNumHeads);
   for (const auto& fade : modulator.fades()) {
     EXPECT_EQ(fade.remaining, 0u);
   }

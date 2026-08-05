@@ -98,7 +98,7 @@ struct LFO {
   float pitch_shift_chance = 0.0f;
   float low_octave_chance = 0.0f;
   float high_octave_chance = 0.0f;
-  std::array<std::optional<Target>, MAX_TARGET_PARAMS> targets{};
+  std::array<std::optional<Target>, kMaxTargetParams> targets{};
 
   bool operator==(const LFO& rhs) const = default;
 
@@ -106,8 +106,8 @@ struct LFO {
 };
 
 struct Config {
-  std::array<Head, NUM_HEADS> heads{};
-  std::array<LFO, NUM_LFOS> lfos{};
+  std::array<Head, kNumHeads> heads{};
+  std::array<LFO, kNumLfos> lfos{};
   float dry = 1.0f;
   float wet = 1.0f;
 
