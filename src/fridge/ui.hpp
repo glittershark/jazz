@@ -593,8 +593,6 @@ class RadioButtons {
   void Select(std::uint8_t which) {
     const bool changed = which != selected_;
 
-    // Always sync the LEDs — this makes it safe to call Select(selected_)
-    // at construction to light up the initial radio-button LED.
     leds_[selected_].SetOn(false);
     leds_[which].SetOn(true);
     leds_[which].SetColor(selected_color_);

@@ -239,20 +239,33 @@ UI::UI(io::led::Controller& led, config::Config initial_config)
 #endif
 }
 
+/** Tick the UI once.
+ *
+ * This method basically exists to step the state machine for blinking LEDs to
+ * give feedback to the LFO "patch" UI one step forwards
+ * */
 void UI::Tick() {
   auto held_lfo = lfo_select.held();
+  // Are we currently holding down an LFO button?
   if (held_lfo.has_value()) {
     auto now = Now();
+    // Are we currently blinking?
     if (blink_state_.has_value()) {
+      // Yes, so toggle the blink if enough time has passed
       if (now - blink_state_->last_toggle > kBlinkFreqMs) {
         blink_state_->blink = !blink_state_->blink;
         blink_state_->last_toggle = Now();
       }
     } else if (now - held_lfo->since > kHoldDelayMs) {
+      // We're not currently blinking, but we *have* been holding down the LFO
+      // button long enough that we should *start* blinking
       head_knobs.StartBlinking();
       head_select.StartBlinking();
       blink_state_ =
           std::make_optional(BlinkState{.blink = true, .last_toggle = now});
+    } else {
+      // No blink is occurring, or should start occurring; do nothing (yet)
+      return;
     }
 
     for (const auto& target : config_.lfos[held_lfo->which].targets) {
@@ -312,10 +325,15 @@ void UI::Tick() {
     }
   } else {
     if (blink_state_.has_value()) {
+      // We're not holding down an LFO button, but we're currently blinking.
+      // Stop doing that.
       head_knobs.StopBlinking();
+      lfo_knobs.StopBlinking();
       head_select.StopBlinking();
+      lfo_select.StopBlinking();
+
+      blink_state_ = std::nullopt;
     }
-    blink_state_ = std::nullopt;
   }
 }
 
