@@ -2,61 +2,36 @@
 	(version 20251024)
 	(generator "kicad_symbol_editor")
 	(generator_version "10.0")
-	(symbol "IS42VM32160E-75BLI"
-		(pin_names
-			(offset 0.254)
-		)
+	(symbol "IS42S32160F-7BLI"
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
 		(duplicate_pin_numbers_are_jumpers no)
-		(property "Reference" "U"
-			(at 30.48 10.16 0)
+		(property "Reference" "IC"
+			(at 31.75 7.62 0)
 			(show_name no)
 			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.524 1.524)
-				)
-			)
-		)
-		(property "Value" "IS42VM32160E-75BLI"
-			(at 30.48 7.62 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.524 1.524)
-				)
-			)
-		)
-		(property "Footprint" "vendor:TFBGA-90_8X13_ISI"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
 			(effects
 				(font
 					(size 1.27 1.27)
-					(italic yes)
 				)
+				(justify left top)
 			)
 		)
-		(property "Datasheet" "IS42VM32160E-75BLI"
-			(at 0 0 0)
+		(property "Value" "IS42S32160F-7BLI"
+			(at 31.75 5.08 0)
 			(show_name no)
 			(do_not_autoplace no)
-			(hide yes)
 			(effects
 				(font
 					(size 1.27 1.27)
-					(italic yes)
 				)
+				(justify left top)
 			)
 		)
-		(property "Description" ""
-			(at 0 0 0)
+		(property "Footprint" "vendor:BGA90C80P9X15_800X1300X120"
+			(at 31.75 -94.92 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -64,9 +39,22 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left top)
 			)
 		)
-		(property "ki_keywords" "IS42VM32160E-75BLI"
+		(property "Datasheet" "https://www.issi.com/ww/pdf/42-45r-s-32160f.pdf"
+			(at 31.75 -194.92 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(property "Description" "DRAM 512M, 3.3V, SDRAM, 16Mx32, 143Mhz, 90 ball BGA (8mmx13mm) RoHS, IT"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -77,8 +65,8 @@
 				)
 			)
 		)
-		(property "ki_fp_filters" "TFBGA-90_8X13_ISI"
-			(at 0 0 0)
+		(property "Height" "1.2"
+			(at 31.75 -394.92 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -86,12 +74,96 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left top)
 			)
 		)
-		(symbol "IS42VM32160E-75BLI_0_1"
-			(pin bidirectional line
+		(property "Manufacturer_Name" "Integrated Silicon Solution Inc."
+			(at 31.75 -494.92 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(property "Manufacturer_Part_Number" "IS42S32160F-7BLI"
+			(at 31.75 -594.92 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(property "Mouser Part Number" "870-42S32160F7BLI"
+			(at 31.75 -694.92 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/ISSI/IS42S32160F-7BLI?qs=N2Tevpb%252BvobsIdjFZhYbag%3D%3D"
+			(at 31.75 -794.92 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(property "Arrow Part Number" "IS42S32160F-7BLI"
+			(at 31.75 -894.92 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(property "Arrow Price/Stock" "https://www.arrow.com/en/products/is42s32160f-7bli/integrated-silicon-solution-inc?region=nac"
+			(at 31.75 -994.92 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(symbol "IS42S32160F-7BLI_1_1"
+			(rectangle
+				(start 5.08 2.54)
+				(end 30.48 -114.3)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type background)
+				)
+			)
+			(pin passive line
 				(at 0 0 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQ26"
 					(effects
 						(font
@@ -107,9 +179,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 0 -2.54 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQ24"
 					(effects
 						(font
@@ -125,10 +197,10 @@
 					)
 				)
 			)
-			(pin power_in line
+			(pin passive line
 				(at 0 -5.08 0)
-				(length 7.62)
-				(name "VSS"
+				(length 5.08)
+				(name "VSS_1"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -143,10 +215,10 @@
 					)
 				)
 			)
-			(pin power_in line
+			(pin passive line
 				(at 0 -7.62 0)
-				(length 7.62)
-				(name "VDD"
+				(length 5.08)
+				(name "VDD_1"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -161,9 +233,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 0 -10.16 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQ23"
 					(effects
 						(font
@@ -179,9 +251,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 0 -12.7 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQ21"
 					(effects
 						(font
@@ -197,9 +269,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 0 -15.24 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQ28"
 					(effects
 						(font
@@ -215,10 +287,10 @@
 					)
 				)
 			)
-			(pin power_in line
+			(pin passive line
 				(at 0 -17.78 0)
-				(length 7.62)
-				(name "VDDQ"
+				(length 5.08)
+				(name "VDDQ_1"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -233,10 +305,10 @@
 					)
 				)
 			)
-			(pin power_in line
+			(pin passive line
 				(at 0 -20.32 0)
-				(length 7.62)
-				(name "VSSQ"
+				(length 5.08)
+				(name "VSSQ_1"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -251,10 +323,10 @@
 					)
 				)
 			)
-			(pin power_in line
+			(pin passive line
 				(at 0 -22.86 0)
-				(length 7.62)
-				(name "VDDQ"
+				(length 5.08)
+				(name "VDDQ_2"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -269,10 +341,10 @@
 					)
 				)
 			)
-			(pin power_in line
+			(pin passive line
 				(at 0 -25.4 0)
-				(length 7.62)
-				(name "VSSQ"
+				(length 5.08)
+				(name "VSSQ_2"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -287,9 +359,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 0 -27.94 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQ19"
 					(effects
 						(font
@@ -305,10 +377,10 @@
 					)
 				)
 			)
-			(pin power_in line
+			(pin passive line
 				(at 0 -30.48 0)
-				(length 7.62)
-				(name "VSSQ"
+				(length 5.08)
+				(name "VSSQ_3"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -323,9 +395,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 0 -33.02 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQ27"
 					(effects
 						(font
@@ -341,9 +413,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 0 -35.56 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQ25"
 					(effects
 						(font
@@ -359,9 +431,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 0 -38.1 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQ22"
 					(effects
 						(font
@@ -377,9 +449,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 0 -40.64 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQ20"
 					(effects
 						(font
@@ -395,10 +467,10 @@
 					)
 				)
 			)
-			(pin power_in line
+			(pin passive line
 				(at 0 -43.18 0)
-				(length 7.62)
-				(name "VDDQ"
+				(length 5.08)
+				(name "VDDQ_3"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -413,10 +485,10 @@
 					)
 				)
 			)
-			(pin power_in line
+			(pin passive line
 				(at 0 -45.72 0)
-				(length 7.62)
-				(name "VSSQ"
+				(length 5.08)
+				(name "VSSQ_4"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -431,9 +503,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 0 -48.26 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQ29"
 					(effects
 						(font
@@ -449,9 +521,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 0 -50.8 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQ30"
 					(effects
 						(font
@@ -467,9 +539,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 0 -53.34 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQ17"
 					(effects
 						(font
@@ -485,9 +557,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 0 -55.88 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQ18"
 					(effects
 						(font
@@ -503,10 +575,10 @@
 					)
 				)
 			)
-			(pin power_in line
+			(pin passive line
 				(at 0 -58.42 0)
-				(length 7.62)
-				(name "VDDQ"
+				(length 5.08)
+				(name "VDDQ_4"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -521,10 +593,10 @@
 					)
 				)
 			)
-			(pin power_in line
+			(pin passive line
 				(at 0 -60.96 0)
-				(length 7.62)
-				(name "VDDQ"
+				(length 5.08)
+				(name "VDDQ_5"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -539,9 +611,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 0 -63.5 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQ31"
 					(effects
 						(font
@@ -557,10 +629,10 @@
 					)
 				)
 			)
-			(pin no_connect line
+			(pin passive line
 				(at 0 -66.04 0)
-				(length 7.62)
-				(name "NC"
+				(length 5.08)
+				(name "NC_1"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -575,10 +647,10 @@
 					)
 				)
 			)
-			(pin no_connect line
+			(pin passive line
 				(at 0 -68.58 0)
-				(length 7.62)
-				(name "NC"
+				(length 5.08)
+				(name "NC_2"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -593,9 +665,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 0 -71.12 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQ16"
 					(effects
 						(font
@@ -611,10 +683,10 @@
 					)
 				)
 			)
-			(pin power_in line
+			(pin passive line
 				(at 0 -73.66 0)
-				(length 7.62)
-				(name "VSSQ"
+				(length 5.08)
+				(name "VSSQ_5"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -629,10 +701,10 @@
 					)
 				)
 			)
-			(pin power_in line
+			(pin passive line
 				(at 0 -76.2 0)
-				(length 7.62)
-				(name "VSS"
+				(length 5.08)
+				(name "VSS_2"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -647,9 +719,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 0 -78.74 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQM3"
 					(effects
 						(font
@@ -665,9 +737,9 @@
 					)
 				)
 			)
-			(pin input line
+			(pin passive line
 				(at 0 -81.28 0)
-				(length 7.62)
+				(length 5.08)
 				(name "A3"
 					(effects
 						(font
@@ -683,9 +755,9 @@
 					)
 				)
 			)
-			(pin input line
+			(pin passive line
 				(at 0 -83.82 0)
-				(length 7.62)
+				(length 5.08)
 				(name "A2"
 					(effects
 						(font
@@ -701,9 +773,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
+			(pin passive line
 				(at 0 -86.36 0)
-				(length 7.62)
+				(length 5.08)
 				(name "DQM2"
 					(effects
 						(font
@@ -719,10 +791,10 @@
 					)
 				)
 			)
-			(pin power_in line
+			(pin passive line
 				(at 0 -88.9 0)
-				(length 7.62)
-				(name "VDD"
+				(length 5.08)
+				(name "VDD_2"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -737,9 +809,9 @@
 					)
 				)
 			)
-			(pin input line
+			(pin passive line
 				(at 0 -91.44 0)
-				(length 7.62)
+				(length 5.08)
 				(name "A4"
 					(effects
 						(font
@@ -755,9 +827,9 @@
 					)
 				)
 			)
-			(pin input line
+			(pin passive line
 				(at 0 -93.98 0)
-				(length 7.62)
+				(length 5.08)
 				(name "A5"
 					(effects
 						(font
@@ -773,9 +845,9 @@
 					)
 				)
 			)
-			(pin input line
+			(pin passive line
 				(at 0 -96.52 0)
-				(length 7.62)
+				(length 5.08)
 				(name "A6"
 					(effects
 						(font
@@ -791,9 +863,9 @@
 					)
 				)
 			)
-			(pin input line
+			(pin passive line
 				(at 0 -99.06 0)
-				(length 7.62)
+				(length 5.08)
 				(name "A10"
 					(effects
 						(font
@@ -809,9 +881,9 @@
 					)
 				)
 			)
-			(pin input line
+			(pin passive line
 				(at 0 -101.6 0)
-				(length 7.62)
+				(length 5.08)
 				(name "A0"
 					(effects
 						(font
@@ -827,9 +899,9 @@
 					)
 				)
 			)
-			(pin input line
+			(pin passive line
 				(at 0 -104.14 0)
-				(length 7.62)
+				(length 5.08)
 				(name "A1"
 					(effects
 						(font
@@ -845,9 +917,9 @@
 					)
 				)
 			)
-			(pin input line
+			(pin passive line
 				(at 0 -106.68 0)
-				(length 7.62)
+				(length 5.08)
 				(name "A7"
 					(effects
 						(font
@@ -863,9 +935,9 @@
 					)
 				)
 			)
-			(pin input line
+			(pin passive line
 				(at 0 -109.22 0)
-				(length 7.62)
+				(length 5.08)
 				(name "A8"
 					(effects
 						(font
@@ -881,9 +953,9 @@
 					)
 				)
 			)
-			(pin input line
+			(pin passive line
 				(at 0 -111.76 0)
-				(length 7.62)
+				(length 5.08)
 				(name "A12"
 					(effects
 						(font
@@ -899,10 +971,10 @@
 					)
 				)
 			)
-			(pin no_connect line
-				(at 60.96 -111.76 180)
-				(length 7.62)
-				(name "NC"
+			(pin passive line
+				(at 35.56 0 180)
+				(length 5.08)
+				(name "NC_3"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -917,9 +989,9 @@
 					)
 				)
 			)
-			(pin input line
-				(at 60.96 -109.22 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -2.54 180)
+				(length 5.08)
 				(name "BA1"
 					(effects
 						(font
@@ -935,9 +1007,9 @@
 					)
 				)
 			)
-			(pin input line
-				(at 60.96 -106.68 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -5.08 180)
+				(length 5.08)
 				(name "A11"
 					(effects
 						(font
@@ -953,9 +1025,9 @@
 					)
 				)
 			)
-			(pin input line
-				(at 60.96 -104.14 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -7.62 180)
+				(length 5.08)
 				(name "CLK"
 					(effects
 						(font
@@ -971,9 +1043,9 @@
 					)
 				)
 			)
-			(pin unspecified line
-				(at 60.96 -101.6 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -10.16 180)
+				(length 5.08)
 				(name "CKE"
 					(effects
 						(font
@@ -989,9 +1061,9 @@
 					)
 				)
 			)
-			(pin input line
-				(at 60.96 -99.06 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -12.7 180)
+				(length 5.08)
 				(name "A9"
 					(effects
 						(font
@@ -1007,9 +1079,9 @@
 					)
 				)
 			)
-			(pin input line
-				(at 60.96 -96.52 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -15.24 180)
+				(length 5.08)
 				(name "BA0"
 					(effects
 						(font
@@ -1025,10 +1097,10 @@
 					)
 				)
 			)
-			(pin unspecified line
-				(at 60.96 -93.98 180)
-				(length 7.62)
-				(name "*CS"
+			(pin passive line
+				(at 35.56 -17.78 180)
+				(length 5.08)
+				(name "~{CS}"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1043,10 +1115,10 @@
 					)
 				)
 			)
-			(pin unspecified line
-				(at 60.96 -91.44 180)
-				(length 7.62)
-				(name "*RAS"
+			(pin passive line
+				(at 35.56 -20.32 180)
+				(length 5.08)
+				(name "~{RAS}"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1061,9 +1133,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 -88.9 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -22.86 180)
+				(length 5.08)
 				(name "DQM1"
 					(effects
 						(font
@@ -1079,10 +1151,10 @@
 					)
 				)
 			)
-			(pin no_connect line
-				(at 60.96 -86.36 180)
-				(length 7.62)
-				(name "NC"
+			(pin passive line
+				(at 35.56 -25.4 180)
+				(length 5.08)
+				(name "NC_4"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1097,10 +1169,10 @@
 					)
 				)
 			)
-			(pin no_connect line
-				(at 60.96 -83.82 180)
-				(length 7.62)
-				(name "NC"
+			(pin passive line
+				(at 35.56 -27.94 180)
+				(length 5.08)
+				(name "NC_5"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1115,10 +1187,10 @@
 					)
 				)
 			)
-			(pin unspecified line
-				(at 60.96 -81.28 180)
-				(length 7.62)
-				(name "*CAS"
+			(pin passive line
+				(at 35.56 -30.48 180)
+				(length 5.08)
+				(name "~{CAS}"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1133,10 +1205,10 @@
 					)
 				)
 			)
-			(pin unspecified line
-				(at 60.96 -78.74 180)
-				(length 7.62)
-				(name "*WE"
+			(pin passive line
+				(at 35.56 -33.02 180)
+				(length 5.08)
+				(name "~{WE}"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1151,9 +1223,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 -76.2 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -35.56 180)
+				(length 5.08)
 				(name "DQM0"
 					(effects
 						(font
@@ -1169,10 +1241,10 @@
 					)
 				)
 			)
-			(pin power_in line
-				(at 60.96 -73.66 180)
-				(length 7.62)
-				(name "VDDQ"
+			(pin passive line
+				(at 35.56 -38.1 180)
+				(length 5.08)
+				(name "VDDQ_6"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1187,9 +1259,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 -71.12 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -40.64 180)
+				(length 5.08)
 				(name "DQ8"
 					(effects
 						(font
@@ -1205,10 +1277,10 @@
 					)
 				)
 			)
-			(pin power_in line
-				(at 60.96 -68.58 180)
-				(length 7.62)
-				(name "VSS"
+			(pin passive line
+				(at 35.56 -43.18 180)
+				(length 5.08)
+				(name "VSS_3"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1223,10 +1295,10 @@
 					)
 				)
 			)
-			(pin power_in line
-				(at 60.96 -66.04 180)
-				(length 7.62)
-				(name "VDD"
+			(pin passive line
+				(at 35.56 -45.72 180)
+				(length 5.08)
+				(name "VDD_3"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1241,9 +1313,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 -63.5 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -48.26 180)
+				(length 5.08)
 				(name "DQ7"
 					(effects
 						(font
@@ -1259,10 +1331,10 @@
 					)
 				)
 			)
-			(pin power_in line
-				(at 60.96 -60.96 180)
-				(length 7.62)
-				(name "VSSQ"
+			(pin passive line
+				(at 35.56 -50.8 180)
+				(length 5.08)
+				(name "VSSQ_6"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1277,10 +1349,10 @@
 					)
 				)
 			)
-			(pin power_in line
-				(at 60.96 -58.42 180)
-				(length 7.62)
-				(name "VSSQ"
+			(pin passive line
+				(at 35.56 -53.34 180)
+				(length 5.08)
+				(name "VSSQ_7"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1295,9 +1367,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 -55.88 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -55.88 180)
+				(length 5.08)
 				(name "DQ10"
 					(effects
 						(font
@@ -1313,9 +1385,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 -53.34 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -58.42 180)
+				(length 5.08)
 				(name "DQ9"
 					(effects
 						(font
@@ -1331,9 +1403,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 -50.8 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -60.96 180)
+				(length 5.08)
 				(name "DQ6"
 					(effects
 						(font
@@ -1349,9 +1421,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 -48.26 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -63.5 180)
+				(length 5.08)
 				(name "DQ5"
 					(effects
 						(font
@@ -1367,10 +1439,10 @@
 					)
 				)
 			)
-			(pin power_in line
-				(at 60.96 -45.72 180)
-				(length 7.62)
-				(name "VDDQ"
+			(pin passive line
+				(at 35.56 -66.04 180)
+				(length 5.08)
+				(name "VDDQ_7"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1385,10 +1457,10 @@
 					)
 				)
 			)
-			(pin power_in line
-				(at 60.96 -43.18 180)
-				(length 7.62)
-				(name "VSSQ"
+			(pin passive line
+				(at 35.56 -68.58 180)
+				(length 5.08)
+				(name "VSSQ_8"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1403,9 +1475,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 -40.64 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -71.12 180)
+				(length 5.08)
 				(name "DQ12"
 					(effects
 						(font
@@ -1421,9 +1493,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 -38.1 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -73.66 180)
+				(length 5.08)
 				(name "DQ14"
 					(effects
 						(font
@@ -1439,9 +1511,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 -35.56 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -76.2 180)
+				(length 5.08)
 				(name "DQ1"
 					(effects
 						(font
@@ -1457,9 +1529,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 -33.02 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -78.74 180)
+				(length 5.08)
 				(name "DQ3"
 					(effects
 						(font
@@ -1475,10 +1547,10 @@
 					)
 				)
 			)
-			(pin power_in line
-				(at 60.96 -30.48 180)
-				(length 7.62)
-				(name "VDDQ"
+			(pin passive line
+				(at 35.56 -81.28 180)
+				(length 5.08)
+				(name "VDDQ_8"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1493,9 +1565,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 -27.94 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -83.82 180)
+				(length 5.08)
 				(name "DQ11"
 					(effects
 						(font
@@ -1511,10 +1583,10 @@
 					)
 				)
 			)
-			(pin power_in line
-				(at 60.96 -25.4 180)
-				(length 7.62)
-				(name "VDDQ"
+			(pin passive line
+				(at 35.56 -86.36 180)
+				(length 5.08)
+				(name "VDDQ_9"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1529,10 +1601,10 @@
 					)
 				)
 			)
-			(pin power_in line
-				(at 60.96 -22.86 180)
-				(length 7.62)
-				(name "VSSQ"
+			(pin passive line
+				(at 35.56 -88.9 180)
+				(length 5.08)
+				(name "VSSQ_9"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1547,10 +1619,10 @@
 					)
 				)
 			)
-			(pin power_in line
-				(at 60.96 -20.32 180)
-				(length 7.62)
-				(name "VDDQ"
+			(pin passive line
+				(at 35.56 -91.44 180)
+				(length 5.08)
+				(name "VDDQ_10"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1565,10 +1637,10 @@
 					)
 				)
 			)
-			(pin power_in line
-				(at 60.96 -17.78 180)
-				(length 7.62)
-				(name "VSSQ"
+			(pin passive line
+				(at 35.56 -93.98 180)
+				(length 5.08)
+				(name "VSSQ_10"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1583,9 +1655,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 -15.24 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -96.52 180)
+				(length 5.08)
 				(name "DQ4"
 					(effects
 						(font
@@ -1601,9 +1673,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 -12.7 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -99.06 180)
+				(length 5.08)
 				(name "DQ13"
 					(effects
 						(font
@@ -1619,9 +1691,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 -10.16 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -101.6 180)
+				(length 5.08)
 				(name "DQ15"
 					(effects
 						(font
@@ -1637,10 +1709,10 @@
 					)
 				)
 			)
-			(pin power_in line
-				(at 60.96 -7.62 180)
-				(length 7.62)
-				(name "VSS"
+			(pin passive line
+				(at 35.56 -104.14 180)
+				(length 5.08)
+				(name "VSS_4"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1655,10 +1727,10 @@
 					)
 				)
 			)
-			(pin power_in line
-				(at 60.96 -5.08 180)
-				(length 7.62)
-				(name "VDD"
+			(pin passive line
+				(at 35.56 -106.68 180)
+				(length 5.08)
+				(name "VDD_4"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1673,9 +1745,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 -2.54 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -109.22 180)
+				(length 5.08)
 				(name "DQ0"
 					(effects
 						(font
@@ -1691,9 +1763,9 @@
 					)
 				)
 			)
-			(pin bidirectional line
-				(at 60.96 0 180)
-				(length 7.62)
+			(pin passive line
+				(at 35.56 -111.76 180)
+				(length 5.08)
 				(name "DQ2"
 					(effects
 						(font
@@ -1707,19 +1779,6 @@
 							(size 1.27 1.27)
 						)
 					)
-				)
-			)
-		)
-		(symbol "IS42VM32160E-75BLI_1_1"
-			(rectangle
-				(start 7.62 5.08)
-				(end 53.34 -116.84)
-				(stroke
-					(width 0)
-					(type solid)
-				)
-				(fill
-					(type background)
 				)
 			)
 		)

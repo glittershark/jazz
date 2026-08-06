@@ -1,6 +1,6 @@
 #+title: the StUD (stillmar universal devboard)
 
-* TODO MCU
+* MCU
 looking at either:
 - the R7KA8M2JFLCAC (e.g., [[https://www.digikey.com/en/products/detail/renesas-electronics-corporation/R7KA8M2JFLCAC-UC0/27569003][this one]]), which is a hawss w/ ARM Helium & two cores;
 - the STM32N645A0, which also supports Helium but is a bit slower and has some
@@ -13,3 +13,32 @@ write a /lot/ of our own tooling.
 
 -> oh wait, hang on! there's https://github.com/ra-rs/ra, which we could most
    likely update for the RA8M2 series.
+
+* SDRAM: IS42S32160F-7BLI (LCSC C2064441)
+fable's notes:
+
+512Mb (4M x 32 x 4 banks), 3.3V, 90-ball TF-BGA 8x13mm 0.8mm pitch.
+checked compatibility against the RA8M2 datasheet (r01ds0438ej0130):
+
+- needs the BGA289 package (only one with the 32-bit SDRAM bus) -- ok, that's
+  the R7KA8M2JFLCAC.
+- VCC *and* VCC2 must be 3.0-3.63V (DQ20-31 are in the VCC2 domain).
+- pins match 1:1: A0-A12 + BA0/BA1 (MCU has A00-A16), DQ0-31, DQM0-3,
+  SDCLK/CKE/SDCS/RAS/CAS/WE. 55 signals.
+- timing: run SDCLK at 100-120 MHz, CL3. 133 MHz doesn't close: read path is
+  tAC3 5.4 + tRDS2 2.1 = 7.5ns + flight > 7.5ns period. ~0.4ns margin @120.
+- hold margin is exactly zero on paper (SDRAM wants 0.8ns, MCU min delay
+  0.8ns): match lengths, or route SDCLK slightly shorter than data/addr.
+- @120 MHz: tRCD 3 cyc, tRP 3, tRAS 6, tRC 8, tMRD 2, tXSR 9; auto-refresh
+  every <=7.8us (8192 rows / 64ms).
+- SDCLK pin needs "high-speed high drive" in PmnPFS, other bus pins "high
+  drive" (timing specs assume it).
+- standard SDRAM, no EMRS -- stock SDRAMC init flow works. (rejected the
+  mobile IS42SM32160E: EMRS init + 1.0ns hold requirement; same footprint
+  though.) tradeoff: self-refresh is 6mA, no deep power down. don't care.
+
+** TODO verify in the hardware manual (not in the datasheet)
+- which A-pins carry BA0/BA1 during SDRAM cycles (check EK-RA8D1 schematic)
+- 13-bit row / 9-bit column multiplex config (SDADR)
+- SDRAM region in the memory map fits the full 64MB
+** TODO check symbol & footprint, apparently user-contributed
