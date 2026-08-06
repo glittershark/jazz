@@ -284,36 +284,8 @@ void UI::Tick() {
 
         // If the head is selected currently, also blink the relevant knob
         if (head_select.selected() == target_head_idx) {
-          switch (target->parameter) {
-          case config::TargetParameter::kPosition:
-            head_knobs.position.Blink(blink_state_->blink);
-            break;
-          case config::TargetParameter::kWriteAmount:
-            head_knobs.write_amount.Blink(blink_state_->blink);
-            break;
-          case config::TargetParameter::kReadAmount:
-            head_knobs.read_amount.Blink(blink_state_->blink);
-            break;
-          case config::TargetParameter::kEraseAmount:
-            head_knobs.erase_amount.Blink(blink_state_->blink);
-            break;
-          case config::TargetParameter::kFeedbackAmount:
-            head_knobs.feedback.Blink(blink_state_->blink);
-            break;
-          case config::TargetParameter::kRange:
-          case config::TargetParameter::kMaxGrainSize:
-          case config::TargetParameter::kMinGrainSize:
-          case config::TargetParameter::kReverseChance:
-          case config::TargetParameter::kTeleportChance:
-          case config::TargetParameter::kPitchShiftChance:
-          case config::TargetParameter::kLowOctaveChance:
-          case config::TargetParameter::kHighOctaveChance:
-          case config::TargetParameter::kPan:
-          case config::TargetParameter::kDry:
-          case config::TargetParameter::kWet:
-            // Remaining are not head parameters
-            break;
-          }
+          KNOB(*this, target->parameter,
+               [&](auto* knob) { knob->Blink(blink_state_->blink); });
         }
         break;
       }
@@ -362,7 +334,12 @@ void UI::KnobPressed(config::TargetParameter param, bool pressed) {
   if (pressed) {
     auto held_lfo = lfo_select.held();
     if (held_lfo.has_value()) {
-      config_.lfos[held_lfo->which].ToggleTarget(TargetForSelected(param));
+      auto target = TargetForSelected(param);
+      auto result = config_.lfos[held_lfo->which].ToggleTarget(target);
+
+      if (result == config::ToggleResult::kToggledOff) {
+        KNOB(*this, param, [&](auto* knob) { knob->BlinkOff(); });
+      }
     }
   }
 }

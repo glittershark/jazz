@@ -79,6 +79,8 @@ enum class TargetParameter : uint8_t {
 
 TargetObject object_for_parameter(TargetParameter param);
 
+enum class ToggleResult { kToggledOn, kToggledOff, kNothingHappened };
+
 // Packed to 3 bytes so a full target list stays small; an
 // std::optional<Target> is 4 bytes.
 struct Target {
@@ -102,7 +104,7 @@ struct LFO {
 
   bool operator==(const LFO& rhs) const = default;
 
-  void ToggleTarget(const Target& target);
+  ToggleResult ToggleTarget(const Target& target);
 };
 
 struct Config {

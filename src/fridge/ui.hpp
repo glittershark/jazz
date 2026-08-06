@@ -625,6 +625,15 @@ class RadioButtons {
   }
 
   void BlinkOff(uint8_t which) { leds_[which].SetOn(false); }
+
+  void Blink(bool on, uint8_t which) {
+    if (on) {
+      BlinkOn(which);
+
+    } else {
+      BlinkOff(which);
+    }
+  }
 };
 
 template <DisplayableBackingValue V>
@@ -777,6 +786,60 @@ struct UI {
 
   void KnobPressed(config::TargetParameter param, bool pressed);
 };
+
+#define KNOB(ui, param, doto)                        \
+  {                                                  \
+    switch (param) {                                 \
+    case config::TargetParameter::kPosition:         \
+      (doto)(&head_knobs.position);                  \
+      break;                                         \
+    case config::TargetParameter::kWriteAmount:      \
+      (doto)(&head_knobs.write_amount);              \
+      break;                                         \
+    case config::TargetParameter::kReadAmount:       \
+      (doto)(&head_knobs.read_amount);               \
+      break;                                         \
+    case config::TargetParameter::kEraseAmount:      \
+      (doto)(&head_knobs.erase_amount);              \
+      break;                                         \
+    case config::TargetParameter::kFeedbackAmount:   \
+      (doto)(&head_knobs.feedback);                  \
+      break;                                         \
+    case config::TargetParameter::kRange:            \
+      (doto)(&lfo_knobs.range);                      \
+      break;                                         \
+    case config::TargetParameter::kMaxGrainSize:     \
+      (doto)(&lfo_knobs.max_grain_size);             \
+      break;                                         \
+    case config::TargetParameter::kMinGrainSize:     \
+      (doto)(&lfo_knobs.min_grain_size);             \
+      break;                                         \
+    case config::TargetParameter::kReverseChance:    \
+      (doto)(&lfo_knobs.reverse_chance);             \
+      break;                                         \
+    case config::TargetParameter::kTeleportChance:   \
+      (doto)(&lfo_knobs.teleport_chance);            \
+      break;                                         \
+    case config::TargetParameter::kPitchShiftChance: \
+      (doto)(&lfo_knobs.pitch_shift_chance);         \
+      break;                                         \
+    case config::TargetParameter::kLowOctaveChance:  \
+      (doto)(&lfo_knobs.low_octave_chance);          \
+      break;                                         \
+    case config::TargetParameter::kHighOctaveChance: \
+      (doto)(&lfo_knobs.high_octave_chance);         \
+      break;                                         \
+    case config::TargetParameter::kDry:              \
+      (doto)(&dry_knob);                             \
+      break;                                         \
+    case config::TargetParameter::kWet:              \
+      (doto)(&wet_knob);                             \
+      break;                                         \
+    case config::TargetParameter::kPan:              \
+      assert(false);                                 \
+      break;                                         \
+    };                                               \
+  }
 
 }  // namespace fridge::ui
 
