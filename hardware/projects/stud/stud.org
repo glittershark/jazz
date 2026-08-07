@@ -42,3 +42,11 @@ checked compatibility against the RA8M2 datasheet (r01ds0438ej0130):
 - 13-bit row / 9-bit column multiplex config (SDADR)
 - SDRAM region in the memory map fits the full 64MB
 ** TODO check symbol & footprint, apparently user-contributed
+* routing
+** traces
+as far as i can tell, i should keep traces to 50 Ω if possible. that's the only
+impedance mentioned (in the SDRAM datasheet).
+** stackup
+looks like i will, in fact, need a six-layer board, as i'm doing a ~300 pin BGA
+arrangement. dog-bone fanout should be feasible, as i have a 0.65 mm pitch
+package.

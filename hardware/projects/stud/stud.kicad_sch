@@ -7752,6 +7752,150 @@
 			(embedded_fonts no)
 		)
 	)
+	(global_label "DQ26"
+		(shape bidirectional)
+		(at 184.15 184.15 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "1fed854e-3d6e-47bb-bae4-0f0517d4483d")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 175.034 184.15 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "DQ25"
+		(shape bidirectional)
+		(at 107.95 167.64 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "458b7df0-ffb9-4424-a39a-5ba504e516c5")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 117.066 167.64 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(global_label "DQ25"
+		(shape bidirectional)
+		(at 184.15 219.71 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "7292f168-05b9-44a4-b589-dfd19707552a")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 175.034 219.71 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "DQ26"
+		(shape bidirectional)
+		(at 107.95 162.56 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "b5115891-5d71-497d-8a63-42236e862326")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 117.066 162.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(global_label "DQ21"
+		(shape bidirectional)
+		(at 184.15 196.85 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "b9218e45-b7db-45ad-8555-a8be8bade39f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 175.034 196.85 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "DQ21"
+		(shape bidirectional)
+		(at 107.95 165.1 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "bf366e99-cfa3-4830-8d3a-528d330aaabb")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 117.066 165.1 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
 	(symbol
 		(lib_id "vendor:R7KA8M2JFLCAC#UC0")
 		(at 46.99 93.98 0)

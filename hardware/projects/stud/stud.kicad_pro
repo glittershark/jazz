@@ -217,7 +217,7 @@
           "corner_radius_percentage": 80,
           "corner_style": 1,
           "max_amplitude": 1.0,
-          "min_amplitude": 0.2,
+          "min_amplitude": 0.0,
           "single_sided": false,
           "spacing": 1.0
         },
@@ -225,7 +225,7 @@
           "corner_radius_percentage": 80,
           "corner_style": 1,
           "max_amplitude": 1.0,
-          "min_amplitude": 0.2,
+          "min_amplitude": 0.0,
           "single_sided": false,
           "spacing": 0.6
         },
@@ -233,7 +233,7 @@
           "corner_radius_percentage": 80,
           "corner_style": 1,
           "max_amplitude": 1.0,
-          "min_amplitude": 0.2,
+          "min_amplitude": 0.0,
           "single_sided": false,
           "spacing": 0.6
         }
@@ -524,6 +524,13 @@
         "via_diameter": 0.25,
         "via_drill": 0.15,
         "wire_width": 6
+      },
+      {
+        "name": "SDRAM",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 0,
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "tuning_profile": ""
       }
     ],
     "meta": {
@@ -531,7 +538,12 @@
     },
     "net_colors": null,
     "netclass_assignments": null,
-    "netclass_patterns": []
+    "netclass_patterns": [
+      {
+        "netclass": "SDRAM",
+        "pattern": "DQ*"
+      }
+    ]
   },
   "pcbnew": {
     "last_paths": {
@@ -675,6 +687,25 @@
     "meta": {
       "version": 0
     },
-    "tuning_profiles_impedance_geometric": []
+    "tuning_profiles_impedance_geometric": [
+      {
+        "enable_time_domain_tuning": false,
+        "layer_entries": [
+          {
+            "bottom_reference_layer": "In1.Cu",
+            "delay": 5776900,
+            "diff_pair_gap": 90000,
+            "signal_layer": "F.Cu",
+            "top_reference_layer": "UNDEFINED",
+            "width": 90000
+          }
+        ],
+        "profile_name": "SDRAM",
+        "target_impedance": 0.0,
+        "type": 0,
+        "via_overrides": [],
+        "via_prop_delay": 0
+      }
+    ]
   }
 }

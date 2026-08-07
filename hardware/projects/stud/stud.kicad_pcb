@@ -9,8 +9,8 @@
 	(paper "A4")
 	(layers
 		(0 "F.Cu" signal)
-		(4 "In1.Cu" signal)
-		(6 "In2.Cu" signal)
+		(4 "In1.Cu" power)
+		(6 "In2.Cu" power)
 		(2 "B.Cu" signal)
 		(9 "F.Adhes" user "F.Adhesive")
 		(11 "B.Adhes" user "B.Adhesive")
@@ -153,7 +153,7 @@
 	(footprint "vendor:BGA90C80P9X15_800X1300X120"
 		(layer "F.Cu")
 		(uuid "8655e194-cc75-4d6b-a816-646f611d76c3")
-		(at 155.443 106.889)
+		(at 147.32 109.22)
 		(descr "90L 8x13mm TF-BGA")
 		(tags "Integrated Circuit")
 		(property "Reference" "IC2"
@@ -295,6 +295,19 @@
 		(path "/f325c85c-57c4-424c-b886-e61bcbd36f8d")
 		(sheetname "/")
 		(sheetfile "stud.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "A1" "A2" "A3" "A7" "A8" "A9" "B1" "B2" "B3" "B7" "B8" "B9" "C1"
+					"C2" "C3" "C7" "C8" "C9" "D1" "D2" "D3" "D7" "D8" "D9" "E1" "E2" "E3"
+					"E7" "E8" "E9" "F1" "F2" "F3" "F7" "F8" "F9" "G1" "G2" "G3" "G7" "G8"
+					"G9" "H1" "H2" "H3" "H7" "H8" "H9" "J1" "J2" "J3" "J7" "J8" "J9" "K1"
+					"K2" "K3" "K7" "K8" "K9" "L1" "L2" "L3" "L7" "L8" "L9" "M1" "M2" "M3"
+					"M7" "M8" "M9" "N1" "N2" "N3" "N7" "N8" "N9" "P1" "P2" "P3" "P7" "P8"
+					"P9" "R1" "R2" "R3" "R7" "R8" "R9"
+				)
+			)
+		)
 		(solder_mask_margin 0.035)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -464,7 +477,7 @@
 			(at -3.2 -5.6 90)
 			(size 0.41 0.41)
 			(layers "F.Cu" "F.Mask" "F.Paste")
-			(net "unconnected-(IC2-DQ26-PadA1)")
+			(net "DQ26")
 			(pinfunction "DQ26_A1")
 			(pintype "passive")
 			(uuid "426abb26-d3dd-4ed5-beaf-d5a8bc9f22fc")
@@ -509,7 +522,7 @@
 			(at 3.2 -5.6 90)
 			(size 0.41 0.41)
 			(layers "F.Cu" "F.Mask" "F.Paste")
-			(net "unconnected-(IC2-DQ21-PadA9)")
+			(net "DQ21")
 			(pinfunction "DQ21_A9")
 			(pintype "passive")
 			(uuid "e187a617-977e-4b24-bdda-95b272a5e021")
@@ -590,7 +603,7 @@
 			(at -1.6 -4 90)
 			(size 0.41 0.41)
 			(layers "F.Cu" "F.Mask" "F.Paste")
-			(net "unconnected-(IC2-DQ25-PadC3)")
+			(net "DQ25")
 			(pinfunction "DQ25_C3")
 			(pintype "passive")
 			(uuid "4abfc6ba-148a-4368-be53-99ba03305e20")
@@ -1286,7 +1299,7 @@
 	(footprint "vendor:BGA289C65P17X17_1200X1200X138"
 		(layer "F.Cu")
 		(uuid "c4e07d26-c2f2-4d1d-b8d6-fbe2d466d783")
-		(at 134.025 111.165)
+		(at 134.62 109.22)
 		(descr "PLBG0289JA-A")
 		(tags "Integrated Circuit")
 		(property "Reference" "IC1"
@@ -3174,7 +3187,7 @@
 			(at -3.9 1.3 90)
 			(size 0.338 0.338)
 			(layers "F.Cu" "F.Mask" "F.Paste")
-			(net "unconnected-(IC1-PC04-PadL3)")
+			(net "DQ26")
 			(pinfunction "PC04_L3")
 			(pintype "passive")
 			(uuid "1825a5ca-5e30-4d3d-87e6-023389f22e45")
@@ -3183,7 +3196,7 @@
 			(at -3.25 1.3 90)
 			(size 0.338 0.338)
 			(layers "F.Cu" "F.Mask" "F.Paste")
-			(net "unconnected-(IC1-PC09-PadL4)")
+			(net "DQ21")
 			(pinfunction "PC09_L4")
 			(pintype "passive")
 			(uuid "27bbe61f-946f-45da-987a-c0a1af6e8ff8")
@@ -3192,7 +3205,7 @@
 			(at -2.6 1.3 90)
 			(size 0.338 0.338)
 			(layers "F.Cu" "F.Mask" "F.Paste")
-			(net "unconnected-(IC1-PC05-PadL5)")
+			(net "DQ25")
 			(pinfunction "PC05_L5")
 			(pintype "passive")
 			(uuid "85ed8ffd-9e06-4e71-be37-f6d09d626750")
