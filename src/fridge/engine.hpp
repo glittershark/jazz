@@ -54,6 +54,7 @@ struct HeadKnobs {
   io::PushbuttonQuadratureEncoder read_amount;
   io::PushbuttonQuadratureEncoder erase_amount;
   io::PushbuttonQuadratureEncoder feedback;
+  io::PushbuttonQuadratureEncoder pan;
 };
 
 struct LfoKnobs {

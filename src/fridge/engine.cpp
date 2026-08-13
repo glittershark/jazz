@@ -108,19 +108,18 @@ Engine::Engine(config::Config initial_config)
       // wet = SW3
       wet_(knob(&mux_, KnobBank::K0, 0)),
 
-      head_{
-          // position = SW4
-          .position = knob(&mux_, KnobBank::K0, 2),
-          // write_amount = SW5
-          .write_amount = knob(&mux_, KnobBank::K0, 3),
-          // read_amount = SW6
-          .read_amount = knob(&mux_, KnobBank::K0, 4),
-          // erase_amount = Sw7
-          .erase_amount = knob(&mux_, KnobBank::K0, 5),
-          // feedback = SW8
-          .feedback = knob(&mux_, KnobBank::K0, 6),
-          // SW9 is spare
-      },
+      head_{// position = SW4
+            .position = knob(&mux_, KnobBank::K0, 2),
+            // write_amount = SW5
+            .write_amount = knob(&mux_, KnobBank::K0, 3),
+            // read_amount = SW6
+            .read_amount = knob(&mux_, KnobBank::K0, 4),
+            // erase_amount = Sw7
+            .erase_amount = knob(&mux_, KnobBank::K0, 5),
+            // feedback = SW8
+            .feedback = knob(&mux_, KnobBank::K0, 6),
+            // pan = SW9
+            .pan = knob(&mux_, KnobBank::K0, 7)},
 
       lfo_{
           // range = SW10
@@ -183,6 +182,8 @@ Engine::Engine(config::Config initial_config)
   ON_PRESS_CHANGED(head_.erase_amount, kEraseAmount);
   head_.feedback.OnChange(ui_.head_knobs.feedback.GetCallback());
   ON_PRESS_CHANGED(head_.feedback, kFeedbackAmount);
+  head_.pan.OnChange(ui_.head_knobs.pan.GetCallback());
+  ON_PRESS_CHANGED(head_.pan, kPan);
 
   dry_.OnChange(ui_.dry_knob.GetCallback());
   ON_PRESS_CHANGED(dry_, kDry);

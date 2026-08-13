@@ -118,6 +118,12 @@ UI::UI(io::led::Controller& led, config::Config initial_config)
                                .max_read_color = color::RGB(0, 255, 0),
                                .max_erase_color = color::RGB(255, 0, 0),
                            }),
+          // D46
+          .pan = PanKnob(RgbLed(led.B(7, 0), led.B(7, 1), led.B(7, 2)),
+                         PanKnob::Config{
+                             .max_right_color = color::RGB(0, 0, 255),
+                             .max_left_color = color::RGB(0, 255, 0),
+                         }),
       },
       lfo_knobs{
           // D5

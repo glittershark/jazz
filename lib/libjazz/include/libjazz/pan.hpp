@@ -62,6 +62,10 @@ class Pan {
     assert(amount >= 0.0f && amount <= 1.0f);
     return Pan(amount);
   }
+
+  constexpr bool IsLeft() const { return pan_ < 0.f; }
+  constexpr bool IsRight() const { return pan_ > 0.f; }
+  constexpr bool IsCenter() const { return pan_ == 0.f; }
 };
 
 std::ostream& operator<<(std::ostream& out, const Pan& val);

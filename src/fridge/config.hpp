@@ -64,6 +64,7 @@ enum class TargetParameter : uint8_t {
   kReadAmount,
   kEraseAmount,
   kFeedbackAmount,
+  kPan,
   kRange,
   kMaxGrainSize,
   kMinGrainSize,
@@ -72,7 +73,6 @@ enum class TargetParameter : uint8_t {
   kPitchShiftChance,
   kLowOctaveChance,
   kHighOctaveChance,
-  kPan,
   kDry,
   kWet,
 };

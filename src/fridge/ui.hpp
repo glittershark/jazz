@@ -19,6 +19,7 @@
 #include "constants.hpp"
 #include "io.hpp"
 #include "libjazz/color.hpp"
+#include "libjazz/pan.hpp"
 #include "rgb_led.hpp"
 #include "value_display.hpp"
 
@@ -504,6 +505,124 @@ class FeedbackKnob : public Knob<Feedback> {
   }
 };
 
+class Pan {
+  using V = Bounded<Turns, -0.5f, 0.5f>;
+  V value_;
+
+ public:
+  using Raw_type = audio::Pan;
+
+  Pan() = default;
+  Pan(const int, const float turns) : value_(turns) {}
+  Pan(const V& value) : value_(value) {}
+  Pan(const Raw_type& value) : value_(value.pan() * 0.5f) {}
+
+  Pan& Increment(const int, const float turns) {
+    value_ += turns;
+    return *this;
+  }
+
+  operator Raw_type() const {
+    if (value_ >= 1.f) {
+      return audio::Pan::Right(value_ * 2);
+    } else {
+      return audio::Pan::Left(value_ * 2);
+    }
+  }
+
+  Pan operator+(const Pan& rhs) const { return Pan(value_ + rhs.value_); }
+
+  Pan& operator+=(const Pan& rhs) {
+    *this = *this + rhs;
+    return *this;
+  }
+
+  Pan& operator=(const V& rhs) {
+    value_ = rhs;
+    return *this;
+  }
+
+  void Print(const char* key) const {
+#ifndef UNIT_TEST
+    hw.PrintLine("%s = " FLT_FMT(3), key, FLT_VAR3(value_));
+#endif
+  }
+};
+
+static_assert(BackingValue<Pan>);
+
+class PanKnob : public Knob<Pan> {
+  RgbLed rgb_led_;
+  value_display::CieInterp right_display_;
+  value_display::CieInterp left_display_;
+
+  static void callback(PanKnob* this_, int ticks, float turns) {
+    this_->Increment(ticks, turns);
+  }
+
+  color::RGB Color() {
+    config::Pan val = Get();
+    auto adjusted = std::pow(val.pan(), 2);
+    auto amount = static_cast<uint8_t>(adjusted * 255);
+    if (val.IsLeft()) {
+      return left_display_(amount);
+    } else {
+      return right_display_(amount);
+    }
+  }
+
+ public:
+  struct Config {
+    color::RGB max_right_color;
+    color::RGB max_left_color;
+    color::RGB center_color = {255, 255, 255};
+  };
+
+  PanKnob(RgbLed rgb_led, Config config)
+      : Knob("Pan"),
+        rgb_led_(rgb_led),
+        right_display_(
+            {.start = config.center_color, .end = config.max_right_color}),
+        left_display_(
+            {.start = config.center_color, .end = config.max_left_color}) {}
+
+  void UpdateDisplay() {
+    rgb_led_.SetOn(true);
+    rgb_led_.SetColor(Color());
+  }
+
+  TypedCallback<PanKnob, int, float> GetCallback() {
+    return {
+        .callback = PanKnob::callback,
+        .data = this,
+    };
+  }
+
+  void Set(const Pan& rhs) {
+    Knob<Pan>::Set(rhs);
+    UpdateDisplay();
+  }
+
+  Pan& Increment(int ticks, float turns) {
+    auto& res = Knob<Pan>::Increment(ticks, turns);
+    UpdateDisplay();
+    return res;
+  }
+
+  void BlinkOn() {
+    rgb_led_.SetOn(true);
+    rgb_led_.SetColor(kUnselectedBlinkColor);
+  }
+  void BlinkOff() { rgb_led_.SetOn(false); }
+  void Blink(bool on) {
+    if (on) {
+      BlinkOn();
+    } else {
+      BlinkOff();
+    }
+  }
+};
+
 using SingleTurn = Bounded<Turns, 0.0f, 1.0f>;
 
 using OneTurnIsBufferLen =
@@ -645,6 +764,7 @@ struct HeadKnobs {
   CieInterpKnob<SingleTurn> read_amount;
   CieInterpKnob<SingleTurn> erase_amount;
   FeedbackKnob feedback;
+  PanKnob pan;
   // NOTE: If you add new knobs here, remember to also add them under
   // EACH_HEAD_KNOB!
 
