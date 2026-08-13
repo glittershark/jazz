@@ -286,21 +286,6 @@ StereoSample Sound::ApplyHead(const fridge::config::Head& head,
   return wet_signal;
 }
 
-StereoSample Sound::ProcessSample(const fridge::config::Config& config,
-                                  StereoSample sample) {
-  PreHousekeeping(global_clock_);
-
-  auto wet_signal = StereoSample::Zero();
-
-  for (auto&& head : config.heads) {
-    wet_signal += ApplyHead(head, sample);
-  }
-
-  global_clock_ = (global_clock_ + 1) % global_clock_max_;
-
-  return sample * config.dry + wet_signal * config.wet;
-}
-
 StereoSample Sound::ProcessSample(const fridge::mod::Frame& frame,
                                   StereoSample sample) {
   PreHousekeeping(global_clock_);

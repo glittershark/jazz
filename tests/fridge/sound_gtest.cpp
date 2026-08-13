@@ -6,6 +6,7 @@
 #include "constants.hpp"
 #include "gtest/gtest.h"
 #include "libjazz/stereo_sample.hpp"
+#include "mod.hpp"
 #include "sound.hpp"
 
 using fridge::kBufferLen;
@@ -69,157 +70,159 @@ TEST(FridgeBufferValueTest, SampleWithUpdates) {
 class FridgeSoundTest : public ::testing::Test {
  protected:
   Sound sound;
-  fridge::config::Config config;
+  fridge::mod::Frame frame;
 
   void SetUp() override {
     // Default config: one head at position 0 with full read/write
-    config.heads[0].position = 0;
-    config.heads[0].read_amount = 1.0f;
-    config.heads[0].write_amount = 1.0f;
-    config.heads[0].erase_amount = 1.0f;
-    config.dry = 0.0f;
-    config.wet = 1.0f;
+    frame.heads[0].position = 0;
+    frame.heads[0].read_amount = 1.0f;
+    frame.heads[0].write_amount = 1.0f;
+    frame.heads[0].erase_amount = 1.0f;
+    frame.dry = 0.0f;
+    frame.wet = 1.0f;
+    frame.head_count = 1;
 
     // Disable other heads
     for (size_t i = 1; i < kNumHeads; ++i) {
-      config.heads[i].read_amount = 0.0f;
-      config.heads[i].write_amount = 0.0f;
-      config.heads[i].erase_amount = 1.0f;
+      frame.heads[i].read_amount = 0.0f;
+      frame.heads[i].write_amount = 0.0f;
+      frame.heads[i].erase_amount = 1.0f;
     }
   }
 };
 
 TEST_F(FridgeSoundTest, InitialReadReturnsZero) {
   // Read-only config at position 0
-  config.heads[0].write_amount = 0.0f;
+  frame.heads[0].write_amount = 0.0f;
 
-  auto output = sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+  auto output = sound.ProcessSample(frame, StereoSample::OfMono(0.0f));
   EXPECT_EQ(output, StereoSample::OfMono(0.0f));
 }
 
 TEST_F(FridgeSoundTest, ReadManyTimesReturnsZero) {
-  config.heads[0].write_amount = 0.0f;
+  frame.heads[0].write_amount = 0.0f;
 
   for (int i = 0; i < 1000; ++i) {
-    EXPECT_EQ(sound.ProcessSample(config, StereoSample::OfMono(0.0f)),
+    EXPECT_EQ(sound.ProcessSample(frame, StereoSample::OfMono(0.0f)),
               StereoSample::OfMono(0.0f));
   }
 }
 
 TEST_F(FridgeSoundTest, WriteAndReadAfterFadeTime) {
   // Write a sample
-  config.heads[0].read_amount = 0.0f;
-  sound.ProcessSample(config, StereoSample::OfMono(0.7f));
+  frame.heads[0].read_amount = 0.0f;
+  sound.ProcessSample(frame, StereoSample::OfMono(0.7f));
 
   // Advance past fade time with no writes
-  config.heads[0].write_amount = 0.0f;
+  frame.heads[0].write_amount = 0.0f;
   for (size_t i = 0; i < kFadeTime; ++i) {
-    sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+    sound.ProcessSample(frame, StereoSample::OfMono(0.0f));
   }
 
   // Now read back
-  config.heads[0].read_amount = 1.0f;
-  auto output = sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+  frame.heads[0].read_amount = 1.0f;
+  auto output = sound.ProcessSample(frame, StereoSample::OfMono(0.0f));
   EXPECT_NEAR(output.Mono(), 0.7f, 0.0001f);
 }
 
 TEST_F(FridgeSoundTest, WriteNegativeSample) {
   // Write a negative sample
-  config.heads[0].read_amount = 0.0f;
-  sound.ProcessSample(config, StereoSample::OfMono(-0.5f));
+  frame.heads[0].read_amount = 0.0f;
+  sound.ProcessSample(frame, StereoSample::OfMono(-0.5f));
 
   // Advance past fade time
-  config.heads[0].write_amount = 0.0f;
+  frame.heads[0].write_amount = 0.0f;
   for (size_t i = 0; i < kFadeTime; ++i) {
-    sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+    sound.ProcessSample(frame, StereoSample::OfMono(0.0f));
   }
 
   // Read back
-  config.heads[0].read_amount = 1.0f;
-  auto output = sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+  frame.heads[0].read_amount = 1.0f;
+  auto output = sound.ProcessSample(frame, StereoSample::OfMono(0.0f));
   EXPECT_NEAR(output.Mono(), -0.5f, 0.0001f);
 }
 
 TEST_F(FridgeSoundTest, WriteToManyPositions) {
   // Write to multiple positions by moving the head
-  config.heads[0].read_amount = 0.0f;
+  frame.heads[0].read_amount = 0.0f;
 
   for (size_t i = 0; i < kBufferLen + 10; ++i) {
-    config.heads[0].position = i % kBufferLen;
-    sound.ProcessSample(config, StereoSample::OfMono(0.5f));
+    frame.heads[0].position = i % kBufferLen;
+    sound.ProcessSample(frame, StereoSample::OfMono(0.5f));
   }
 }
 
 TEST_F(FridgeSoundTest, DryWetMix) {
   // Test that dry/wet mix works correctly
-  config.heads[0].write_amount = 0.0f;
-  config.heads[0].read_amount = 0.0f;
-  config.dry = 0.5f;
-  config.wet = 0.5f;
+  frame.heads[0].write_amount = 0.0f;
+  frame.heads[0].read_amount = 0.0f;
+  frame.dry = 0.5f;
+  frame.wet = 0.5f;
 
-  auto output = sound.ProcessSample(config, StereoSample::OfMono(1.0f));
+  auto output = sound.ProcessSample(frame, StereoSample::OfMono(1.0f));
   EXPECT_NEAR(output.Mono(), 0.5f, 0.0001f);  // Only dry signal, wet is 0
 }
 
 TEST_F(FridgeSoundTest, MultipleHeadsRead) {
   // Write to position 0
-  config.heads[0].read_amount = 0.0f;
-  sound.ProcessSample(config, StereoSample::OfMono(0.4f));
+  frame.heads[0].read_amount = 0.0f;
+  sound.ProcessSample(frame, StereoSample::OfMono(0.4f));
 
   // Write to position 100
-  config.heads[0].position = 100;
-  sound.ProcessSample(config, StereoSample::OfMono(0.3f));
+  frame.heads[0].position = 100;
+  sound.ProcessSample(frame, StereoSample::OfMono(0.3f));
 
   // Advance past fade time
-  config.heads[0].write_amount = 0.0f;
+  frame.heads[0].write_amount = 0.0f;
   for (size_t i = 0; i < kFadeTime; ++i) {
-    sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+    sound.ProcessSample(frame, StereoSample::OfMono(0.0f));
   }
 
   // Read from both positions with two heads
-  config.heads[0].position = 0;
-  config.heads[0].read_amount = 1.0f;
-  config.heads[1].position = 100;
-  config.heads[1].read_amount = 1.0f;
-  config.dry = 0.0f;
-  config.wet = 1.0f;
+  frame.heads[0].position = 0;
+  frame.heads[0].read_amount = 1.0f;
+  frame.heads[1].position = 100;
+  frame.heads[1].read_amount = 1.0f;
+  frame.head_count = 2;
+  frame.dry = 0.0f;
+  frame.wet = 1.0f;
 
-  auto output = sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+  auto output = sound.ProcessSample(frame, StereoSample::OfMono(0.0f));
   EXPECT_NEAR(output.Mono(), 0.7f, 0.0001f);  // 0.4 + 0.3
 }
 
 TEST_F(FridgeSoundTest, EraseReducesSignal) {
   // Write to position 0
-  config.heads[0].read_amount = 0.0f;
-  sound.ProcessSample(config, StereoSample::OfMono(1.0f));
+  frame.heads[0].read_amount = 0.0f;
+  sound.ProcessSample(frame, StereoSample::OfMono(1.0f));
 
   // Advance past fade time
-  config.heads[0].write_amount = 0.0f;
+  frame.heads[0].write_amount = 0.0f;
   for (size_t i = 0; i < kFadeTime; ++i) {
-    sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+    sound.ProcessSample(frame, StereoSample::OfMono(0.0f));
   }
 
   // Now erase (erase_amount multiplies the sample, so 0.5 keeps half)
-  config.heads[0].position = 0;
-  config.heads[0].erase_amount = 0.5f;
-  sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+  frame.heads[0].position = 0;
+  frame.heads[0].erase_amount = 0.5f;
+  sound.ProcessSample(frame, StereoSample::OfMono(0.0f));
 
   // Advance past fade time for erase
-  config.heads[0].erase_amount = 1.0f;
+  frame.heads[0].erase_amount = 1.0f;
   for (size_t i = 0; i < kFadeTime; ++i) {
-    sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+    sound.ProcessSample(frame, StereoSample::OfMono(0.0f));
   }
 
   // Read - should be reduced to ~0.5
-  config.heads[0].read_amount = 1.0f;
-  auto output = sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+  frame.heads[0].read_amount = 1.0f;
+  auto output = sound.ProcessSample(frame, StereoSample::OfMono(0.0f));
   EXPECT_NEAR(output.Mono(), 0.5f, 0.01f);
 }
 
 // Verify that Sound's destructor properly frees all slab entries, by allocating
 // a bunch of Sound instances and freeing them
 TEST_F(FridgeSoundTest, DestructorCleansUpSlabs) {
-  fridge::config::Config config;
+  fridge::mod::Frame frame;
 
   // Collect reference outputs from the first Sound instance.
   std::vector<StereoSample> reference;
@@ -228,7 +231,7 @@ TEST_F(FridgeSoundTest, DestructorCleansUpSlabs) {
     auto sound = std::make_unique<Sound>();
     for (size_t i = 0; i <= kFadeTime; ++i) {
       reference.push_back(
-          sound->ProcessSample(config, StereoSample::OfMono(1.0f)));
+          sound->ProcessSample(frame, StereoSample::OfMono(1.0f)));
     }
   }
 
@@ -237,7 +240,7 @@ TEST_F(FridgeSoundTest, DestructorCleansUpSlabs) {
   for (int j = 0; j < 20; ++j) {
     auto sound = std::make_unique<Sound>();
     for (size_t i = 0; i <= kFadeTime; ++i) {
-      ASSERT_EQ(sound->ProcessSample(config, StereoSample::OfMono(1.0f)),
+      ASSERT_EQ(sound->ProcessSample(frame, StereoSample::OfMono(1.0f)),
                 reference[i])
           << "output mismatch at iteration " << j << ", sample " << i;
     }
@@ -246,43 +249,43 @@ TEST_F(FridgeSoundTest, DestructorCleansUpSlabs) {
 
 TEST_F(FridgeSoundTest, PanOnHeadShiftsOutput) {
   // Write with center pan so both buffer channels get the full signal.
-  config.heads[0].read_amount = 0.0f;
-  sound.ProcessSample(config, StereoSample::OfMono(0.7f));
+  frame.heads[0].read_amount = 0.0f;
+  sound.ProcessSample(frame, StereoSample::OfMono(0.7f));
 
   // Advance past fade time with no writes.
-  config.heads[0].write_amount = 0.0f;
+  frame.heads[0].write_amount = 0.0f;
   for (size_t i = 0; i < kFadeTime; ++i) {
-    sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+    sound.ProcessSample(frame, StereoSample::OfMono(0.0f));
   }
 
   // Read with full-right pan: left channel should be silent, right should carry
   // the full signal.
-  config.heads[0].read_amount = 1.0f;
-  config.heads[0].pan = Pan::Right(1.0f);
-  auto output = sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+  frame.heads[0].read_amount = 1.0f;
+  frame.heads[0].pan = Pan::Right(1.0f);
+  auto output = sound.ProcessSample(frame, StereoSample::OfMono(0.0f));
   EXPECT_NEAR(output.left, 0.0f, 0.0001f);
   EXPECT_NEAR(output.right, 0.7f, 0.0001f);
 }
 
 TEST_F(FridgeSoundTest, ZeroEraseAmountClearsSignal) {
-  config.heads[0].read_amount = 0.0f;
-  sound.ProcessSample(config, StereoSample::OfMono(1.0f));
+  frame.heads[0].read_amount = 0.0f;
+  sound.ProcessSample(frame, StereoSample::OfMono(1.0f));
 
-  config.heads[0].write_amount = 0.0f;
+  frame.heads[0].write_amount = 0.0f;
   for (size_t i = 0; i < kFadeTime; ++i) {
-    sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+    sound.ProcessSample(frame, StereoSample::OfMono(0.0f));
   }
 
-  config.heads[0].position = 0;
-  config.heads[0].erase_amount = 0.0f;
-  sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+  frame.heads[0].position = 0;
+  frame.heads[0].erase_amount = 0.0f;
+  sound.ProcessSample(frame, StereoSample::OfMono(0.0f));
 
-  config.heads[0].erase_amount = 1.0f;
+  frame.heads[0].erase_amount = 1.0f;
   for (size_t i = 0; i < kFadeTime; ++i) {
-    sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+    sound.ProcessSample(frame, StereoSample::OfMono(0.0f));
   }
 
-  config.heads[0].read_amount = 1.0f;
-  auto output = sound.ProcessSample(config, StereoSample::OfMono(0.0f));
+  frame.heads[0].read_amount = 1.0f;
+  auto output = sound.ProcessSample(frame, StereoSample::OfMono(0.0f));
   EXPECT_NEAR(output.Mono(), 0.0f, 0.01f);
 }

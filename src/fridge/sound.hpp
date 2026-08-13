@@ -287,8 +287,6 @@ class Sound {
   /**
    * Process an audio sample. Moves the internal clock forwards by 1
    */
-  StereoSample ProcessSample(const fridge::config::Config& config,
-                             StereoSample sample);
   StereoSample ProcessSample(const fridge::mod::Frame& frame,
                              StereoSample sample);
 };

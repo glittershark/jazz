@@ -24,6 +24,7 @@ using fridge::config::LFO;
 using fridge::config::Target;
 using fridge::config::TargetObject;
 using fridge::config::TargetParameter;
+using fridge::mod::Frame;
 using fridge::sound::Sound;
 using jazz::audio::StereoSample;
 using jazz::units::Samples;
@@ -145,16 +146,17 @@ auto ValidConfig() {
 void ProcessSampleDoesNotCrash(float sample, size_t position,
                                float write_amount, float read_amount,
                                float erase_amount) {
-  Config config;
-  config.heads[0] = Head{
+  Frame frame;
+  frame.heads[0] = Head{
       .position = position,
       .write_amount = write_amount,
       .read_amount = read_amount,
       .erase_amount = erase_amount,
   };
+  frame.head_count = 1;
 
   auto sound = std::make_unique<Sound>();
-  sound->ProcessSample(config, StereoSample::OfMono(sample));
+  sound->ProcessSample(frame, StereoSample::OfMono(sample));
 }
 
 FUZZ_TEST(FridgeSoundFuzzTest, ProcessSampleDoesNotCrash)
@@ -170,8 +172,8 @@ void StaticConfigNeverCrashes(Config root_config,
   auto modulator = std::make_unique<fridge::mod::Modulator>(seed);
   auto sound = std::make_unique<Sound>();
   for (auto&& sample : samples) {
-    const auto& modulated = modulator->Update(root_config, Samples(1));
-    auto res = sound->ProcessSample(modulated, StereoSample::OfMono(sample));
+    auto res = sound->ProcessSample(modulator->TickSample(),
+                                    StereoSample::OfMono(sample));
   }
 }
 
@@ -195,9 +197,8 @@ void DynamicConfigNeverCrashes(Config initial_config,
     if (event.new_config.has_value()) {
       config = *event.new_config;
     }
-    const auto& modulated = modulator->Update(config, Samples(1));
-    auto res =
-        sound->ProcessSample(modulated, StereoSample::OfMono(event.sample));
+    auto res = sound->ProcessSample(modulator->TickSample(),
+                                    StereoSample::OfMono(event.sample));
   }
 }
 
