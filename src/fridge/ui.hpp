@@ -659,31 +659,31 @@ class RadioButtons {
   Callback<uint8_t> on_change_;
 
   struct Selector {
-    RadioButtons* rb;
+    RadioButtons* radio_buttons;
     std::uint8_t which;
 
-    Selector() : rb(nullptr), which(0) {}
+    Selector() : radio_buttons(nullptr), which(0) {}
 
     // because doing this at construction is too hard
-    void Configure(RadioButtons* rb, std::uint8_t which) {
-      this->rb = rb;
+    void Configure(RadioButtons* radio_buttons, std::uint8_t which) {
+      this->radio_buttons = radio_buttons;
       this->which = which;
     }
 
     void Select(bool pressed) {
-      if (rb) {
+      if (radio_buttons) {
         if (pressed) {
-          if (rb->selected_ != which) {
-            rb->Select(which);
+          if (radio_buttons->selected_ != which) {
+            radio_buttons->Select(which);
           }
-          if (!rb->held_.has_value()) {
-            rb->held_ = Held{.which = which, .since = Now()};
+          if (!radio_buttons->held_.has_value()) {
+            radio_buttons->held_ = Held{.which = which, .since = Now()};
           }
-        } else if (rb->selected_ == which) {
+        } else if (radio_buttons->selected_ == which) {
           // If we just released the button for the *currently selected*
           // selector (which must have been the last pressed one), then reset
           // the held item to nothing
-          rb->held_ = std::nullopt;
+          radio_buttons->held_ = std::nullopt;
         }
       }
     }
