@@ -267,6 +267,9 @@ void UI::Tick() {
       // button long enough that we should *start* blinking
       head_knobs.StartBlinking();
       head_select.StartBlinking();
+      head_knobs.SetEnabled(false);
+      lfo_knobs.SetEnabled(false);
+
       blink_state_ =
           std::make_optional(BlinkState{.blink = true, .last_toggle = now});
     } else {
@@ -306,9 +309,12 @@ void UI::Tick() {
       // We're not holding down an LFO button, but we're currently blinking.
       // Stop doing that.
       head_knobs.StopBlinking();
-      lfo_knobs.StopBlinking();
       head_select.StopBlinking();
+      head_knobs.SetEnabled(true);
+
+      lfo_knobs.StopBlinking();
       lfo_select.StopBlinking();
+      lfo_knobs.SetEnabled(true);
 
       blink_state_ = std::nullopt;
     }
@@ -358,12 +364,32 @@ void HeadKnobs::StopBlinking() {
   EACH_HEAD_KNOB(this, [](const auto knob) { knob->UpdateDisplay(); });
 }
 
+void HeadKnobs::SetEnabled(bool enabled) {
+  EACH_HEAD_KNOB(this, [=](const auto knob) { knob->SetEnabled(enabled); });
+}
+
+bool HeadKnobs::Enabled() const {
+  /* All knobs are enabled+disabled together, so we just return the enabled
+   * status of an arbitrary knob */
+  return position.Enabled();
+}
+
 void LFOKnobs::StartBlinking() {
   EACH_LFO_KNOB(this, [](const auto knob) { knob->BlinkOff(); });
 }
 
 void LFOKnobs::StopBlinking() {
   EACH_LFO_KNOB(this, [](const auto knob) { knob->UpdateDisplay(); });
+}
+
+void LFOKnobs::SetEnabled(bool enabled) {
+  EACH_LFO_KNOB(this, [=](const auto knob) { knob->SetEnabled(enabled); });
+}
+
+bool LFOKnobs::Enabled() const {
+  /* All knobs are enabled+disabled together, so we just return the enabled
+   * status of an arbitrary knob */
+  return range.Enabled();
 }
 
 #ifndef UNIT_TEST

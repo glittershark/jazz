@@ -64,12 +64,17 @@ concept DisplayableBackingValue = BackingValue<V> && requires(const V& v) {
 
 template <BackingValue V>
 class Knob {
+  bool enabled_ = true;
+
   static void callback(Knob* this_, int ticks, float turns) {
     this_->Increment(ticks, turns);
   }
 
  public:
   bool logging_enabled() const { return logging_enabled_; }
+
+  bool Enabled() const { return enabled_; }
+  void SetEnabled(bool enabled) { enabled_ = enabled; }
 
  protected:
   V value_;
@@ -103,6 +108,9 @@ class Knob {
   }
 
   V& Increment(int ticks, float turns) {
+    if (!Enabled()) {
+      return value_;
+    }
     auto& res = value_.Increment(ticks, turns);
     LogValue();
     return res;
@@ -144,7 +152,9 @@ class KnobWithDisplay : public Knob<V> {
 
   V& Increment(int ticks, float turns) {
     auto& res = Knob<V>::Increment(ticks, turns);
-    UpdateDisplay();
+    if (Knob<V>::Enabled()) {
+      UpdateDisplay();
+    }
     return res;
   }
 
@@ -487,7 +497,9 @@ class FeedbackKnob : public Knob<Feedback> {
 
   Feedback& Increment(int ticks, float turns) {
     auto& res = Knob<Feedback>::Increment(ticks, turns);
-    UpdateDisplay();
+    if (Enabled()) {
+      UpdateDisplay();
+    }
     return res;
   }
 
@@ -605,7 +617,9 @@ class PanKnob : public Knob<Pan> {
 
   Pan& Increment(int ticks, float turns) {
     auto& res = Knob<Pan>::Increment(ticks, turns);
-    UpdateDisplay();
+    if (Enabled()) {
+      UpdateDisplay();
+    }
     return res;
   }
 
@@ -773,6 +787,9 @@ struct HeadKnobs {
 
   void StartBlinking();
   void StopBlinking();
+
+  void SetEnabled(bool enabled);
+  bool Enabled() const;
 };
 
 #define EACH_HEAD_KNOB(head_knobs, f) \
@@ -801,6 +818,9 @@ struct LFOKnobs {
 
   void StartBlinking();
   void StopBlinking();
+
+  void SetEnabled(bool enabled);
+  bool Enabled() const;
 };
 
 #define EACH_LFO_KNOB(lfo_knobs, f)    \
@@ -860,6 +880,9 @@ struct UI {
  private:
   // The authoritative, live config of the effect.
   config::Config config_;
+
+  /* Which LFO is the source of the current target selection workflow, if any */
+  std::optional<uint8_t> lfo_target_source_ = std::nullopt;
 
   struct BlinkState {
     bool blink;
