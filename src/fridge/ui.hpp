@@ -876,8 +876,7 @@ struct TempoButton {
 };
 #endif  // UNIT_TEST
 
-struct UI {
- private:
+class UI {
   // The authoritative, live config of the effect.
   config::Config config_;
 
@@ -899,84 +898,96 @@ struct UI {
 
   config::Target TargetForSelected(config::TargetParameter param) const;
 
- public:
-  void Tick();
-
- private:
   static void timer_callback_(void* self) { static_cast<UI*>(self)->Tick(); }
 
+  uint8_t selected_head_ = 0;
+  uint8_t selected_lfo_ = 0;
+
+  HeadKnobs head_knobs_;
+  LFOKnobs lfo_knobs_;
+
+  CieInterpKnob<SingleTurn> dry_knob_;
+  CieInterpKnob<SingleTurn> wet_knob_;
+  TempoButton tempo_button_;
+
+  RadioButtons<kNumHeads> head_select_;
+  RadioButtons<kNumLfos> lfo_select_;
+
  public:
-  uint8_t selected_head = 0;
-  uint8_t selected_lfo = 0;
-
-  HeadKnobs head_knobs;
-  LFOKnobs lfo_knobs;
-
-  CieInterpKnob<SingleTurn> dry_knob;
-  CieInterpKnob<SingleTurn> wet_knob;
-  TempoButton tempo_button;
-
-  RadioButtons<kNumHeads> head_select;
-  RadioButtons<kNumLfos> lfo_select;
-
-  // TODO(nausicaa): LEDs (there are a bunch, one for each encoder and
-  // selection button)
-
   const config::Config& Config();
 
   UI(io::led::Controller& led_controller,
      config::Config initial_config = config::Config{});
 
   void KnobPressed(config::TargetParameter param, bool pressed);
+
+  uint8_t selected_head() const { return selected_head_; }
+  uint8_t selected_lfo() const { return selected_lfo_; }
+
+  HeadKnobs& head_knobs() { return head_knobs_; }
+  LFOKnobs& lfo_knobs() { return lfo_knobs_; }
+
+  CieInterpKnob<SingleTurn>& dry_knob() { return dry_knob_; }
+  CieInterpKnob<SingleTurn>& wet_knob() { return wet_knob_; }
+
+  TempoButton& tempo_button() { return tempo_button_; }
+
+  RadioButtons<kNumHeads>& head_select() { return head_select_; }
+  RadioButtons<kNumLfos>& lfo_select() { return lfo_select_; }
+
+  void Tick();
+
+  void SelectHead(uint8_t head);
+  void SelectLFO(uint8_t lfo);
 };
 
 #define KNOB(ui, param, doto)                        \
   {                                                  \
     switch (param) {                                 \
     case config::TargetParameter::kPosition:         \
-      (doto)(&head_knobs.position);                  \
+      (doto)(&head_knobs_.position);                 \
       break;                                         \
     case config::TargetParameter::kWriteAmount:      \
-      (doto)(&head_knobs.write_amount);              \
+      (doto)(&head_knobs_.write_amount);             \
       break;                                         \
     case config::TargetParameter::kReadAmount:       \
-      (doto)(&head_knobs.read_amount);               \
+      (doto)(&head_knobs_.read_amount);              \
       break;                                         \
     case config::TargetParameter::kEraseAmount:      \
-      (doto)(&head_knobs.erase_amount);              \
+      (doto)(&head_knobs_.erase_amount);             \
       break;                                         \
     case config::TargetParameter::kFeedbackAmount:   \
-      (doto)(&head_knobs.feedback);                  \
+      (doto)(&head_knobs_.feedback);                 \
       break;                                         \
     case config::TargetParameter::kRange:            \
-      (doto)(&lfo_knobs.range);                      \
+      (doto)(&lfo_knobs_.range);                     \
       break;                                         \
     case config::TargetParameter::kMaxGrainSize:     \
-      (doto)(&lfo_knobs.max_grain_size);             \
+      (doto)(&lfo_knobs_.max_grain_size);            \
       break;                                         \
     case config::TargetParameter::kMinGrainSize:     \
-      (doto)(&lfo_knobs.min_grain_size);             \
+      (doto)(&lfo_knobs_.min_grain_size);            \
       break;                                         \
     case config::TargetParameter::kReverseChance:    \
-      (doto)(&lfo_knobs.reverse_chance);             \
+      (doto)(&lfo_knobs_.reverse_chance);            \
       break;                                         \
     case config::TargetParameter::kTeleportChance:   \
-      (doto)(&lfo_knobs.teleport_chance);            \
+      (doto)(&lfo_knobs_.teleport_chance);           \
       break;                                         \
     case config::TargetParameter::kPitchShiftChance: \
-      (doto)(&lfo_knobs.pitch_shift_chance);         \
+      (doto)(&lfo_knobs_.pitch_shift_chance);        \
       break;                                         \
     case config::TargetParameter::kLowOctaveChance:  \
-      (doto)(&lfo_knobs.low_octave_chance);          \
+      (doto)(&lfo_knobs_.low_octave_chance);         \
       break;                                         \
     case config::TargetParameter::kHighOctaveChance: \
-      (doto)(&lfo_knobs.high_octave_chance);         \
+      (doto)(&lfo_knobs_.high_octave_chance);        \
       break;                                         \
     case config::TargetParameter::kDry:              \
-      (doto)(&dry_knob);                             \
+      (doto)(&dry_knob_);                            \
       break;                                         \
     case config::TargetParameter::kWet:              \
-      (doto)(&wet_knob);                             \
+      (doto)(&wet_knob_);                            \
       break;                                         \
     case config::TargetParameter::kPan:              \
       assert(false);                                 \

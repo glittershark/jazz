@@ -172,47 +172,47 @@ Engine::Engine(config::Config initial_config)
       .data = &ui_,                                               \
   })
 
-  head_.position.OnChange(ui_.head_knobs.position.GetCallback());
+  head_.position.OnChange(ui_.head_knobs().position.GetCallback());
   ON_PRESS_CHANGED(head_.position, kPosition);
-  head_.write_amount.OnChange(ui_.head_knobs.write_amount.GetCallback());
+  head_.write_amount.OnChange(ui_.head_knobs().write_amount.GetCallback());
   ON_PRESS_CHANGED(head_.write_amount, kWriteAmount);
-  head_.read_amount.OnChange(ui_.head_knobs.read_amount.GetCallback());
+  head_.read_amount.OnChange(ui_.head_knobs().read_amount.GetCallback());
   ON_PRESS_CHANGED(head_.read_amount, kReadAmount);
-  head_.erase_amount.OnChange(ui_.head_knobs.erase_amount.GetCallback());
+  head_.erase_amount.OnChange(ui_.head_knobs().erase_amount.GetCallback());
   ON_PRESS_CHANGED(head_.erase_amount, kEraseAmount);
-  head_.feedback.OnChange(ui_.head_knobs.feedback.GetCallback());
+  head_.feedback.OnChange(ui_.head_knobs().feedback.GetCallback());
   ON_PRESS_CHANGED(head_.feedback, kFeedbackAmount);
-  head_.pan.OnChange(ui_.head_knobs.pan.GetCallback());
+  head_.pan.OnChange(ui_.head_knobs().pan.GetCallback());
   ON_PRESS_CHANGED(head_.pan, kPan);
 
-  dry_.OnChange(ui_.dry_knob.GetCallback());
+  dry_.OnChange(ui_.dry_knob().GetCallback());
   ON_PRESS_CHANGED(dry_, kDry);
-  wet_.OnChange(ui_.wet_knob.GetCallback());
+  wet_.OnChange(ui_.wet_knob().GetCallback());
   ON_PRESS_CHANGED(wet_, kWet);
 
-  lfo_.range.OnChange(ui_.lfo_knobs.range.GetCallback());
+  lfo_.range.OnChange(ui_.lfo_knobs().range.GetCallback());
   ON_PRESS_CHANGED(lfo_.range, kRange);
-  lfo_.max_grain_size.OnChange(ui_.lfo_knobs.max_grain_size.GetCallback());
+  lfo_.max_grain_size.OnChange(ui_.lfo_knobs().max_grain_size.GetCallback());
   ON_PRESS_CHANGED(lfo_.max_grain_size, kMaxGrainSize);
-  lfo_.min_grain_size.OnChange(ui_.lfo_knobs.min_grain_size.GetCallback());
+  lfo_.min_grain_size.OnChange(ui_.lfo_knobs().min_grain_size.GetCallback());
   ON_PRESS_CHANGED(lfo_.min_grain_size, kMinGrainSize);
-  lfo_.reverse_chance.OnChange(ui_.lfo_knobs.reverse_chance.GetCallback());
+  lfo_.reverse_chance.OnChange(ui_.lfo_knobs().reverse_chance.GetCallback());
   ON_PRESS_CHANGED(lfo_.reverse_chance, kReverseChance);
-  lfo_.teleport_chance.OnChange(ui_.lfo_knobs.teleport_chance.GetCallback());
+  lfo_.teleport_chance.OnChange(ui_.lfo_knobs().teleport_chance.GetCallback());
   ON_PRESS_CHANGED(lfo_.teleport_chance, kTeleportChance);
   lfo_.pitch_shift_chance.OnChange(
-      ui_.lfo_knobs.pitch_shift_chance.GetCallback());
+      ui_.lfo_knobs().pitch_shift_chance.GetCallback());
   ON_PRESS_CHANGED(lfo_.pitch_shift_chance, kPitchShiftChance);
   lfo_.low_octave_chance.OnChange(
-      ui_.lfo_knobs.low_octave_chance.GetCallback());
+      ui_.lfo_knobs().low_octave_chance.GetCallback());
   ON_PRESS_CHANGED(lfo_.low_octave_chance, kLowOctaveChance);
   lfo_.high_octave_chance.OnChange(
-      ui_.lfo_knobs.high_octave_chance.GetCallback());
+      ui_.lfo_knobs().high_octave_chance.GetCallback());
   ON_PRESS_CHANGED(lfo_.high_octave_chance, kHighOctaveChance);
 
   // and then physical buttons (registers in the order you would expect)
-  ui_.head_select.RegisterCallbacks(head_select_);
-  ui_.lfo_select.RegisterCallbacks(lfo_select_);
+  ui_.head_select().RegisterCallbacks(head_select_);
+  ui_.lfo_select().RegisterCallbacks(lfo_select_);
 
   // TODO: tempo button should probably be connected to something lol
 

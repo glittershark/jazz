@@ -61,16 +61,16 @@ void LFOKnobs::Select(const fridge::config::LFO& lfo) {
 }
 
 const config::Config& ui::UI::Config() {
-  config_.heads[selected_head] = head_knobs.Config();
+  config_.heads[selected_head_] = head_knobs_.Config();
 
   // HACK: keep the targets unchanged. Fix this once we have actual target
   // selection
-  auto prev_targets = config_.lfos[selected_lfo].targets;
-  config_.lfos[selected_lfo] = lfo_knobs.Config();
-  config_.lfos[selected_lfo].targets = prev_targets;
+  auto prev_targets = config_.lfos[selected_lfo_].targets;
+  config_.lfos[selected_lfo_] = lfo_knobs_.Config();
+  config_.lfos[selected_lfo_].targets = prev_targets;
 
-  config_.dry = dry_knob.Get();
-  config_.wet = wet_knob.Get();
+  config_.dry = dry_knob_.Get();
+  config_.wet = wet_knob_.Get();
   return config_;
 }
 
@@ -98,7 +98,7 @@ uint32_t Now() {
 
 UI::UI(io::led::Controller& led, config::Config initial_config)
     : config_(initial_config),
-      head_knobs{
+      head_knobs_{
           // D16
           .position = knob<OneTurnIsBufferLen>(
               "Position", RgbLed(led.B(2, 0), led.B(2, 1), led.B(2, 2))),
@@ -125,7 +125,7 @@ UI::UI(io::led::Controller& led, config::Config initial_config)
                              .max_left_color = color::RGB(0, 255, 0),
                          }),
       },
-      lfo_knobs{
+      lfo_knobs_{
           // D5
           .range = knob<OneTurnIsBufferLen>(
               "Range", RgbLed(led.B(0, 3), led.B(0, 4), led.B(0, 5))),
@@ -155,14 +155,14 @@ UI::UI(io::led::Controller& led, config::Config initial_config)
                                RgbLed(led.B(7, 3), led.B(7, 4), led.B(7, 5))),
       },
       // D4
-      dry_knob(knob<SingleTurn>("Dry",
-                                RgbLed(led.B(0, 0), led.B(0, 1), led.B(0, 2)))),
+      dry_knob_(knob<SingleTurn>(
+          "Dry", RgbLed(led.B(0, 0), led.B(0, 1), led.B(0, 2)))),
       // D10
-      wet_knob(knob<SingleTurn>("Wet",
-                                RgbLed(led.B(1, 0), led.B(1, 1), led.B(1, 2)))),
+      wet_knob_(knob<SingleTurn>(
+          "Wet", RgbLed(led.B(1, 0), led.B(1, 1), led.B(1, 2)))),
 
       // D1, D7, D13, D19, D25, D31, D37, D43
-      head_select(
+      head_select_(
           std::array<RgbLed, 8U>{
               RgbLed(led.A(0, 0), led.A(0, 1), led.A(0, 2)),
               RgbLed(led.A(1, 0), led.A(1, 1), led.A(1, 2)),
@@ -177,7 +177,7 @@ UI::UI(io::led::Controller& led, config::Config initial_config)
           // something.
           color::RGB(0, 255, 0)),
       // D2, D8, D14, D20, D26, D32, D38, D44
-      lfo_select(
+      lfo_select_(
           std::array<RgbLed, 8U>{
               RgbLed(led.A(0, 3), led.A(0, 4), led.A(0, 5)),
               RgbLed(led.A(1, 3), led.A(1, 4), led.A(1, 5)),
@@ -195,42 +195,23 @@ UI::UI(io::led::Controller& led, config::Config initial_config)
   // calls below — those fire on_change which saves-then-loads, and would
   // overwrite the initial config with the default (zero) knob values if the
   // knobs hadn't been loaded first.
-  head_knobs.Select(config_.heads[selected_head]);
-  lfo_knobs.Select(config_.lfos[selected_lfo]);
-  dry_knob.Set(initial_config.dry);
-  wet_knob.Set(initial_config.wet);
+  head_knobs_.Select(config_.heads[selected_head_]);
+  lfo_knobs_.Select(config_.lfos[selected_lfo_]);
+  dry_knob_.Set(initial_config.dry);
+  wet_knob_.Set(initial_config.wet);
 
-  head_select.OnChange(TypedCallback<UI, uint8_t>{
-      .callback =
-          +[](UI* self, uint8_t which) {
-            self->config_.heads[self->selected_head] =
-                self->head_knobs.Config();
-            self->selected_head = which;
-            if (!self->AmBlinking()) {
-              self->head_knobs.Select(self->config_.heads[which]);
-            }
-          },
+  head_select_.OnChange(TypedCallback<UI, uint8_t>{
+      .callback = +[](UI* self, uint8_t head) { self->SelectHead(head); },
       .data = this,
   });
 
-  lfo_select.OnChange(TypedCallback<UI, uint8_t>{
-      .callback =
-          +[](UI* self, uint8_t which) {
-            // HACK: Preserve the outgoing LFO's targets — LFOKnobs::Config()
-            // doesn't include them (no target-selection UI yet), so writing
-            // back naively would wipe modulation routes. Same trick as the
-            // HACK in UI::Config above.
-            auto prev_targets = self->config_.lfos[self->selected_lfo].targets;
-            self->config_.lfos[self->selected_lfo] = self->lfo_knobs.Config();
-            self->config_.lfos[self->selected_lfo].targets = prev_targets;
-            self->selected_lfo = which;
-            self->lfo_knobs.Select(self->config_.lfos[which]);
-          },
+  lfo_select_.OnChange(TypedCallback<UI, uint8_t>{
+      .callback = +[](UI* self, uint8_t lfo) { self->SelectLFO(lfo); },
       .data = this,
   });
 
-  head_select.Select(selected_head);
-  lfo_select.Select(selected_lfo);
+  head_select_.Select(selected_head_);
+  lfo_select_.Select(selected_lfo_);
 
 #ifndef UNIT_TEST
   {
@@ -245,13 +226,33 @@ UI::UI(io::led::Controller& led, config::Config initial_config)
 #endif
 }
 
+void UI::SelectHead(uint8_t head) {
+  config_.heads[selected_head_] = head_knobs_.Config();
+  selected_head_ = head;
+  if (!AmBlinking()) {
+    head_knobs_.Select(config_.heads[head]);
+  }
+}
+
+void UI::SelectLFO(uint8_t lfo) {
+  // HACK: Preserve the outgoing LFO's targets — LFOKnobs::Config()
+  // doesn't include them (no target-selection UI yet), so writing
+  // back naively would wipe modulation routes. Same trick as the
+  // HACK in UI::Config above.
+  auto prev_targets = config_.lfos[selected_lfo_].targets;
+  config_.lfos[selected_lfo_] = lfo_knobs_.Config();
+  config_.lfos[selected_lfo_].targets = prev_targets;
+  selected_lfo_ = lfo;
+  lfo_knobs_.Select(config_.lfos[lfo]);
+}
+
 /** Tick the UI once.
  *
  * This method basically exists to step the state machine for blinking LEDs to
  * give feedback to the LFO "patch" UI one step forwards
  * */
 void UI::Tick() {
-  auto held_lfo = lfo_select.held();
+  auto held_lfo = lfo_select_.held();
   // Are we currently holding down an LFO button?
   if (held_lfo.has_value()) {
     auto now = Now();
@@ -265,10 +266,10 @@ void UI::Tick() {
     } else if (now - held_lfo->since > kHoldDelayMs) {
       // We're not currently blinking, but we *have* been holding down the LFO
       // button long enough that we should *start* blinking
-      head_knobs.StartBlinking();
-      head_select.StartBlinking();
-      head_knobs.SetEnabled(false);
-      lfo_knobs.SetEnabled(false);
+      head_knobs_.StartBlinking();
+      head_select_.StartBlinking();
+      head_knobs_.SetEnabled(false);
+      lfo_knobs_.SetEnabled(false);
 
       blink_state_ =
           std::make_optional(BlinkState{.blink = true, .last_toggle = now});
@@ -286,13 +287,13 @@ void UI::Tick() {
         // Blink the target head's selector
         auto target_head_idx = target->object_idx;
         if (blink_state_->blink) {
-          head_select.BlinkOn(target_head_idx);
+          head_select_.BlinkOn(target_head_idx);
         } else {
-          head_select.BlinkOff(target_head_idx);
+          head_select_.BlinkOff(target_head_idx);
         }
 
         // If the head is selected currently, also blink the relevant knob
-        if (head_select.selected() == target_head_idx) {
+        if (head_select_.selected() == target_head_idx) {
           KNOB(*this, target->parameter,
                [&](auto* knob) { knob->Blink(blink_state_->blink); });
         }
@@ -308,13 +309,13 @@ void UI::Tick() {
     if (blink_state_.has_value()) {
       // We're not holding down an LFO button, but we're currently blinking.
       // Stop doing that.
-      head_knobs.StopBlinking();
-      head_select.StopBlinking();
-      head_knobs.SetEnabled(true);
+      head_knobs_.StopBlinking();
+      head_select_.StopBlinking();
+      head_knobs_.SetEnabled(true);
 
-      lfo_knobs.StopBlinking();
-      lfo_select.StopBlinking();
-      lfo_knobs.SetEnabled(true);
+      lfo_knobs_.StopBlinking();
+      lfo_select_.StopBlinking();
+      lfo_knobs_.SetEnabled(true);
 
       blink_state_ = std::nullopt;
     }
@@ -326,10 +327,10 @@ config::Target UI::TargetForSelected(config::TargetParameter param) const {
   uint8_t object_idx = 0;
   switch (object) {
   case config::TargetObject::kHead:
-    object_idx = selected_head;
+    object_idx = selected_head_;
     break;
   case config::TargetObject::kLFO:
-    object_idx = selected_lfo;
+    object_idx = selected_lfo_;
     break;
   case config::TargetObject::kMixer:
     break;
@@ -344,7 +345,7 @@ config::Target UI::TargetForSelected(config::TargetParameter param) const {
 
 void UI::KnobPressed(config::TargetParameter param, bool pressed) {
   if (pressed) {
-    auto held_lfo = lfo_select.held();
+    auto held_lfo = lfo_select_.held();
     if (held_lfo.has_value()) {
       auto target = TargetForSelected(param);
       auto result = config_.lfos[held_lfo->which].ToggleTarget(target);

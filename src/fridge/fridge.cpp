@@ -243,11 +243,11 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
   hw.PrintLine("Now refrigerating your heads...");
 
   // TODO: delete
-  ::engine->ui().head_knobs.feedback.EnableLogging();
-  ::engine->ui().head_knobs.position.EnableLogging();
-  ::engine->ui().lfo_knobs.range.EnableLogging();
-  ::engine->ui().lfo_knobs.min_grain_size.EnableLogging();
-  ::engine->ui().lfo_knobs.max_grain_size.EnableLogging();
+  ::engine->ui().head_knobs().feedback.EnableLogging();
+  ::engine->ui().head_knobs().position.EnableLogging();
+  ::engine->ui().lfo_knobs().range.EnableLogging();
+  ::engine->ui().lfo_knobs().min_grain_size.EnableLogging();
+  ::engine->ui().lfo_knobs().max_grain_size.EnableLogging();
 
   for (;;) {
     ::engine->SyncConfig();
