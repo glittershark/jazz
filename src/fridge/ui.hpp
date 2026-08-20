@@ -65,6 +65,7 @@ concept DisplayableBackingValue = BackingValue<V> && requires(const V& v) {
 template <BackingValue V>
 class Knob {
   bool enabled_ = true;
+  Callback<> on_change_;
 
   static void callback(Knob* this_, int ticks, float turns) {
     this_->Increment(ticks, turns);
@@ -75,6 +76,8 @@ class Knob {
 
   bool Enabled() const { return enabled_; }
   void SetEnabled(bool enabled) { enabled_ = enabled; }
+
+  void OnChange(Callback<> on_change) { on_change_ = on_change; }
 
  protected:
   V value_;
@@ -113,6 +116,7 @@ class Knob {
     }
     auto& res = value_.Increment(ticks, turns);
     LogValue();
+    on_change_();
     return res;
   }
 
@@ -807,7 +811,9 @@ struct HeadKnobs {
   // EACH_HEAD_KNOB!
 
   void Select(const config::Head& head);
-  config::Head Config() const;
+  void WriteInto(config::Head& head) const;
+
+  void OnChange(Callback<> on_change);
 
   void StartBlinking();
   void StopBlinking();
@@ -839,7 +845,9 @@ struct LFOKnobs {
   // EACH_LFO_KNOB!
 
   void Select(const config::LFO& lfo);
-  config::LFO Config() const;
+  void WriteInto(config::LFO& lfo) const;
+
+  void OnChange(Callback<> on_change);
 
   void StartBlinking();
   void StopBlinking();
@@ -903,7 +911,7 @@ struct TempoButton {
 
 class UI {
   // The authoritative, live config of the effect.
-  config::Config config_;
+  config::ConfigStore* config_;
 
   /* Which LFO is the source of the current target selection workflow, if any */
   std::optional<uint8_t> lfo_target_source_ = std::nullopt;
@@ -946,11 +954,14 @@ class UI {
    */
   void TickTargetSelect();
 
- public:
-  const config::Config& Config();
+  void WriteHead();
+  void WriteLFO();
+  void WriteMixer();
 
-  UI(io::led::Controller& led_controller,
-     config::Config initial_config = config::Config{});
+ public:
+  const config::Config& Config() const { return config_->Read(); }
+
+  UI(io::led::Controller& led_controller, config::ConfigStore* config);
 
   void KnobPressed(config::TargetParameter param, bool pressed);
 

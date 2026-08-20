@@ -28,14 +28,16 @@ struct UITest : public testing::Test {
 };
 
 TEST_F(UITest, UI_can_be_constructed) {
-  ui::UI ui(leds);
+  config::ConfigStore store;
+  ui::UI ui(leds, &store);
 }
 
 TEST_F(UITest, update_head_knobs_via_callbacks) {
   const unsigned garbage = 21307;
   const size_t selected_head = 1;
 
-  ui::UI ui(leds, initial_config);
+  config::ConfigStore store(initial_config);
+  ui::UI ui(leds, &store);
   ui.SelectHead(selected_head);
   config::Config config;
 
@@ -92,7 +94,8 @@ TEST_F(UITest, update_lfo_knobs_via_callbacks) {
   const unsigned garbage = 21307;
   const size_t selected_lfo = 1;
 
-  ui::UI ui(leds, initial_config);
+  config::ConfigStore store(initial_config);
+  ui::UI ui(leds, &store);
   ui.SelectLFO(selected_lfo);
   config::Config config;
 
@@ -176,7 +179,8 @@ TEST_F(UITest, one_turn_is_buffer_len_knob_saturates) {
 }
 
 TEST_F(UITest, wet_knob_uses_led_to_display) {
-  ui::UI ui(leds);
+  config::ConfigStore store;
+  ui::UI ui(leds, &store);
 
   auto& knob = ui.wet_knob();
 
@@ -201,7 +205,8 @@ TEST_F(UITest, initial_config_is_left_unchanged_if_no_callbacks) {
   initial_config.lfos[0].max_grain_size = 19000;
   initial_config.lfos[0].min_grain_size = 2000;
 
-  ui::UI ui(leds, initial_config);
+  config::ConfigStore store(initial_config);
+  ui::UI ui(leds, &store);
 
   auto new_config = ui.Config();
   EXPECT_EQ(new_config.lfos[0].range, initial_config.lfos[0].range);
@@ -216,7 +221,8 @@ TEST_F(UITest, dry_and_wet_come_from_initial_config) {
   initial_config.dry = 0.9;
   initial_config.wet = 0.777;
 
-  ui::UI ui(leds, initial_config);
+  config::ConfigStore store(initial_config);
+  ui::UI ui(leds, &store);
 
   auto new_config = ui.Config();
 
@@ -225,7 +231,8 @@ TEST_F(UITest, dry_and_wet_come_from_initial_config) {
 }
 
 TEST_F(UITest, change_selected_head_via_radio_buttons) {
-  ui::UI ui(leds);
+  config::ConfigStore store;
+  ui::UI ui(leds, &store);
 
   ui.head_select().Select(2);
   EXPECT_EQ(ui.selected_head(), 2);
@@ -239,7 +246,8 @@ TEST_F(UITest, change_selected_head_via_radio_buttons) {
 }
 
 TEST_F(UITest, change_selected_lfo_via_radio_buttons) {
-  ui::UI ui(leds);
+  config::ConfigStore store;
+  ui::UI ui(leds, &store);
 
   ui.lfo_select().Select(2);
   EXPECT_EQ(ui.selected_lfo(), 2);
@@ -265,7 +273,8 @@ TEST_F(UITest, heads_and_lfo_are_locked) {
   };
 
   {
-    ui::UI ui(leds, initial_config);
+    config::ConfigStore store(initial_config);
+    ui::UI ui(leds, &store);
     EXPECT_TRUE(ui.HeadsAndLFOsAreLocked());
   }
 
@@ -277,7 +286,8 @@ TEST_F(UITest, heads_and_lfo_are_locked) {
         .object_idx = 2,
     };
 
-    ui::UI ui(leds, initial_config);
+    config::ConfigStore store(initial_config);
+    ui::UI ui(leds, &store);
     EXPECT_FALSE(ui.HeadsAndLFOsAreLocked());
   }
 
@@ -289,7 +299,8 @@ TEST_F(UITest, heads_and_lfo_are_locked) {
         .object_idx = 1,
     };
 
-    ui::UI ui(leds, initial_config);
+    config::ConfigStore store(initial_config);
+    ui::UI ui(leds, &store);
     EXPECT_TRUE(ui.HeadsAndLFOsAreLocked());
   }
 
@@ -301,7 +312,8 @@ TEST_F(UITest, heads_and_lfo_are_locked) {
         .object_idx = 2,
     };
 
-    ui::UI ui(leds, initial_config);
+    config::ConfigStore store(initial_config);
+    ui::UI ui(leds, &store);
     EXPECT_FALSE(ui.HeadsAndLFOsAreLocked());
   }
 }

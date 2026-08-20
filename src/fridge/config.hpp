@@ -116,6 +116,29 @@ struct Config {
   bool operator==(const Config& rhs) const = default;
 };
 
+/**
+ * The one live copy of the config, plus whether the audio engine has caught up
+ * with it. Written from the mux timer interrupt, read from the main loop.
+ */
+class ConfigStore {
+  Config config_;
+  volatile bool dirty_ = false;
+
+ public:
+  ConfigStore() = default;
+  explicit ConfigStore(const Config& config) : config_(config) {}
+
+  const Config& Read() const { return config_; }
+
+  Config& Write() {
+    dirty_ = true;
+    return config_;
+  }
+
+  bool dirty() const { return dirty_; }
+  void MarkClean() { dirty_ = false; }
+};
+
 }  // namespace fridge::config
 // NOLINTEND(clang-diagnostic-unused-*)
 

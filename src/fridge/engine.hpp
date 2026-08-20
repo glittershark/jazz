@@ -88,12 +88,13 @@ class Engine {
   std::array<io::Button, kNumHeads> head_select_;
   std::array<io::Button, kNumLfos> lfo_select_;
 
-  // leds_ must be declared before ui_: C++ initializes members in declaration
-  // order, and the UI constructor writes to the LED controller during init.
+  // config_ and leds_ must both be declared before ui_: C++ initializes
+  // members in declaration order, and the UI constructor reads the config and
+  // writes to the LED controller during init.
+  config::ConfigStore config_;
   io::led::Controller leds_;
   ui::UI ui_;
   mod::Modulator modulator_;
-  config::Config installed_config_;
 
  public:
   Engine(config::Config initial_config = config::Config{});
@@ -101,12 +102,8 @@ class Engine {
   ui::UI& ui() { return ui_; }
   const ui::UI& ui() const { return ui_; }
 
-  /** Install a new root config (cheap enough for occasional knob changes,
-   * not for the audio path). */
-  void SetConfig(const config::Config& config);
-
-  /** Pull the UI's config and install it if a knob changed it. Call from the
-   * main loop, never the audio path. */
+  /** Install the live config into the modulator if the UI has touched it since
+   * we last looked. Call from the main loop, never the audio path. */
   void SyncConfig();
 
   /** Advance the modulation world one sample; feed the result to Sound. */

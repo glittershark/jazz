@@ -19,15 +19,14 @@ using namespace daisy;
 using namespace fridge;
 using namespace fridge::ui;
 
-config::Head HeadKnobs::Config() const {
-  return {
-      .position = position.Get(),
-      .write_amount = write_amount.Get(),
-      .read_amount = read_amount.Get(),
-      .erase_amount = erase_amount.Get(),
-      .feedback = feedback.Get(),
-  };
-};
+void HeadKnobs::WriteInto(fridge::config::Head& head) const {
+  head.position = position.Get();
+  head.write_amount = write_amount.Get();
+  head.read_amount = read_amount.Get();
+  head.erase_amount = erase_amount.Get();
+  head.feedback = feedback.Get();
+  head.pan = pan.Get();
+}
 
 void HeadKnobs::Select(const fridge::config::Head& head) {
   position.Set(head.position);
@@ -38,17 +37,15 @@ void HeadKnobs::Select(const fridge::config::Head& head) {
   pan.Set(head.pan);
 }
 
-fridge::config::LFO LFOKnobs::Config() const {
-  return {
-      .range = range.Get(),
-      .max_grain_size = max_grain_size.Get(),
-      .min_grain_size = min_grain_size.Get(),
-      .reverse_chance = reverse_chance.Get(),
-      .teleport_chance = teleport_chance.Get(),
-      .pitch_shift_chance = pitch_shift_chance.Get(),
-      .low_octave_chance = low_octave_chance.Get(),
-      .high_octave_chance = high_octave_chance.Get(),
-  };
+void LFOKnobs::WriteInto(fridge::config::LFO& lfo) const {
+  lfo.range = range.Get();
+  lfo.max_grain_size = max_grain_size.Get();
+  lfo.min_grain_size = min_grain_size.Get();
+  lfo.reverse_chance = reverse_chance.Get();
+  lfo.teleport_chance = teleport_chance.Get();
+  lfo.pitch_shift_chance = pitch_shift_chance.Get();
+  lfo.low_octave_chance = low_octave_chance.Get();
+  lfo.high_octave_chance = high_octave_chance.Get();
 }
 
 void LFOKnobs::Select(const fridge::config::LFO& lfo) {
@@ -62,18 +59,18 @@ void LFOKnobs::Select(const fridge::config::LFO& lfo) {
   high_octave_chance.Set(lfo.high_octave_chance);
 }
 
-const config::Config& ui::UI::Config() {
-  config_.heads[selected_head_] = head_knobs_.Config();
+void ui::UI::WriteHead() {
+  head_knobs_.WriteInto(config_->Write().heads[selected_head_]);
+}
 
-  // HACK: keep the targets unchanged. Fix this once we have actual target
-  // selection
-  auto prev_targets = config_.lfos[selected_lfo_].targets;
-  config_.lfos[selected_lfo_] = lfo_knobs_.Config();
-  config_.lfos[selected_lfo_].targets = prev_targets;
+void ui::UI::WriteLFO() {
+  lfo_knobs_.WriteInto(config_->Write().lfos[selected_lfo_]);
+}
 
-  config_.dry = dry_knob_.Get();
-  config_.wet = wet_knob_.Get();
-  return config_;
+void ui::UI::WriteMixer() {
+  config::Config& config = config_->Write();
+  config.dry = dry_knob_.Get();
+  config.wet = wet_knob_.Get();
 }
 
 namespace {
@@ -105,8 +102,8 @@ constexpr const radio_buttons::Config kRadioButtonConfig{
     .held_color = color::RGB(255, 0, 0),
 };
 
-UI::UI(io::led::Controller& led, config::Config initial_config)
-    : config_(initial_config),
+UI::UI(io::led::Controller& led, config::ConfigStore* config)
+    : config_(config),
       head_knobs_{
           // D16
           .position = knob<OneTurnIsBufferLen>(
@@ -196,14 +193,27 @@ UI::UI(io::led::Controller& led, config::Config initial_config)
               RgbLed(led.A(7, 3), led.A(7, 4), led.A(7, 5)),
           },
           kRadioButtonConfig) {
-  // Load initial config into the knobs BEFORE the head_select/lfo_select
-  // calls below — those fire on_change which saves-then-loads, and would
-  // overwrite the initial config with the default (zero) knob values if the
-  // knobs hadn't been loaded first.
-  head_knobs_.Select(config_.heads[selected_head_]);
-  lfo_knobs_.Select(config_.lfos[selected_lfo_]);
-  dry_knob_.Set(initial_config.dry);
-  wet_knob_.Set(initial_config.wet);
+  head_knobs_.Select(config_->Read().heads[selected_head_]);
+  lfo_knobs_.Select(config_->Read().lfos[selected_lfo_]);
+  dry_knob_.Set(config_->Read().dry);
+  wet_knob_.Set(config_->Read().wet);
+
+  head_knobs_.OnChange(TypedCallback<UI>{
+      .callback = +[](UI* self) { self->WriteHead(); },
+      .data = this,
+  });
+
+  lfo_knobs_.OnChange(TypedCallback<UI>{
+      .callback = +[](UI* self) { self->WriteLFO(); },
+      .data = this,
+  });
+
+  auto write_mixer = TypedCallback<UI>{
+      .callback = +[](UI* self) { self->WriteMixer(); },
+      .data = this,
+  };
+  dry_knob_.OnChange(write_mixer);
+  wet_knob_.OnChange(write_mixer);
 
   head_select_.OnChange(TypedCallback<UI, uint8_t>{
       .callback = +[](UI* self, uint8_t head) { self->SelectHead(head); },
@@ -233,7 +243,7 @@ UI::UI(io::led::Controller& led, config::Config initial_config)
 
 bool UI::HeadsAndLFOsAreLocked() const {
   for (uint8_t lfo_idx = 0; lfo_idx < kNumLfos; ++lfo_idx) {
-    for (const auto& target : config_.lfos[lfo_idx].targets) {
+    for (const auto& target : config_->Read().lfos[lfo_idx].targets) {
       if (!target.has_value()) {
         continue;
       }
@@ -247,11 +257,10 @@ bool UI::HeadsAndLFOsAreLocked() const {
 }
 
 void UI::SelectHead(uint8_t head) {
-  config_.heads[selected_head_] = head_knobs_.Config();
   selected_head_ = head;
 
   if (!AmBlinking()) {
-    head_knobs_.Select(config_.heads[head]);
+    head_knobs_.Select(config_->Read().heads[head]);
 
     if (HeadsAndLFOsAreLocked() && selected_lfo_ != head) {
       lfo_select_.Select(head, /*instantaneous=*/true);
@@ -260,17 +269,10 @@ void UI::SelectHead(uint8_t head) {
 }
 
 void UI::SelectLFO(uint8_t lfo) {
-  // HACK: Preserve the outgoing LFO's targets — LFOKnobs::Config()
-  // doesn't include them (no target-selection UI yet), so writing
-  // back naively would wipe modulation routes. Same trick as the
-  // HACK in UI::Config above.
-  auto prev_targets = config_.lfos[selected_lfo_].targets;
-  config_.lfos[selected_lfo_] = lfo_knobs_.Config();
-  config_.lfos[selected_lfo_].targets = prev_targets;
   selected_lfo_ = lfo;
 
   if (!AmBlinking()) {
-    lfo_knobs_.Select(config_.lfos[lfo]);
+    lfo_knobs_.Select(config_->Read().lfos[lfo]);
 
     if (HeadsAndLFOsAreLocked() && selected_head_ != lfo) {
       head_select_.Select(lfo, /*instantaneous=*/true);
@@ -301,12 +303,15 @@ void UI::StartBlinking(uint32_t now) {
 }
 
 void UI::StopBlinking() {
+  // The selection may have moved while we were blinking, so reload the knobs.
+  head_knobs_.Select(config_->Read().heads[selected_head_]);
   head_knobs_.StopBlinking();
   head_knobs_.SetEnabled(true);
 
   head_select_.StopBlinking();
   lfo_select_.StopBlinking();
 
+  lfo_knobs_.Select(config_->Read().lfos[selected_lfo_]);
   lfo_knobs_.StopBlinking();
   lfo_knobs_.SetEnabled(true);
 
@@ -339,7 +344,7 @@ void UI::TickTargetSelect() {
       return;
     }
 
-    for (const auto& target : config_.lfos[held_lfo->which].targets) {
+    for (const auto& target : config_->Read().lfos[held_lfo->which].targets) {
       if (!target.has_value()) {
         continue;
       }
@@ -414,13 +419,17 @@ void UI::KnobPressed(config::TargetParameter param, bool pressed) {
     auto held_lfo = lfo_select_.held();
     if (held_lfo.has_value()) {
       auto target = TargetForSelected(param);
-      auto result = config_.lfos[held_lfo->which].ToggleTarget(target);
+      auto result = config_->Write().lfos[held_lfo->which].ToggleTarget(target);
 
       if (result == config::ToggleResult::kToggledOff) {
         KNOB(*this, param, [&](auto* knob) { knob->BlinkOff(); });
       }
     }
   }
+}
+
+void HeadKnobs::OnChange(Callback<> on_change) {
+  EACH_HEAD_KNOB(this, [=](const auto knob) { knob->OnChange(on_change); });
 }
 
 void HeadKnobs::StartBlinking() {
@@ -439,6 +448,10 @@ bool HeadKnobs::Enabled() const {
   /* All knobs are enabled+disabled together, so we just return the enabled
    * status of an arbitrary knob */
   return position.Enabled();
+}
+
+void LFOKnobs::OnChange(Callback<> on_change) {
+  EACH_LFO_KNOB(this, [=](const auto knob) { knob->OnChange(on_change); });
 }
 
 void LFOKnobs::StartBlinking() {

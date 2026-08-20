@@ -154,14 +154,16 @@ Engine::Engine(config::Config initial_config)
           mux_.channel(kSW1, 6), mux_.channel(kSW1, 7),
       },
 
+      config_(initial_config),
+
       leds_({
           .interrupt = D13,
           .shutdown = D14,
 
       }),
 
-      ui_(leds_, initial_config) {
-  modulator_.SetConfig(initial_config);
+      ui_(leds_, &config_) {
+  modulator_.SetConfig(config_.Read());
   // assign physical controls to UI controls
 
 #define ON_PRESS_CHANGED(knob, param)                             \
@@ -219,20 +221,17 @@ Engine::Engine(config::Config initial_config)
   timer_.Start();
 }
 
-void Engine::SetConfig(const config::Config& config) {
-  installed_config_ = config;
-  // The audio IRQ walks the modulator's state; don't let it observe a
-  // half-applied config swap.
-  __disable_irq();
-  modulator_.SetConfig(config);
-  __enable_irq();
-}
-
 void Engine::SyncConfig() {
-  const config::Config& config = ui_.Config();
-  if (config != installed_config_) {
-    SetConfig(config);
+  if (!config_.dirty()) {
+    return;
   }
+
+  // The scan IRQ writes the config and the audio IRQ walks the modulator's
+  // state; don't let either observe a half-applied swap.
+  __disable_irq();
+  config_.MarkClean();
+  modulator_.SetConfig(config_.Read());
+  __enable_irq();
 }
 
 #endif  // UNIT_TEST
