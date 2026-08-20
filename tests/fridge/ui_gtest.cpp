@@ -252,4 +252,58 @@ TEST_F(UITest, change_selected_lfo_via_radio_buttons) {
   EXPECT_FLOAT_EQ(config.lfos[2].high_octave_chance, 0.5f);
 }
 
+TEST_F(UITest, heads_and_lfo_are_locked) {
+  initial_config.lfos[0].targets[0] = {
+      .object = config::TargetObject::kHead,
+      .parameter = config::TargetParameter::kPosition,
+      .object_idx = 0,
+  };
+  initial_config.lfos[1].targets[0] = {
+      .object = config::TargetObject::kHead,
+      .parameter = config::TargetParameter::kPosition,
+      .object_idx = 1,
+  };
+
+  {
+    ui::UI ui(leds, initial_config);
+    EXPECT_TRUE(ui.HeadsAndLFOsAreLocked());
+  }
+
+  // Targeting another head's position
+  {
+    initial_config.lfos[1].targets[1] = {
+        .object = config::TargetObject::kHead,
+        .parameter = config::TargetParameter::kPosition,
+        .object_idx = 2,
+    };
+
+    ui::UI ui(leds, initial_config);
+    EXPECT_FALSE(ui.HeadsAndLFOsAreLocked());
+  }
+
+  // Targeting another parameter
+  {
+    initial_config.lfos[1].targets[1] = {
+        .object = config::TargetObject::kHead,
+        .parameter = config::TargetParameter::kPan,
+        .object_idx = 1,
+    };
+
+    ui::UI ui(leds, initial_config);
+    EXPECT_TRUE(ui.HeadsAndLFOsAreLocked());
+  }
+
+  // Targeting another LFO
+  {
+    initial_config.lfos[1].targets[1] = {
+        .object = config::TargetObject::kLFO,
+        .parameter = config::TargetParameter::kHighOctaveChance,
+        .object_idx = 2,
+    };
+
+    ui::UI ui(leds, initial_config);
+    EXPECT_FALSE(ui.HeadsAndLFOsAreLocked());
+  }
+}
+
 }  // namespace

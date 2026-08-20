@@ -230,11 +230,31 @@ UI::UI(io::led::Controller& led, config::Config initial_config)
 #endif
 }
 
+bool UI::HeadsAndLFOsAreLocked() const {
+  for (uint8_t lfo_idx = 0; lfo_idx < kNumLfos; ++lfo_idx) {
+    for (const auto& target : config_.lfos[lfo_idx].targets) {
+      if (!target.has_value()) {
+        continue;
+      }
+      if (target->object != config::TargetObject::kHead ||
+          target->object_idx != lfo_idx) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 void UI::SelectHead(uint8_t head) {
   config_.heads[selected_head_] = head_knobs_.Config();
   selected_head_ = head;
+
   if (!AmBlinking()) {
     head_knobs_.Select(config_.heads[head]);
+
+    if (HeadsAndLFOsAreLocked() && selected_lfo_ != head) {
+      lfo_select_.Select(head, /*instantaneous=*/true);
+    }
   }
 }
 
@@ -247,7 +267,14 @@ void UI::SelectLFO(uint8_t lfo) {
   config_.lfos[selected_lfo_] = lfo_knobs_.Config();
   config_.lfos[selected_lfo_].targets = prev_targets;
   selected_lfo_ = lfo;
-  lfo_knobs_.Select(config_.lfos[lfo]);
+
+  if (!AmBlinking()) {
+    lfo_knobs_.Select(config_.lfos[lfo]);
+
+    if (HeadsAndLFOsAreLocked() && selected_head_ != lfo) {
+      head_select_.Select(lfo, /*instantaneous=*/true);
+    }
+  }
 }
 
 void UI::StartBlinking() {

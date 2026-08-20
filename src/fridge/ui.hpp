@@ -739,7 +739,7 @@ class RadioButtons {
 
   void OnChange(Callback<uint8_t> on_change) { on_change_ = on_change; }
 
-  void Select(std::uint8_t which) {
+  void Select(std::uint8_t which, bool instantaneous = false) {
     const bool changed = which != selected_;
 
     if (held_.has_value() && held_->which == selected_) {
@@ -753,7 +753,7 @@ class RadioButtons {
     leds_[which].SetColor(selected_color_);
 
     selected_ = which;
-    if (!held_.has_value()) {
+    if (!instantaneous && !held_.has_value()) {
       held_ = Held{.which = which, .since = Now()};
     }
 
@@ -970,6 +970,13 @@ class UI {
 
   /** Tick the UI once */
   void Tick();
+
+  /** True if each LFO is only targeting parameters in the head of the same
+   * index.
+   *
+   * If this is true, selecting either heads or LFOs also selects the other
+   */
+  bool HeadsAndLFOsAreLocked() const;
 
   void SelectHead(uint8_t head);
   void SelectLFO(uint8_t lfo);

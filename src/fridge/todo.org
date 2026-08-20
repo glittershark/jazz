@@ -23,8 +23,11 @@ CLOSED: [2026-08-05 Wed 22:28]
 CLOSED: [2026-08-05 Wed 19:15]
 ** DONE can't press and hold the current lfo
 CLOSED: [2026-07-23 Thu 20:53]
+** DONE you shouldn't be able to turn knobs while holding an LFO
+CLOSED: [2026-08-19 Wed 20:47]
 ** TODO if you toggle off a parameter, it should always turn off (currently it keeps its previous state)
-** TODO you shouldn't be able to turn knobs while holding an LFO
 ** TODO avg and var instead of max and min for grain size
-** TODO default preset every lfo modulates every head
-*** TODO and switching lfos switches heads in lockstep, and vice versa, until the 1:1 relationship is broken
+** DONE default preset every lfo modulates every head
+CLOSED: [2026-08-19 Wed 21:39]
+*** DONE and switching lfos switches heads in lockstep, and vice versa, until the 1:1 relationship is broken
+CLOSED: [2026-08-19 Wed 21:39]
