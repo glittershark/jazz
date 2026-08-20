@@ -5,6 +5,7 @@
 
 #include "callback.hpp"
 #include "config.hpp"
+#include "constants.hpp"
 #include "led.hpp"
 #include "libjazz/color.hpp"
 #include "rgb_led.hpp"
@@ -96,6 +97,13 @@ uint32_t Now() {
 #endif
 }
 
+constexpr const radio_buttons::Config kRadioButtonConfig{
+    // TODO(aspen): Pick a real color. Or use the color to indicate
+    // something.
+    .selected_color = color::RGB(0, 255, 0),
+    .held_color = color::RGB(255, 0, 0),
+};
+
 UI::UI(io::led::Controller& led, config::Config initial_config)
     : config_(initial_config),
       head_knobs_{
@@ -173,9 +181,7 @@ UI::UI(io::led::Controller& led, config::Config initial_config)
               RgbLed(led.A(6, 0), led.A(6, 1), led.A(6, 2)),
               RgbLed(led.A(7, 0), led.A(7, 1), led.A(7, 2)),
           },
-          // TODO(aspen): Pick a real color. Or use the color to indicate
-          // something.
-          color::RGB(0, 255, 0)),
+          kRadioButtonConfig),
       // D2, D8, D14, D20, D26, D32, D38, D44
       lfo_select_(
           std::array<RgbLed, 8U>{
@@ -188,9 +194,7 @@ UI::UI(io::led::Controller& led, config::Config initial_config)
               RgbLed(led.A(6, 3), led.A(6, 4), led.A(6, 5)),
               RgbLed(led.A(7, 3), led.A(7, 4), led.A(7, 5)),
           },
-          // TODO(aspen): Pick a real color. Or use the color to indicate
-          // something (like the lfo moving?)
-          color::RGB(0, 255, 0)) {
+          kRadioButtonConfig) {
   // Load initial config into the knobs BEFORE the head_select/lfo_select
   // calls below — those fire on_change which saves-then-loads, and would
   // overwrite the initial config with the default (zero) knob values if the
@@ -246,6 +250,46 @@ void UI::SelectLFO(uint8_t lfo) {
   lfo_knobs_.Select(config_.lfos[lfo]);
 }
 
+void UI::StartBlinking() {
+  StartBlinking(Now());
+}
+void UI::StartBlinking(uint32_t now) {
+  head_knobs_.StartBlinking();
+  head_knobs_.SetEnabled(false);
+
+  head_select_.StartBlinking();
+  lfo_select_.StartBlinking();
+
+  lfo_knobs_.StartBlinking();
+  lfo_knobs_.SetEnabled(false);
+
+  wet_knob_.StartBlinking();
+  wet_knob_.SetEnabled(false);
+  dry_knob_.StartBlinking();
+  dry_knob_.SetEnabled(false);
+
+  blink_state_ =
+      std::make_optional(BlinkState{.blink = true, .last_toggle = now});
+}
+
+void UI::StopBlinking() {
+  head_knobs_.StopBlinking();
+  head_knobs_.SetEnabled(true);
+
+  head_select_.StopBlinking();
+  lfo_select_.StopBlinking();
+
+  lfo_knobs_.StopBlinking();
+  lfo_knobs_.SetEnabled(true);
+
+  wet_knob_.StopBlinking();
+  wet_knob_.SetEnabled(true);
+  dry_knob_.StopBlinking();
+  dry_knob_.SetEnabled(true);
+
+  blink_state_ = std::nullopt;
+}
+
 /** Tick the UI once.
  *
  * This method basically exists to step the state machine for blinking LEDs to
@@ -266,13 +310,7 @@ void UI::Tick() {
     } else if (now - held_lfo->since > kHoldDelayMs) {
       // We're not currently blinking, but we *have* been holding down the LFO
       // button long enough that we should *start* blinking
-      head_knobs_.StartBlinking();
-      head_select_.StartBlinking();
-      head_knobs_.SetEnabled(false);
-      lfo_knobs_.SetEnabled(false);
-
-      blink_state_ =
-          std::make_optional(BlinkState{.blink = true, .last_toggle = now});
+      StartBlinking(now);
     } else {
       // No blink is occurring, or should start occurring; do nothing (yet)
       return;
@@ -286,11 +324,7 @@ void UI::Tick() {
       case fridge::config::TargetObject::kHead: {
         // Blink the target head's selector
         auto target_head_idx = target->object_idx;
-        if (blink_state_->blink) {
-          head_select_.BlinkOn(target_head_idx);
-        } else {
-          head_select_.BlinkOff(target_head_idx);
-        }
+        head_select_.Blink(blink_state_->blink, target_head_idx);
 
         // If the head is selected currently, also blink the relevant knob
         if (head_select_.selected() == target_head_idx) {
@@ -299,25 +333,30 @@ void UI::Tick() {
         }
         break;
       }
-      case fridge::config::TargetObject::kLFO:
-      case fridge::config::TargetObject::kMixer:
-        // TODO
+      case fridge::config::TargetObject::kLFO: {
+        // Blink the target lfo's selector
+        auto target_lfo_idx = target->object_idx;
+        lfo_select_.Blink(blink_state_->blink, target_lfo_idx);
+
+        // If the lfo is selected currently, also blink the relevant knob
+        if (lfo_select_.selected() == target_lfo_idx) {
+          KNOB(*this, target->parameter,
+               [&](auto* knob) { knob->Blink(blink_state_->blink); });
+        }
         break;
+      }
+      case fridge::config::TargetObject::kMixer: {
+        KNOB(*this, target->parameter,
+             [&](auto* knob) { knob->Blink(blink_state_->blink); });
+        break;
+      }
       }
     }
   } else {
     if (blink_state_.has_value()) {
       // We're not holding down an LFO button, but we're currently blinking.
       // Stop doing that.
-      head_knobs_.StopBlinking();
-      head_select_.StopBlinking();
-      head_knobs_.SetEnabled(true);
-
-      lfo_knobs_.StopBlinking();
-      lfo_select_.StopBlinking();
-      lfo_knobs_.SetEnabled(true);
-
-      blink_state_ = std::nullopt;
+      StopBlinking();
     }
   }
 }

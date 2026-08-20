@@ -173,6 +173,9 @@ class KnobWithDisplay : public Knob<V> {
       BlinkOff();
     }
   }
+
+  void StartBlinking() { BlinkOff(); }
+  void StopBlinking() { UpdateDisplay(); }
 };
 
 template <BackingValue V>
@@ -642,6 +645,13 @@ using SingleTurn = Bounded<Turns, 0.0f, 1.0f>;
 using OneTurnIsBufferLen =
     Bounded<ScaledIntegralTurns<size_t, kBufferLen>, 0, kBufferLen>;
 
+namespace radio_buttons {
+struct Config {
+  color::RGB selected_color;
+  color::RGB held_color;
+};
+}  // namespace radio_buttons
+
 template <std::uint8_t N>
 class RadioButtons {
   std::uint8_t selected_;
@@ -656,6 +666,7 @@ class RadioButtons {
   std::optional<Held> held_;
   std::array<RgbLed, N> leds_;
   color::RGB selected_color_;
+  color::RGB held_color_;
   Callback<uint8_t> on_change_;
 
   struct Selector {
@@ -671,22 +682,18 @@ class RadioButtons {
     }
 
     void Select(bool pressed) {
-      if (radio_buttons) {
-        if (pressed) {
-          if (radio_buttons->selected_ != which) {
-            radio_buttons->Select(which);
-          }
-          if (!radio_buttons->held_.has_value()) {
-            radio_buttons->held_ = Held{.which = which, .since = Now()};
-          }
-        } else if (radio_buttons->selected_ == which) {
-          // If we just released the button for the *currently selected*
-          // selector (which must have been the last pressed one), then reset
-          // the held item to nothing
-          radio_buttons->held_ = std::nullopt;
-        }
+      if (radio_buttons == nullptr) {
+        return;
       }
-    }
+
+      if (pressed) {
+        radio_buttons->Select(which);
+      } else if (radio_buttons->held_.has_value() &&
+                 radio_buttons->held_->which == which) {
+        // We just released the held button
+        radio_buttons->ClearHeld();
+      }
+    };
 
     Callback<bool> GetCallback() {
       return {
@@ -701,9 +708,21 @@ class RadioButtons {
 
   std::array<Selector, N> selectors_;
 
+  void ClearHeld() {
+    if (held_.has_value() && held_->which != selected_) {
+      // If the held lfo is not the selected lfo, clear the light (which should
+      // be the held color)
+      leds_[held_->which].SetOn(false);
+    }
+    held_ = std::nullopt;
+  }
+
  public:
-  RadioButtons(std::array<RgbLed, N> leds, color::RGB selected_color)
-      : selected_(0), leds_(leds), selected_color_(selected_color) {
+  RadioButtons(std::array<RgbLed, N> leds, radio_buttons::Config config)
+      : selected_(0),
+        leds_(leds),
+        selected_color_(config.selected_color),
+        held_color_(config.held_color) {
     for (std::uint8_t i = 0; i < N; ++i) {
       selectors_[i].Configure(this, i);
     }
@@ -723,16 +742,21 @@ class RadioButtons {
   void Select(std::uint8_t which) {
     const bool changed = which != selected_;
 
-    leds_[selected_].SetOn(false);
+    if (held_.has_value() && held_->which == selected_) {
+      // If we selected an LED but are still holding another LED, set the held
+      // LED's color to the held color. It'll be turned off in `ClearHeld`
+      leds_[selected_].SetColor(held_color_);
+    } else {
+      leds_[selected_].SetOn(false);
+    }
     leds_[which].SetOn(true);
     leds_[which].SetColor(selected_color_);
 
     selected_ = which;
+    if (!held_.has_value()) {
+      held_ = Held{.which = which, .since = Now()};
+    }
 
-    // Only fire on_change when the selection actually moved — the callback
-    // does a destructive save-then-load of knob state, so firing it on
-    // no-op selects (including the boot-time Select(0)) would clobber the
-    // just-loaded initial config.
     if (changed && on_change_) {
       on_change_(which);
     }
@@ -913,6 +937,10 @@ class UI {
 
   RadioButtons<kNumHeads> head_select_;
   RadioButtons<kNumLfos> lfo_select_;
+
+  void StartBlinking();
+  void StartBlinking(uint32_t now);
+  void StopBlinking();
 
  public:
   const config::Config& Config();
