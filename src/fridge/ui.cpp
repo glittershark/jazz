@@ -35,6 +35,7 @@ void HeadKnobs::Select(const fridge::config::Head& head) {
   read_amount.Set(head.read_amount);
   erase_amount.Set(head.erase_amount);
   feedback.Set(head.feedback);
+  pan.Set(head.pan);
 }
 
 fridge::config::LFO LFOKnobs::Config() const {
