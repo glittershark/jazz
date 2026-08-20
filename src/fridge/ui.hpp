@@ -541,13 +541,7 @@ class Pan {
     return *this;
   }
 
-  operator Raw_type() const {
-    if (value_ >= 1.f) {
-      return audio::Pan::Right(value_ * 2);
-    } else {
-      return audio::Pan::Left(value_ * 2);
-    }
-  }
+  operator Raw_type() const { return audio::Pan(value_ * 2.0f); }
 
   Pan operator+(const Pan& rhs) const { return Pan(value_ + rhs.value_); }
 

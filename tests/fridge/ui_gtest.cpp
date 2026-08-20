@@ -178,6 +178,36 @@ TEST_F(UITest, one_turn_is_buffer_len_knob_saturates) {
   EXPECT_EQ(knob.Get(), kBufferLen);
 }
 
+TEST_F(UITest, pan_knob_converts_to_config_pan) {
+  ui::Knob<ui::Pan> knob("test knob");
+
+  EXPECT_TRUE(config::Pan(knob.Get()).IsCenter());
+
+  knob.GetCallback()(0, 0.25f);
+  EXPECT_FLOAT_EQ(config::Pan(knob.Get()).pan(), 0.5f);
+
+  knob.GetCallback()(0, -0.5f);
+  EXPECT_FLOAT_EQ(config::Pan(knob.Get()).pan(), -0.5f);
+
+  knob.GetCallback()(0, -1.0f);
+  EXPECT_FLOAT_EQ(config::Pan(knob.Get()).pan(), -1.0f);
+}
+
+TEST_F(UITest, pan_survives_a_head_switch) {
+  config::ConfigStore store;
+  ui::UI ui(leds, &store);
+
+  ui.head_knobs().pan.GetCallback()(0, 0.25f);
+  ASSERT_FLOAT_EQ(ui.Config().heads[0].pan.pan(), 0.5f);
+
+  ui.SelectHead(1);
+  ui.SelectHead(0);
+
+  // Nudging the knob by nothing writes back whatever SelectHead loaded into it
+  ui.head_knobs().pan.GetCallback()(0, 0.0f);
+  EXPECT_FLOAT_EQ(ui.Config().heads[0].pan.pan(), 0.5f);
+}
+
 TEST_F(UITest, wet_knob_uses_led_to_display) {
   config::ConfigStore store;
   ui::UI ui(leds, &store);
