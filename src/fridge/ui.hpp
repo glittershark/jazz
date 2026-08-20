@@ -942,6 +942,10 @@ class UI {
   void StartBlinking(uint32_t now);
   void StopBlinking();
 
+  /** Tick the lfo target selection state machine once
+   */
+  void TickTargetSelect();
+
  public:
   const config::Config& Config();
 
@@ -964,6 +968,7 @@ class UI {
   RadioButtons<kNumHeads>& head_select() { return head_select_; }
   RadioButtons<kNumLfos>& lfo_select() { return lfo_select_; }
 
+  /** Tick the UI once */
   void Tick();
 
   void SelectHead(uint8_t head);

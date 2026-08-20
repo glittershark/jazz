@@ -290,12 +290,7 @@ void UI::StopBlinking() {
   blink_state_ = std::nullopt;
 }
 
-/** Tick the UI once.
- *
- * This method basically exists to step the state machine for blinking LEDs to
- * give feedback to the LFO "patch" UI one step forwards
- * */
-void UI::Tick() {
+void UI::TickTargetSelect() {
   auto held_lfo = lfo_select_.held();
   // Are we currently holding down an LFO button?
   if (held_lfo.has_value()) {
@@ -359,6 +354,10 @@ void UI::Tick() {
       StopBlinking();
     }
   }
+}
+
+void UI::Tick() {
+  TickTargetSelect();
 }
 
 config::Target UI::TargetForSelected(config::TargetParameter param) const {
