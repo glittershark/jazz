@@ -37,10 +37,10 @@ checked compatibility against the RA8M2 datasheet (r01ds0438ej0130):
   mobile IS42SM32160E: EMRS init + 1.0ns hold requirement; same footprint
   though.) tradeoff: self-refresh is 6mA, no deep power down. don't care.
 
-** TODO verify in the hardware manual (not in the datasheet)
-- which A-pins carry BA0/BA1 during SDRAM cycles (check EK-RA8D1 schematic)
-- 13-bit row / 9-bit column multiplex config (SDADR)
-- SDRAM region in the memory map fits the full 64MB
+** TODO verify in the hardware manual (not in the datasheet) [0/3]
+- [ ] which A-pins carry BA0/BA1 during SDRAM cycles (check EK-RA8D1 schematic)
+- [ ] 13-bit row / 9-bit column multiplex config (SDADR)
+- [ ] SDRAM region in the memory map fits the full 64MB
 ** TODO check symbol & footprint, apparently user-contributed
 * routing
 ** traces
@@ -56,3 +56,6 @@ converter for the 1.1 V (or so) core voltage, but needs an /external/ 3.3 V supp
 capable of at least 340 mA, if i'm reading the datasheet correctly. we could
 simply copy the daisy's core supply, which uses a converter rated for 500 mA
 (the TPS6217N), or go for a more modern part with a 1 A rating (the TPS629210).
+* clocks
+thinking a 32.768 kHz & 32.000 MHz external clock, both ±50 ppm, made by seiko
+epson.
