@@ -799,6 +799,7 @@ struct HeadKnobs {
     f(&head_knobs->read_amount);      \
     f(&head_knobs->erase_amount);     \
     f(&head_knobs->feedback);         \
+    f(&head_knobs->pan);              \
   }
 
 struct LFOKnobs {
