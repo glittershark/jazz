@@ -673,7 +673,7 @@
         "uuid": "5a440a9e-b660-4605-bd2b-6a991cc5b149"
       }
     ],
-    "used_designators": "MICRO_SD1,IC1-2,U1-2",
+    "used_designators": "U1-2,IC1-2,MICRO_SD1",
     "variants": []
   },
   "sheets": [

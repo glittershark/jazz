@@ -50,3 +50,9 @@ impedance mentioned (in the SDRAM datasheet).
 looks like i will, in fact, need a six-layer board, as i'm doing a ~300 pin BGA
 arrangement. dog-bone fanout should be feasible, as i have a 0.65 mm pitch
 package.
+* chip power
+see user manual p. 3646, datasheet p. 41 & §2.2.5. the chip has an internal
+converter for the 1.1 V (or so) core voltage, but needs an /external/ 3.3 V supply
+capable of at least 340 mA, if i'm reading the datasheet correctly. we could
+simply copy the daisy's core supply, which uses a converter rated for 500 mA
+(the TPS6217N), or go for a more modern part with a 1 A rating (the TPS629210).
