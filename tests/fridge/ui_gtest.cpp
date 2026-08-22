@@ -208,6 +208,24 @@ TEST_F(UITest, pan_survives_a_head_switch) {
   EXPECT_FLOAT_EQ(ui.Config().heads[0].pan.pan(), 0.5f);
 }
 
+TEST_F(UITest, pan_can_be_toggled_as_an_lfo_target) {
+  config::ConfigStore store;
+  ui::UI ui(leds, &store);
+
+  ui.lfo_select().Select(0);
+  ASSERT_TRUE(ui.lfo_select().held().has_value());
+
+  ui.KnobPressed(config::TargetParameter::kPan, true);
+  EXPECT_EQ(ui.Config().lfos[0].targets[0],
+            (config::Target{.object = config::TargetObject::kHead,
+                            .parameter = config::TargetParameter::kPan,
+                            .object_idx = 0}));
+
+  // Toggling back off is what runs the KNOB dispatch for kPan.
+  ui.KnobPressed(config::TargetParameter::kPan, true);
+  EXPECT_EQ(ui.Config().lfos[0].targets[0], std::nullopt);
+}
+
 TEST_F(UITest, wet_knob_uses_led_to_display) {
   config::ConfigStore store;
   ui::UI ui(leds, &store);

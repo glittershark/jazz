@@ -1036,7 +1036,7 @@ class UI {
       (doto)(&wet_knob_);                            \
       break;                                         \
     case config::TargetParameter::kPan:              \
-      assert(false);                                 \
+      (doto)(&head_knobs_.pan);                      \
       break;                                         \
     };                                               \
   }
