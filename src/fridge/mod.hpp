@@ -176,12 +176,15 @@ class Modulator {
   static float ClampFinite(float value, float fallback = 0.0f);
   static float ClampChance(float value);
   static size_t ClampSize(float value, size_t minimum);
+  /** audio::Pan asserts on anything outside [-1, 1], so modulation has to be
+   * clamped before it can be handed back as one. */
+  static config::Pan ClampPan(float value);
   static config::Config SanitizeConfig(const config::Config& root_config);
 
  private:
-  // Parameter indexing for the modulation table: 5 head params per head,
+  // Parameter indexing for the modulation table: 6 head params per head,
   // then 8 LFO params per LFO, then dry and wet.
-  static constexpr size_t kHeadParamCount = 5;
+  static constexpr size_t kHeadParamCount = 6;
   static constexpr size_t kLfoParamCount = 8;
   static constexpr size_t kLfoParamBase = kNumHeads * kHeadParamCount;
   static constexpr size_t kMixerParamBase =

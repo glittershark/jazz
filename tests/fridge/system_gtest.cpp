@@ -10,6 +10,7 @@ using fridge::config::Target;
 using fridge::config::TargetObject;
 using fridge::config::TargetParameter;
 using fridge::mod::Modulator;
+using jazz::audio::Pan;
 using jazz::units::Samples;
 
 namespace {
@@ -97,6 +98,24 @@ TEST(FridgeLFOSystemTest, LfoCanModulateMixerKnobs) {
 
   EXPECT_FLOAT_EQ(output.dry, 1.2f);
   EXPECT_FLOAT_EQ(output.wet, 1.4f);
+}
+
+TEST(FridgeLFOSystemTest, LfoCanModulateHeadPan) {
+  fridge::config::Config config;
+  config.heads[0].pan = Pan::Left(1.0f);
+  config.lfos[0] = DeterministicLfo();
+  config.lfos[0].targets[0] = Target{.object = TargetObject::kHead,
+                                     .parameter = TargetParameter::kPan,
+                                     .object_idx = 0};
+
+  Modulator system(1234);
+  system.Reset(config);
+
+  EXPECT_FLOAT_EQ(system.Update(config, Samples(1)).heads[0].pan.pan(), 0.0f);
+
+  // audio::Pan asserts outside [-1, 1], so the second sample's worth of
+  // modulation has to saturate rather than run off the end.
+  EXPECT_FLOAT_EQ(system.Update(config, Samples(1)).heads[0].pan.pan(), 1.0f);
 }
 
 TEST(FridgeLFOSystemTest, LfoModulatesAnotherLfoOnTheNextTick) {

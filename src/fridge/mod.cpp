@@ -263,6 +263,10 @@ float Modulator::ClampChance(float value) {
   return std::clamp(value, 0.0f, 1.0f);
 }
 
+config::Pan Modulator::ClampPan(float value) {
+  return config::Pan(std::clamp(ClampFinite(value), -1.0f, 1.0f));
+}
+
 size_t Modulator::ClampSize(float value, size_t minimum) {
   if (!std::isfinite(value)) {
     return minimum;
@@ -279,6 +283,7 @@ config::Config Modulator::SanitizeConfig(const config::Config& root_config) {
     head.read_amount = ClampFinite(head.read_amount);
     head.erase_amount = ClampFinite(head.erase_amount);
     head.feedback.amount = ClampFinite(head.feedback.amount);
+    head.pan = ClampPan(head.pan.pan());
   }
 
   for (config::LFO& lfo : sanitized.lfos) {
@@ -320,6 +325,8 @@ std::optional<size_t> Modulator::ParamSlot(const config::Target& target) {
       return base + 3;
     case TargetParameter::kFeedbackAmount:
       return base + 4;
+    case TargetParameter::kPan:
+      return base + 5;
     default:
       return std::nullopt;
     }
@@ -501,6 +508,7 @@ void Modulator::UpdateEffectiveHead(size_t head_idx) {
   head.erase_amount = ClampFinite(base.erase_amount + mod[3]);
   head.feedback.kind = base.feedback.kind;
   head.feedback.amount = ClampFinite(base.feedback.amount + mod[4]);
+  head.pan = ClampPan(base.pan.pan() + mod[5]);
 }
 
 void Modulator::BeginFades(size_t lfo_idx, const LFOTransition& transition) {
