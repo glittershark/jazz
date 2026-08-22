@@ -51,8 +51,17 @@ struct Head {
     return StereoSample::OfMono(read_amount).Panned(pan);
   }
 
+  /** erase_amount is how much of the tape survives, so 1.0f is inert and 0.0f
+   * is a full wipe. Panning has to attenuate the erase *strength*, not the
+   * amount left behind — panning the latter would have an inert head wipe
+   * whichever channel it is panned away from. */
   StereoSample EraseAmount() const {
-    return StereoSample::OfMono(erase_amount).Panned(pan);
+    const StereoSample strength =
+        StereoSample::OfMono(1.0f - erase_amount).Panned(pan);
+    return {
+        .left = 1.0f - strength.left,
+        .right = 1.0f - strength.right,
+    };
   }
 };
 

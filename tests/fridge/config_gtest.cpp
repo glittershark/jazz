@@ -5,10 +5,50 @@
 
 namespace {
 
+using fridge::config::Head;
 using fridge::config::LFO;
 using fridge::config::Target;
 using fridge::config::TargetObject;
 using fridge::config::TargetParameter;
+using jazz::audio::Pan;
+
+TEST(EraseAmountTest, an_inert_head_erases_nothing_however_it_is_panned) {
+  Head head;
+  ASSERT_FLOAT_EQ(head.erase_amount, 1.0f);
+
+  for (float p : {-1.0f, -0.5f, 0.0f, 0.5f, 1.0f}) {
+    head.pan = Pan(p);
+    EXPECT_FLOAT_EQ(head.EraseAmount().left, 1.0f) << "pan = " << p;
+    EXPECT_FLOAT_EQ(head.EraseAmount().right, 1.0f) << "pan = " << p;
+  }
+}
+
+TEST(EraseAmountTest, a_centered_head_erases_both_channels_equally) {
+  Head head;
+  head.erase_amount = 0.25f;
+  head.pan = Pan::Center();
+
+  EXPECT_FLOAT_EQ(head.EraseAmount().left, 0.25f);
+  EXPECT_FLOAT_EQ(head.EraseAmount().right, 0.25f);
+}
+
+TEST(EraseAmountTest, panning_attenuates_the_erase_on_the_far_channel) {
+  Head head;
+  head.erase_amount = 0.0f;
+
+  head.pan = Pan::Right(1.0f);
+  EXPECT_FLOAT_EQ(head.EraseAmount().left, 1.0f);
+  EXPECT_FLOAT_EQ(head.EraseAmount().right, 0.0f);
+
+  head.pan = Pan::Left(1.0f);
+  EXPECT_FLOAT_EQ(head.EraseAmount().left, 0.0f);
+  EXPECT_FLOAT_EQ(head.EraseAmount().right, 1.0f);
+
+  // Half right: the left channel erases at half strength.
+  head.pan = Pan::Right(0.5f);
+  EXPECT_FLOAT_EQ(head.EraseAmount().left, 0.5f);
+  EXPECT_FLOAT_EQ(head.EraseAmount().right, 0.0f);
+}
 
 void check_invariant(const LFO& lfo) {
   bool found_null = false;
