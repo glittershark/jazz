@@ -140,14 +140,57 @@ TEST(ToggleTargetTest, adds_target_when_not_full) {
   EXPECT_EQ(lfo.targets[3], new_target);
 }
 
+static LFO lfo_with_full_targets() {
+  LFO lfo;
+  for (size_t i = 0; i < lfo.targets.size(); ++i) {
+    lfo.targets[i] = Target{
+        .object = TargetObject::kHead,
+        .parameter = TargetParameter::kPosition,
+        .object_idx = static_cast<uint8_t>(i),
+    };
+  }
+
+  check_invariant(lfo);
+
+  return lfo;
+}
+
+TEST(ToggleTargetTest, removes_target_from_a_full_array) {
+  const auto prev = lfo_with_full_targets();
+  auto lfo = prev;
+  auto result = lfo.ToggleTarget(*prev.targets[0]);
+  check_invariant(lfo);
+
+  EXPECT_EQ(result, fridge::config::ToggleResult::kToggledOff);
+
+  // Everything shuffles down one, and the vacated tail is cleared rather than
+  // left holding a second copy of what used to be last.
+  for (size_t i = 0; i + 1 < prev.targets.size(); ++i) {
+    EXPECT_EQ(lfo.targets[i], prev.targets[i + 1]);
+  }
+  EXPECT_EQ(lfo.targets.back(), std::nullopt);
+}
+
+TEST(ToggleTargetTest, removing_the_last_target_of_a_full_array_removes_it) {
+  const auto prev = lfo_with_full_targets();
+  auto lfo = prev;
+  auto result = lfo.ToggleTarget(*prev.targets.back());
+  check_invariant(lfo);
+
+  EXPECT_EQ(result, fridge::config::ToggleResult::kToggledOff);
+  for (const auto& target : lfo.targets) {
+    EXPECT_NE(target, prev.targets.back());
+  }
+}
+
 TEST(ToggleTargetTest, does_nothing_when_full) {
   auto prev = lfo_with_targets();
 
-  for (uint8_t i = 3; static_cast<size_t>(i) < prev.targets.size(); ++i) {
+  for (size_t i = 3; i < prev.targets.size(); ++i) {
     prev.targets[i] = {
         .object = TargetObject::kHead,
         .parameter = TargetParameter::kPosition,
-        .object_idx = i,
+        .object_idx = static_cast<uint8_t>(i),
     };
   }
 
@@ -160,7 +203,7 @@ TEST(ToggleTargetTest, does_nothing_when_full) {
   check_invariant(lfo);
 
   EXPECT_EQ(result, fridge::config::ToggleResult::kNothingHappened);
-  for (size_t i = 0; i <= lfo.targets.size(); ++i) {
+  for (size_t i = 0; i < lfo.targets.size(); ++i) {
     EXPECT_EQ(lfo.targets[i], prev.targets[i]);
   }
 }

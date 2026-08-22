@@ -41,9 +41,9 @@ ToggleResult LFO::ToggleTarget(const Target& target) {
     }
 
     if (*existing_target == target) {
-      targets[i] = std::nullopt;
       static_assert(std::is_trivially_copyable<Target>());
-      std::copy(&targets[i + 1], &targets[targets.size()], &targets[i]);
+      std::copy(targets.begin() + i + 1, targets.end(), targets.begin() + i);
+      targets.back() = std::nullopt;
       return ToggleResult::kToggledOff;
     }
   }
