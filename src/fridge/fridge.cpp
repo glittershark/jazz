@@ -29,7 +29,7 @@ constexpr const config::Config kInitialConfig{
             {.position = 0,
              .write_amount = 0.0f,
              .read_amount = 0.0f,
-             .erase_amount = 0.0f,
+             .erase_amount = 1.0f,
              .feedback =
                  {
                      .kind = config::Feedback::Kind::kRead,
@@ -38,7 +38,7 @@ constexpr const config::Config kInitialConfig{
             {.position = 0,
              .write_amount = 0.0f,
              .read_amount = 0.0f,
-             .erase_amount = 0.0f,
+             .erase_amount = 1.0f,
              .feedback =
                  {
                      .kind = config::Feedback::Kind::kRead,
@@ -47,7 +47,7 @@ constexpr const config::Config kInitialConfig{
             {.position = 0,
              .write_amount = 0.0f,
              .read_amount = 0.0f,
-             .erase_amount = 0.0f,
+             .erase_amount = 1.0f,
              .feedback =
                  {
                      .kind = config::Feedback::Kind::kRead,
@@ -56,7 +56,7 @@ constexpr const config::Config kInitialConfig{
             {.position = 0,
              .write_amount = 0.0f,
              .read_amount = 0.0f,
-             .erase_amount = 0.0f,
+             .erase_amount = 1.0f,
              .feedback =
                  {
                      .kind = config::Feedback::Kind::kRead,
@@ -65,7 +65,7 @@ constexpr const config::Config kInitialConfig{
             {.position = 0,
              .write_amount = 0.0f,
              .read_amount = 0.0f,
-             .erase_amount = 0.0f,
+             .erase_amount = 1.0f,
              .feedback =
                  {
                      .kind = config::Feedback::Kind::kRead,
@@ -74,7 +74,7 @@ constexpr const config::Config kInitialConfig{
             {.position = 0,
              .write_amount = 0.0f,
              .read_amount = 0.0f,
-             .erase_amount = 0.0f,
+             .erase_amount = 1.0f,
              .feedback =
                  {
                      .kind = config::Feedback::Kind::kRead,
@@ -83,7 +83,7 @@ constexpr const config::Config kInitialConfig{
             {.position = 0,
              .write_amount = 0.0f,
              .read_amount = 0.0f,
-             .erase_amount = 0.0,
+             .erase_amount = 1.0f,
              .feedback =
                  {
                      .kind = config::Feedback::Kind::kRead,
@@ -92,7 +92,7 @@ constexpr const config::Config kInitialConfig{
             {.position = 0,
              .write_amount = 0.0f,
              .read_amount = 0.0f,
-             .erase_amount = 0.0,
+             .erase_amount = 1.0f,
              .feedback =
                  {
                      .kind = config::Feedback::Kind::kRead,
