@@ -1,5 +1,17 @@
 #+title: the StUD (stillmar universal devboard)
 
+* ACTIVE features [4/11]
+- [X] a convenient microcontroller ⇒ rust support
+- [X] a nice codec with nice filtering on the outputs
+- [ ] capacitively coupled I/O
+- [ ] a usb-c port instead of micro-b (of course)
+- [ ] a debug port that doesn't suck
+- [X] a fuckload of ram of some sort for massive buffer
+- [ ] a bunch of analog outputs
+- [X] external microSD
+- [ ] optional input attenuator?
+- [ ] optional output amplifier?
+- [ ] high precision clocks
 * MCU
 looking at either:
 - the R7KA8M2JFLCAC (e.g., [[https://www.digikey.com/en/products/detail/renesas-electronics-corporation/R7KA8M2JFLCAC-UC0/27569003][this one]]), which is a hawss w/ ARM Helium & two cores;
