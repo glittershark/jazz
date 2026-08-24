@@ -1503,7 +1503,7 @@
 				(start -5.08 3.81)
 				(end 5.08 -3.81)
 				(stroke
-					(width 0)
+					(width 0.254)
 					(type solid)
 				)
 				(fill
@@ -1964,7 +1964,7 @@
 				(start -15.24 17.78)
 				(end 15.24 -17.78)
 				(stroke
-					(width 0)
+					(width 0.254)
 					(type solid)
 				)
 				(fill
