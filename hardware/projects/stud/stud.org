@@ -75,3 +75,4 @@ epson.
 using SSIE's =SSI*0_A= pin set.
 * sd card
 using =SD0*_C= pin set.
+* TODO decide whether two hardware I2Cs is too much
