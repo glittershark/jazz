@@ -8576,6 +8576,16 @@
 			(embedded_fonts no)
 		)
 	)
+	(text "MICBIAS is an output to bias mics;\nbring out to test point?"
+		(exclude_from_sim no)
+		(at 186.436 158.242 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "83f093b4-27dd-4df1-92fa-1ad7421dcf91")
+	)
 	(text "mapping An → A(n - 2) is intentional\nand specified in the microcontroller\ndatasheet"
 		(exclude_from_sim no)
 		(at 201.422 305.562 0)
@@ -8585,6 +8595,75 @@
 			)
 		)
 		(uuid "96740b76-e4df-45a2-b3df-d8abe454a694")
+	)
+	(text "pin groups:\n- SSI*0_A for audio\n- SD0*_C for μSD"
+		(exclude_from_sim no)
+		(at 69.088 468.63 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "cbfda9fd-05da-4a95-b118-85ffd7cfef6a")
+	)
+	(text "GPO latched high ⇒ clock error; have\nto power-cycle to clear, but good\ndebug item?"
+		(exclude_from_sim no)
+		(at 186.944 149.86 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "f2b05287-fb1a-455c-96ce-667c2238eaf6")
+	)
+	(no_connect
+		(at 184.15 250.19)
+		(uuid "88a8b709-6e05-4dc9-9c2a-539332693eb1")
+	)
+	(no_connect
+		(at 219.71 184.15)
+		(uuid "949105eb-1992-4565-a06d-a5b732cbc543")
+	)
+	(no_connect
+		(at 184.15 252.73)
+		(uuid "dc9a6c2a-7d29-4e51-8e31-d0c60200bff0")
+	)
+	(no_connect
+		(at 107.95 152.4)
+		(uuid "ed6b84ee-df48-4dd9-b923-92a755392c9b")
+	)
+	(no_connect
+		(at 219.71 209.55)
+		(uuid "f2551431-1ef4-46ed-b6f2-8cc714c39a09")
+	)
+	(no_connect
+		(at 219.71 212.09)
+		(uuid "f77bd795-4030-4982-99e6-10c1987ce489")
+	)
+	(global_label "μSD_DAT1"
+		(shape bidirectional)
+		(at 237.49 121.92 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "03434820-238c-4d20-b712-f0aebb68d8ee")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 224.0802 121.92 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
 	)
 	(global_label "A12"
 		(shape output)
@@ -8679,6 +8758,30 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+			)
+		)
+	)
+	(global_label "SSI_TX"
+		(shape input)
+		(at 168.91 133.35 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "0e35c670-1a24-48f8-b29e-1b45dc752e6f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 159.7563 133.35 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 			)
 		)
 	)
@@ -8970,6 +9073,30 @@
 			)
 		)
 	)
+	(global_label "SSI_BCK"
+		(shape output)
+		(at 46.99 426.72 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "271d3822-f4ad-44df-89f8-12658b95f952")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 36.2034 426.72 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "DQ10"
 		(shape bidirectional)
 		(at 219.71 240.03 0)
@@ -9234,6 +9361,30 @@
 			)
 		)
 	)
+	(global_label "SSI_FS"
+		(shape input)
+		(at 168.91 130.81 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "39b7dc9c-50a9-44ef-80f3-37313b1871e6")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 159.6353 130.81 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "DQ18"
 		(shape bidirectional)
 		(at 184.15 240.03 180)
@@ -9247,6 +9398,54 @@
 		(uuid "39e8eda3-311c-40b0-89f2-6d65a5a16cb7")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 175.034 240.03 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "μSD_CLK"
+		(shape output)
+		(at 46.99 218.44 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "3a24afb5-e4c6-49e8-b061-754d521b221b")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 35.6591 218.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "SSI_TX"
+		(shape output)
+		(at 46.99 381 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "3e6f09ea-18a8-4aa7-a57c-89f22c35adce")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 37.8363 381 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9522,6 +9721,30 @@
 			)
 		)
 	)
+	(global_label "μSD_DAT2"
+		(shape bidirectional)
+		(at 237.49 124.46 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "57304b2f-3119-47fa-aaea-f15b8454aa64")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 224.0802 124.46 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "CAS"
 		(shape output)
 		(at 46.99 317.5 180)
@@ -9615,6 +9838,30 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+			)
+		)
+	)
+	(global_label "μSD_CLK"
+		(shape input)
+		(at 237.49 111.76 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "616f6eba-3072-4f98-a209-4ed3503b110c")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 226.1591 111.76 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 			)
 		)
 	)
@@ -9727,6 +9974,30 @@
 		(uuid "67d23d83-5213-4b69-a191-e9284482373a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 39.0835 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "SSI_RX"
+		(shape input)
+		(at 46.99 342.9 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "6835aa06-f64b-4df8-9799-d78fe3876a86")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 37.5339 342.9 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9978,6 +10249,30 @@
 			)
 		)
 	)
+	(global_label "SSI_RX"
+		(shape output)
+		(at 168.91 135.89 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "86f181ee-a4ef-4c70-902b-6afc8eb68d27")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 159.4539 135.89 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "A2"
 		(shape output)
 		(at 46.99 355.6 180)
@@ -10050,6 +10345,30 @@
 			)
 		)
 	)
+	(global_label "SSI_BCK"
+		(shape input)
+		(at 168.91 128.27 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "8c395767-ef75-466f-b6a5-180b221b0d7c")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 158.1234 128.27 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "DQ16"
 		(shape bidirectional)
 		(at 184.15 255.27 180)
@@ -10063,6 +10382,30 @@
 		(uuid "8ee7fa02-841f-4e8b-96a2-808445bf1fc4")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 175.034 255.27 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "μSD_DAT1"
+		(shape bidirectional)
+		(at 46.99 177.8 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "93f6fbc5-8665-480d-a041-19dfc093d79e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 33.5802 177.8 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10183,6 +10526,30 @@
 		(uuid "9d43fba4-f0af-42e2-917f-4ebfd764fe34")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 40.4972 444.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "μSD_DAT2"
+		(shape bidirectional)
+		(at 46.99 175.26 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "9ef8aa84-aad2-4768-b51d-2fbe4fe636ec")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 33.5802 175.26 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10482,6 +10849,30 @@
 			)
 		)
 	)
+	(global_label "EXTAL"
+		(shape input)
+		(at 107.95 154.94 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "b48a9180-37b4-4f5e-ac8b-57fec1d4d5bd")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 116.378 154.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
 	(global_label "DQ26"
 		(shape bidirectional)
 		(at 107.95 162.56 0)
@@ -10567,6 +10958,30 @@
 		(uuid "ba766098-8c70-44a7-8411-ffb9f5bbca4a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 226.2633 204.47 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(global_label "SSI_FS"
+		(shape output)
+		(at 107.95 101.6 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "bad25fc8-e53f-4bc3-b98b-756ebb725493")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 117.2247 101.6 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10674,6 +11089,30 @@
 			)
 		)
 	)
+	(global_label "μSD_CD"
+		(shape input)
+		(at 46.99 248.92 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "c5bbae4b-dedc-4851-89bb-b5e9933c0d41")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 36.6872 248.92 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "RAS"
 		(shape output)
 		(at 46.99 312.42 180)
@@ -10770,6 +11209,30 @@
 			)
 		)
 	)
+	(global_label "μSD_CD"
+		(shape output)
+		(at 257.81 119.38 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "ce9959f9-872f-4b51-88b8-0437ac434bc3")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 268.1128 119.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
 	(global_label "DQ19"
 		(shape bidirectional)
 		(at 46.99 406.4 180)
@@ -10842,6 +11305,30 @@
 			)
 		)
 	)
+	(global_label "μSD_DAT0"
+		(shape bidirectional)
+		(at 237.49 119.38 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "d42d716f-4a4d-4f11-9ea1-6480db5adb81")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 224.0802 119.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "DQ2"
 		(shape bidirectional)
 		(at 46.99 147.32 180)
@@ -10855,6 +11342,30 @@
 		(uuid "d646c853-5489-458d-838c-38f98b11181c")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 39.0835 147.32 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "μSD_CMD"
+		(shape output)
+		(at 46.99 213.36 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "d6d39af2-0782-4f1a-8229-78198fc69caf")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 35.2358 213.36 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11010,6 +11521,30 @@
 			)
 		)
 	)
+	(global_label "μSD_DAT3"
+		(shape bidirectional)
+		(at 237.49 127 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "e006aa40-0718-4a10-bbef-18323687b8c8")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 224.0802 127 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "DQ31"
 		(shape bidirectional)
 		(at 107.95 203.2 0)
@@ -11071,6 +11606,54 @@
 		(uuid "e5a985bd-911a-44d6-a597-eba196f52401")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 178.8667 278.13 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "EXTAL"
+		(shape output)
+		(at 321.31 134.62 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e7e48d54-e612-4b78-9496-70d1372c0c3f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 329.738 134.62 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(global_label "μSD_DAT3"
+		(shape bidirectional)
+		(at 46.99 284.48 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "e88c1eed-208e-43f0-86ba-203c859ab502")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 33.5802 284.48 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11178,6 +11761,30 @@
 			)
 		)
 	)
+	(global_label "μSD_DAT0"
+		(shape bidirectional)
+		(at 46.99 215.9 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "ee4c36c8-190d-4df6-97f6-b8b875fa96a9")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 33.5802 215.9 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "DQ28"
 		(shape bidirectional)
 		(at 184.15 199.39 180)
@@ -11223,6 +11830,30 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+			)
+		)
+	)
+	(global_label "μSD_CMD"
+		(shape input)
+		(at 237.49 114.3 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "f696f968-9ac1-4d98-8c5a-f17e038f03bc")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 225.7358 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 			)
 		)
 	)
@@ -11471,7 +12102,7 @@
 	)
 	(symbol
 		(lib_id "custom:CrystalOsc_X1G0044510004")
-		(at 152.4 158.75 0)
+		(at 313.69 133.35 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -11482,7 +12113,7 @@
 		(fields_autoplaced yes)
 		(uuid "44f0d108-aee0-4d11-a70f-cf8d8560d3d7")
 		(property "Reference" "Y1"
-			(at 152.4 149.86 0)
+			(at 313.69 124.46 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -11492,7 +12123,7 @@
 			)
 		)
 		(property "Value" "X1G0044510004"
-			(at 152.4 152.4 0)
+			(at 313.69 127 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -11502,7 +12133,7 @@
 			)
 		)
 		(property "Footprint" "custom:SG5032CAN"
-			(at 152.146 152.4 0)
+			(at 313.436 127 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11513,7 +12144,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 152.4 158.75 0)
+			(at 313.69 133.35 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11524,7 +12155,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 152.4 158.75 0)
+			(at 313.69 133.35 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)

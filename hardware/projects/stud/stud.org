@@ -71,3 +71,7 @@ simply copy the daisy's core supply, which uses a converter rated for 500 mA
 * clocks
 thinking a 32.768 kHz & 32.000 MHz external clock, both ±50 ppm, made by seiko
 epson.
+* audio
+using SSIE's =SSI*0_A= pin set.
+* sd card
+using =SD0*_C= pin set.
