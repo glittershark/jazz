@@ -1718,6 +1718,12 @@
 		(embedded_fonts no)
 	)
 	(symbol "Connector_01x01_CastellatedEdge"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(hide yes)
+		)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board yes)
@@ -1727,13 +1733,14 @@
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
+			(hide yes)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" ""
+		(property "Value" "Connector_01x01_CastellatedEdge"
 			(at 0 0 0)
 			(show_name no)
 			(do_not_autoplace no)
