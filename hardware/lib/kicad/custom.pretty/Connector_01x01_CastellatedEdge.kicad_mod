@@ -1,0 +1,125 @@
+(footprint "Connector_01x01_CastellatedEdge"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "nice castellated edge thing")
+	(tags "castellated pin")
+	(property "Reference" "REF**"
+		(at 0 -0.5 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "d09ffaa7-f54a-43da-bcfe-550454736bc6")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+		)
+	)
+	(property "Value" "Connector_01x01_CastellatedEdge"
+		(at 0 1 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "eac1c7bb-c6bf-4f3f-964b-f7d97ced0af7")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "8e814900-4814-45d3-a04e-bbddf5a6519a")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "fefe8a46-30cf-4520-aa01-024bf9e8c50d")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr through_hole exclude_from_pos_files exclude_from_bom dnp)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_line
+		(start -1.27 -1.27)
+		(end 1.27 -1.27)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(layer "Edge.Cuts")
+		(uuid "b27893f0-0dea-4461-bc00-33e572c2216f")
+	)
+	(fp_rect
+		(start -1.016 -1.27)
+		(end 1.016 1.016)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(fill no)
+		(layer "B.CrtYd")
+		(uuid "2f7d70c5-48dd-4405-a85b-1a93d4ea5f8a")
+	)
+	(fp_rect
+		(start -1.016 -1.27)
+		(end 1.016 1.016)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "d395239e-f70b-4062-8c44-f6881f155eb6")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 2.5 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "08b66646-69ee-433d-ab4e-a1737e8025d1")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "1" thru_hole circle
+		(at 0 -1.27)
+		(size 1.27 1.27)
+		(drill 1)
+		(property pad_prop_castellated)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "96e16f5d-7f09-4b6b-a154-7c4ee3e72552")
+	)
+	(pad "1" thru_hole oval
+		(at 0 0)
+		(size 1.7 2.97)
+		(drill 1
+			(offset 0 -0.635)
+		)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "dd4568a9-ce89-4179-9558-b9e78d0fe496")
+	)
+	(embedded_fonts no)
+)
