@@ -269,7 +269,7 @@
 					)
 				)
 			)
-			(pin passive line
+			(pin power_in line
 				(at 0 -15.24 0)
 				(length 5.08)
 				(name "VLO_1"
@@ -287,7 +287,7 @@
 					)
 				)
 			)
-			(pin passive line
+			(pin power_in line
 				(at 0 -17.78 0)
 				(length 5.08)
 				(name "VLO_2"
@@ -305,10 +305,10 @@
 					)
 				)
 			)
-			(pin passive line
+			(pin power_in line
 				(at 0 -20.32 0)
 				(length 5.08)
-				(name "VSS_D_CDC_1"
+				(name "VSS_DCDC_1"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -323,10 +323,10 @@
 					)
 				)
 			)
-			(pin passive line
+			(pin power_in line
 				(at 0 -22.86 0)
 				(length 5.08)
-				(name "VCC_D_CDC_1"
+				(name "VCC_DCDC_1"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -341,10 +341,10 @@
 					)
 				)
 			)
-			(pin passive line
+			(pin power_in line
 				(at 0 -25.4 0)
 				(length 5.08)
-				(name "VCC_D_CDC_2"
+				(name "VCC_DCDC_2"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -614,7 +614,7 @@
 			(pin passive line
 				(at 0 -63.5 0)
 				(length 5.08)
-				(name "VSS_D_CDC_2"
+				(name "VSS_DCDC_2"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -632,7 +632,7 @@
 			(pin passive line
 				(at 0 -66.04 0)
 				(length 5.08)
-				(name "VCC_D_CDC_3"
+				(name "VCC_DCDC_3"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -650,7 +650,7 @@
 			(pin passive line
 				(at 0 -68.58 0)
 				(length 5.08)
-				(name "VCC_D_CDC_4"
+				(name "VCC_DCDC_4"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -2576,7 +2576,7 @@
 			(pin passive line
 				(at 0 -340.36 0)
 				(length 5.08)
-				(name "USBH_S_DP"
+				(name "USBHS_DP"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -2594,7 +2594,7 @@
 			(pin passive line
 				(at 0 -342.9 0)
 				(length 5.08)
-				(name "USBH_S_DM"
+				(name "USBHS_DM"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -2702,7 +2702,7 @@
 			(pin passive line
 				(at 0 -358.14 0)
 				(length 5.08)
-				(name "VCC2__11"
+				(name "VCC2_11"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -2720,7 +2720,7 @@
 			(pin passive line
 				(at 0 -360.68 0)
 				(length 5.08)
-				(name "VSS_1_1"
+				(name "VSS_11"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -2846,7 +2846,7 @@
 			(pin passive line
 				(at 60.96 -10.16 180)
 				(length 5.08)
-				(name "VSS_0_2"
+				(name "VSS_02"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -2864,7 +2864,7 @@
 			(pin passive line
 				(at 60.96 -12.7 180)
 				(length 5.08)
-				(name "USBH_S_RRE_F"
+				(name "USBHS_RREF"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -2882,7 +2882,7 @@
 			(pin passive line
 				(at 60.96 -15.24 180)
 				(length 5.08)
-				(name "VSS2__USBH_S"
+				(name "VSS2_USBHS"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -2900,7 +2900,7 @@
 			(pin passive line
 				(at 60.96 -17.78 180)
 				(length 5.08)
-				(name "VSS1__USBH_S"
+				(name "VSS1_USBHS"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -3008,7 +3008,7 @@
 			(pin passive line
 				(at 60.96 -33.02 180)
 				(length 5.08)
-				(name "VSS_1_2"
+				(name "VSS_12"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -3152,7 +3152,7 @@
 			(pin passive line
 				(at 60.96 -53.34 180)
 				(length 5.08)
-				(name "VCC_0_2"
+				(name "VCC_02"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -3170,7 +3170,7 @@
 			(pin passive line
 				(at 60.96 -55.88 180)
 				(length 5.08)
-				(name "AVCC__USBH_S"
+				(name "AVCC_USBHS"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -3188,7 +3188,7 @@
 			(pin passive line
 				(at 60.96 -58.42 180)
 				(length 5.08)
-				(name "P213/X_TAL"
+				(name "P213/XTAL"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -3206,7 +3206,7 @@
 			(pin passive line
 				(at 60.96 -60.96 180)
 				(length 5.08)
-				(name "P212/E_XTAL"
+				(name "P212/EXTAL"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -3314,7 +3314,7 @@
 			(pin passive line
 				(at 60.96 -76.2 180)
 				(length 5.08)
-				(name "VCC2__12"
+				(name "VCC2_12"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -3332,7 +3332,7 @@
 			(pin passive line
 				(at 60.96 -78.74 180)
 				(length 5.08)
-				(name "VSS_1_4"
+				(name "VSS_14"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -3350,7 +3350,7 @@
 			(pin passive line
 				(at 60.96 -81.28 180)
 				(length 5.08)
-				(name "VSS_1_5"
+				(name "VSS_15"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -3476,7 +3476,7 @@
 			(pin passive line
 				(at 60.96 -99.06 180)
 				(length 5.08)
-				(name "VCC_0_1"
+				(name "VCC_01"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -3494,7 +3494,7 @@
 			(pin passive line
 				(at 60.96 -101.6 180)
 				(length 5.08)
-				(name "P214/X_COUT"
+				(name "P214/XCOUT"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -3512,7 +3512,7 @@
 			(pin passive line
 				(at 60.96 -104.14 180)
 				(length 5.08)
-				(name "P215/X_CIN/EX_CIN"
+				(name "P215/XCIN/EXCIN"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -3638,7 +3638,7 @@
 			(pin passive line
 				(at 60.96 -121.92 180)
 				(length 5.08)
-				(name "VCC2__14"
+				(name "VCC2_14"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -3656,7 +3656,7 @@
 			(pin passive line
 				(at 60.96 -124.46 180)
 				(length 5.08)
-				(name "VCC2__15"
+				(name "VCC2_15"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -3818,7 +3818,7 @@
 			(pin passive line
 				(at 60.96 -147.32 180)
 				(length 5.08)
-				(name "VSS_0_1"
+				(name "VSS_01"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -4448,7 +4448,7 @@
 			(pin passive line
 				(at 60.96 -236.22 180)
 				(length 5.08)
-				(name "VCC2__13"
+				(name "VCC2_13"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -5024,7 +5024,7 @@
 			(pin passive line
 				(at 60.96 -317.5 180)
 				(length 5.08)
-				(name "P815/U_SB_D_M"
+				(name "P815/USB_DM"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -5042,7 +5042,7 @@
 			(pin passive line
 				(at 60.96 -320.04 180)
 				(length 5.08)
-				(name "VSS_U_SB"
+				(name "VSS_USB"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -5114,7 +5114,7 @@
 			(pin passive line
 				(at 60.96 -330.2 180)
 				(length 5.08)
-				(name "VSS_1_3"
+				(name "VSS_13"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -5330,7 +5330,7 @@
 			(pin passive line
 				(at 60.96 -360.68 180)
 				(length 5.08)
-				(name "P814/U_SB_DP"
+				(name "P814/USB_DP"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -5348,7 +5348,7 @@
 			(pin passive line
 				(at 60.96 -363.22 180)
 				(length 5.08)
-				(name "VCC_U_SB"
+				(name "VCC_USB"
 					(effects
 						(font
 							(size 1.27 1.27)
