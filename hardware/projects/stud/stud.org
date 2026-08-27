@@ -54,6 +54,7 @@ checked compatibility against the RA8M2 datasheet (r01ds0438ej0130):
 - [ ] 13-bit row / 9-bit column multiplex config (SDADR)
 - [ ] SDRAM region in the memory map fits the full 64MB
 ** TODO check symbol & footprint, apparently user-contributed
+** TODO consider IS42SM32160E-6BLI, which the Seed3 uses
 * routing
 ** traces
 as far as i can tell, i should keep traces to 50 Ω if possible. that's the only
