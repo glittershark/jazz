@@ -26,9 +26,7 @@ write a /lot/ of our own tooling.
 -> oh wait, hang on! there's https://github.com/ra-rs/ra, which we could most
    likely update for the RA8M2 series.
 
-* SDRAM: IS42S32160F-7BLI (LCSC C2064441)
-fable's notes:
-
+* SDRAM: IS42S32160F-7BLI (LCSC C2064441) :claude:
 512Mb (4M x 32 x 4 banks), 3.3V, 90-ball TF-BGA 8x13mm 0.8mm pitch.
 checked compatibility against the RA8M2 datasheet (r01ds0438ej0130):
 
@@ -36,11 +34,16 @@ checked compatibility against the RA8M2 datasheet (r01ds0438ej0130):
   the R7KA8M2JFLCAC.
 - VCC *and* VCC2 must be 3.0-3.63V (DQ20-31 are in the VCC2 domain).
 - pins match 1:1: A0-A12 + BA0/BA1 (MCU has A00-A16), DQ0-31, DQM0-3,
-  SDCLK/CKE/SDCS/RAS/CAS/WE. 55 signals.
+  SDCLK/CKE/SDCS/RAS/CAS/WE. 57 signals.
 - timing: run SDCLK at 100-120 MHz, CL3. 133 MHz doesn't close: read path is
   tAC3 5.4 + tRDS2 2.1 = 7.5ns + flight > 7.5ns period. ~0.4ns margin @120.
 - hold margin is exactly zero on paper (SDRAM wants 0.8ns, MCU min delay
   0.8ns): match lengths, or route SDCLK slightly shorter than data/addr.
+  /caveat:/ note (2) on that ISSI table (p.16) says the setup/hold numbers
+  assume a 1 ns clock edge, and to add (tt/2 - 0.5) ns for anything slower.
+  the RA8M2 only specs SDCLK rise/fall as <=2.7 ns, which would add 0.85 ns and
+  blow the hold budget. so: keep SDCLK short and lightly loaded, and don't let
+  series termination round the edge off. worth checking on the real board.
 - @120 MHz: tRCD 3 cyc, tRP 3, tRAS 6, tRC 8, tMRD 2, tXSR 9; auto-refresh
   every <=7.8us (8192 rows / 64ms).
 - SDCLK pin needs "high-speed high drive" in PmnPFS, other bus pins "high
@@ -49,12 +52,221 @@ checked compatibility against the RA8M2 datasheet (r01ds0438ej0130):
   mobile IS42SM32160E: EMRS init + 1.0ns hold requirement; same footprint
   though.) tradeoff: self-refresh is 6mA, no deep power down. don't care.
 
-** TODO verify in the hardware manual (not in the datasheet) [0/3]
-- [ ] which A-pins carry BA0/BA1 during SDRAM cycles (check EK-RA8D1 schematic)
-- [ ] 13-bit row / 9-bit column multiplex config (SDADR)
-- [ ] SDRAM region in the memory map fits the full 64MB
+** DONE verify in the hardware manual [3/3]
+checked against r01uh1066ej0130 §15 (buses). all three resolved:
+- [X] BA0/BA1: with a 13-bit row on a 32-bit bus, *BA1 -> MCU A16, BA0 -> A15*,
+  SDRAM A0-A12 -> MCU A02-A14, SDRAM A10 (=AP) -> MCU A12. MCU A00/A01 unused.
+  see §15.6.12 table 15.36 (32-bit, 9-bit shift) and the worked example in
+  table 15.38.
+- [X] multiplex: *SDADR.MXC = 01* (9-bit shift). gives 9 column bits on
+  A02-A10 and 13 row bits on A02-A14. 9+13+2 = 24 word addr + 2 = 64 MB.
+- [X] memory map: SDRAM area is *0x6800_0000, 128 MB* (§5, fig 5.4). 64 MB fits.
+
+** wiring the address bus
+| MCU  | SDRAM   | note                          |
+|------+---------+-------------------------------|
+| A16  | BA1     |                               |
+| A15  | BA0     |                               |
+| A14  | A12     |                               |
+| A13  | A11     |                               |
+| A12  | A10     | doubles as AP/precharge-sel   |
+| A11  | A9      | row only (col is 9 bits)      |
+| A10..A02 | A8..A0 |                            |
+
+** clock rate
+SDCLK comes from BCLK or BCLKA (§9.10.9, BCKCR.EBCKASEL picks which):
+- BCLK: from PLL1P, dividers 1/2/3/4/6/8/12/16/24/32/64, *max 125 MHz*. with
+  CPU0 at 1 GHz that's /8 = 125 (too tight) or /12 = 83.3 MHz.
+- BCLKA: from PLL2P/Q/R or PLL1P/Q/R, dividers 1/2/4/6/8/10/16/32, *max 133
+  MHz*. decoupled from the CPU clock.
+
+=> *use BCLKA off PLL2* so SDCLK is independent of the 1 GHz core clock and can
+be dialled to exactly 100 MHz. 120 MHz only buys ~7% on burst reads (the fixed
+ns latencies dominate) and eats most of the timing margin, so *100 MHz, CL3*.
+
+/gotcha:/ if the CS area controller is ever used at the same time as the
+SDRAMC, we drop to datasheet "condition 3": SDCLK max *66 MHz* and output
+delays worsen from 6.0 to 10 ns. so: keep the external bus SDRAM-only.
+
+** init sequence (§15.6.11.1, fig 15.48)
+the controller has a hardware init sequencer -- we don't bit-bang commands.
+1. SDIR   <- 0x085   PRC=3 cyc, ARFC=8 refreshes, ARFI=8 cyc
+2. SDCCR  <- 0x11    BSIZE=01 (32-bit), EXENB=1
+3. SDICR.INIRQ <- 1  fires PALL then n x REF automatically
+4. poll SDICR.INIRQ (and SDSR) until 0
+5. SDCCR.EXENB <- 0
+6. SDMOD  <- 0x0030  MRS: burst length 1, sequential, CL3
+7. SDTR   <- 0x41303 CL=3, WR=2, RP=2, RCD=2, RAI=5  (@100 MHz)
+8. SDADR  <- 0x01    MXC=01
+9. SDRFCR <- 0x630B  RFC=779, REFW=7 cyc ; then SDRFEN.RFEN <- 1
+10. SDAMOD.BE <- 1   enable consecutive access
+11. SDCCR.EXENB <- 1, read back SDCCR (needs a barrier on CPU0)
+
+SDMOD/SDIR/SDTR/SDCMOD are *write-once after reset* -- one shot, get it right.
+also need SDCKOCR.SDCKOEN=1 and PmnPFS.PSEL=01011b to actually emit SDCLK.
+
+*** register values at 100 MHz (10 ns) vs 120 MHz (8.333 ns)
+| reg    | 100 MHz | 120 MHz | derivation                       |
+|--------+---------+---------+----------------------------------|
+| CL     |       3 |       3 | tck2 min 10 ns, so CL2 is out     |
+| RCD    |       2 |       3 | tRCD 20 ns                       |
+| RP     |       2 |       3 | tRP 20 ns                        |
+| RAI    |       5 |       6 | tRAS 42 ns                       |
+| WR     |       2 |       2 | tDPL 14 ns                       |
+| SDTR   | 0x41303 | 0x52503 |                                  |
+| RFC    |     779 |     935 | 7.8 us / tCK - 1                 |
+| SDRFCR |  0x630B |  0x73A7 | REFW from tRC 63 ns              |
+
+/constraint:/ SDTR.RAI <= RCD + CL. at 120 MHz that's 6 <= 3+3, satisfied
+*exactly* -- no room. at 100 MHz it's 5 <= 2+3, also exact. don't fiddle.
+
+** read/write sequence (§15.6.10)
+no open-row policy: *every transfer is ACT -> RD/WR xN -> PRE*. the SDRAM's own
+burst length is forced to 1 (SDMOD note); the controller makes bursts by
+issuing back-to-back RD/WR commands on consecutive clocks while the row stays
+open. row change mid-transfer auto-precharges and re-activates (fig 15.47).
+
+consecutive access needs SDAMOD.BE=1 *and* a bus master issuing a burst of >=2
+beats -- i.e. cache line fills or DMAC/DTC block moves. plain uncached
+single-word CPU access pays the whole ACT+CL+PRE each time.
+
+rough numbers @100 MHz (peak 400 MB/s):
+- single 32-bit read: ~9 cycles = 90 ns -> ~44 MB/s. ouch.
+- 8-word (32 B cache line): ~16 cycles = 160 ns -> ~200 MB/s.
+
+=> map the SDRAM cacheable write-back and stream buffers with DMA. random
+scalar access to it will be miserable, which is fine for our use (big audio
+buffers), but means don't put the heap there without thinking.
+
 ** TODO check symbol & footprint, apparently user-contributed
-** TODO consider IS42SM32160E-6BLI, which the Seed3 uses
+** DONE consider IS42SM32160E-6BLI, which the Seed3 uses
+*rejected -- sticking with the IS42S32160F-7BLI.* two hard reasons:
+
+1. *hold-time violation.* the mobile part wants 1.0 ns hold on address,
+   command and write data (tAH/tCMH/tDH, same at both speed grades). the RA8M2
+   only guarantees 0.8 ns min output delay. 0.2 ns short, unfixable by layout
+   in the right direction. the IS42S32160F wants exactly 0.8 ns -> met.
+2. *we can't issue the EMRS.* the mobile part's init wants a second mode
+   register write (E14/BA1=1) to set PASR and driver strength. but SDMOD is
+   write-once per reset, so we get exactly one MRS -- and we need that one for
+   CL/burst length. (the manual is self-contradictory on whether BA1 can even
+   go high during MRS: table 15.30 lists MRS as BA1=L/BA0=L, while §15.6.9 maps
+   MR[14:0] onto A16-A02 = BA1/BA0/A12-A0. either way, write-once settles it.)
+   so driver strength and PASR would sit at whatever they power up as. probably
+   fine (all-zeros = full strength, all banks) but undocumented.
+
+the "but the Seed3 uses it" argument doesn't carry: the Seed3 drives it with an
+STM32 FMC, a different controller with different hold specs.
+
+note the datasheet actually in docs/ (C2064216) is the *-75BLI*, not the -6BLI
+-- the slower 133 MHz grade, with 2.0 ns setup and tAC3 6.0 ns. that one is the
+worst of the three: only ~0.23 ns read margin at 120 MHz vs ~0.83 for our part.
+
+*** timing margin comparison @120 MHz, CL3
+| part               | read | write/cmd | hold  |
+|--------------------+------+-----------+-------|
+| IS42S32160F-7 (us) | 0.83 |      0.83 |  0.00 |
+| IS42SM32160E-6     | 0.73 |      0.83 | -0.20 |
+| IS42SM32160E-75    | 0.23 |      0.33 | -0.20 |
+read = tCK - (tAC3 + tRDS2 2.1); write = tCK - (6.0 + setup); ns, before trace
+flight time. all three fail at 133 MHz.
+* GPIO breakout :claude:
+of the 208 I/O ports on the BGA289, 80 are committed (SDRAM 57, SSIE0/codec 4,
+microSD 5, USB-HS 3, EXTAL 1, + the 10 already on pads). 128 free.
+
+/ring/ = distance from the package edge, 0 = outer row. drives escape
+difficulty; everything below is ring 0-2 except P009. verified against
+datasheet table 1.16 (pin lists): every pin is free and actually carries the
+function listed.
+
+** already broken out (J2-J11)
+| pad | port | ball | function                              |
+|-----+------+------+---------------------------------------|
+| J2  | P014 | T8   | DA0 / AN014 / ACMPHS3.IVCMP0          |
+| J4  | P015 | U8   | DA1 / AN015 / ACMPHS2.IVCMP0          |
+| J3  | P008 | U11  | IVREF0 (all 4 comparators) / AN008    |
+| J6  | P000 | U13  | ACMPHS0.IVCMP2 / AN000                |
+| J7  | P002 | U14  | ACMPHS1.IVCMP2 / AN002                |
+| J5  | P006 | U12  | ACMPHS3.IVCMP2 / AN006                |
+| J8  | P410 | K13  | IIC0 SCL (dedicated), 5V              |
+| J9  | P409 | R16  | IIC0 SDA (dedicated), 5V              |
+| J10 | P512 | P13  | IIC1 SCL (dedicated), 5V              |
+| J11 | P511 | U15  | IIC1 SDA (dedicated), 5V              |
+
+both DAC channels are here already -- the chip only has two, so there is
+nothing more to add on that front. if we ever want more analog out it's the
+codec, an external DAC, or filtered PWM.
+
+** to add: 33 pads
+| #  | function      | signal   | port | ball | ring | 5V | IRQ   |
+|----+---------------+----------+------+------+------+----+-------|
+|  1 | I2C (IIC2)    | SCL2_B   | P515 | P15  |    2 | y  | IRQ12 |
+|  2 | I2C (IIC2)    | SDA2_B   | P514 | R14  |    2 | y  | IRQ13 |
+|  3 | SPI (SPI0)    | RSPCKA_A | P203 | T2   |    1 |    | IRQ2  |
+|  4 | SPI (SPI0)    | MOSIA_A  | P202 | U2   |    0 |    | IRQ3  |
+|  5 | SPI (SPI0)    | MISOA_A  | P313 | T3   |    1 |    | IRQ27 |
+|  6 | SPI (SPI0)    | SSLA0_A  | P204 | U1   |    0 | y  | IRQ26 |
+|  7 | CAN-FD0       | CTX0     | P312 | C13  |    2 |    | IRQ22 |
+|  8 | CAN-FD0       | CRX0     | P311 | B12  |    1 |    | IRQ23 |
+|  9 | PWM  GPT13 A  | GTIOC13A | P907 | A15  |    0 |    | IRQ10 |
+| 10 | PWM  GPT13 B  | GTIOC13B | P906 | A13  |    0 |    | IRQ9  |
+| 11 | PWM  GPT12 A  | GTIOC12A | P909 | B14  |    1 |    | IRQ21 |
+| 12 | PWM  GPT12 B  | GTIOC12B | P908 | B13  |    1 |    | IRQ11 |
+| 13 | PWM  GPT11 B  | GTIOC11B | P904 | A16  |    0 |    | IRQ2  |
+| 14 | PWM  GPT2 A   | GTIOC2A  | PD06 | C17  |    0 |    | IRQ18 |
+| 15 | PWM  GPT8 A   | GTIOC8A  | P605 | N1   |    0 |    | IRQ25 |
+| 16 | PWM  GPT8 B   | GTIOC8B  | P100 | U6   |    0 |    | IRQ2  |
+| 17 | UART (SCI0)   | TXD0_B   | P603 | P1   |    0 |    | IRQ27 |
+| 18 | UART (SCI0)   | RXD0_B   | P602 | P2   |    1 |    | IRQ28 |
+| 19 | ACMPHS out    | VCOUT    | P309 | A12  |    0 |    | IRQ25 |
+| 20 | ACMPHS ref 1  | IVREF1   | P009 | P11  |    3 |    | IRQ13 |
+| 21 | ADC + IVCMP3  | AN001    | P001 | T13  |    1 |    | IRQ7  |
+| 22 | ADC + IVCMP3  | AN003    | P003 | R12  |    2 |    | IRQ29 |
+| 23 | ADC + IVCMP3  | AN005    | P005 | R11  |    2 |    | IRQ10 |
+| 24 | ADC + IVCMP3  | AN007    | P007 | T12  |    1 |    | IRQ28 |
+| 25 | ADC trigger   | ADTRG0   | P407 | R17  |    0 | y  | IRQ22 |
+| 26 | PDM clock     | PDMCLK2  | P705 | F17  |    0 |    | IRQ19 |
+| 27 | PDM data      | PDMDAT2  | PB00 | E16  |    1 |    | IRQ10 |
+| 28 | gpio          | —        | P205 | T1   |    0 | y  | IRQ1  |
+| 29 | gpio          | —        | P303 | B6   |    1 | y  | IRQ29 |
+| 30 | gpio          | —        | P709 | P16  |    1 | y  | IRQ10 |
+| 31 | gpio          | —        | P711 | N15  |    2 | y  | IRQ3  |
+| 32 | gpio          | —        | P713 | N16  |    1 | y  | IRQ14 |
+| 33 | gpio          | —        | P715 | T15  |    1 | y  | IRQ12 |
+
+*** notes
+- the comparator was almost fully broken out already (see J2-J7 above); only
+  VCOUT was missing. IVREF1 is optional -- it's the one ring-3 pin, drop it if
+  escape routing gets tight.
+- AN001/003/005/007 double as ACMPHS0/1/2/3 IVCMP3, so together with the
+  existing IVCMP2 pads we get complete external input pairs on ACMPHS0, 1, 3
+  for free.
+- PWM is 8 duty cycles across 5 channels. pairs within a channel (13 A+B,
+  12 A+B, 8 A+B) share a counter => shared period, independent duty. fine for
+  pseudo-analog level control; if we need 8 independent /frequencies/ we have
+  to spread across 8 channels and lose some clustering.
+- the 6 gpios have distinct IRQ numbers (1,3,10,12,14,29) so all six can take
+  external interrupts at once. IRQ numbers /are/ shared across pins elsewhere
+  in the table (P904 and P203 are both IRQ2, etc.) but those pins are doing
+  peripheral duty and don't need the interrupt path.
+
+*** what this gives up
+- CANFD1 (its pins became PWM) -- we keep CANFD0.
+- SCI6 loses its only free alternate (same pins).
+- PDMCLK0/1; channel 2 is what's allocated.
+- SDHI1, partially blocked by the SPI pins -- no second SD interface.
+- I3C0 is *preserved*: swapped two PWM pins off P400/P401 onto P605/P100
+  specifically to keep it, since it's the only I3C instance on the chip.
+- USBFS still fully available if we ever want a second USB.
+
+*** geography
+four clusters: bottom-left (SPI + UART, rows T/U/P cols 1-3), bottom-right
+(ADC + ADTRG, rows R/T cols 11-17), top-right (PWM + CAN + VCOUT, rows A-C
+cols 12-17), right edge (I2C + PDM + gpio, cols 15-17). the existing 10 pads
+are bottom-right so that cluster extends naturally. top-right is diagonally
+opposite the SDRAM, which is good for routing but only useful if that edge
+ends up exposed.
+
 * routing
 ** traces
 as far as i can tell, i should keep traces to 50 Ω if possible. that's the only
