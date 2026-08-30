@@ -9,6 +9,215 @@
 		(company "stillmar electric")
 	)
 	(lib_symbols
+		(symbol "Connector:Conn_ARM_SWD_TagConnect_TC2030-NL"
+			(exclude_from_sim no)
+			(in_bom no)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "J"
+				(at 2.54 11.43 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Conn_ARM_SWD_TagConnect_TC2030-NL"
+				(at 2.54 8.89 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "Connector:Tag-Connect_TC2030-IDC-NL_2x03_P1.27mm_Vertical"
+				(at 0 -17.78 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" "https://www.tag-connect.com/wp-content/uploads/bsk-pdf-manager/TC2030-CTX_1.pdf"
+				(at 0 -15.24 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Tag-Connect ARM Cortex SWD JTAG connector, 6 pin, no legs"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "Cortex Debug Connector ARM SWD JTAG"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "*TC2030*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Conn_ARM_SWD_TagConnect_TC2030-NL_0_0"
+				(pin power_in line
+					(at -2.54 10.16 270)
+					(length 2.54)
+					(name "VCC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin bidirectional line
+					(at 7.62 -2.54 180)
+					(length 2.54)
+					(name "SWDIO"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(alternate "TMS" bidirectional line)
+				)
+				(pin open_collector line
+					(at 7.62 5.08 180)
+					(length 2.54)
+					(name "~{RESET}"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin output line
+					(at 7.62 0 180)
+					(length 2.54)
+					(name "SWCLK"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(alternate "TCK" output line)
+				)
+				(pin power_in line
+					(at -2.54 -10.16 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin input line
+					(at 7.62 -5.08 180)
+					(length 2.54)
+					(name "SWO"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(alternate "TDO" input line)
+				)
+			)
+			(symbol "Conn_ARM_SWD_TagConnect_TC2030-NL_0_1"
+				(rectangle
+					(start -5.08 7.62)
+					(end 5.08 -7.62)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Connector:TestPoint"
 			(pin_numbers
 				(hide yes)
@@ -1744,6 +1953,184 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Jumper:SolderJumper_2_Open"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom no)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "JP"
+				(at 0 2.032 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "SolderJumper_2_Open"
+				(at 0 -2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 -7.62 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Solder Jumper, 2-pole, open"
+				(at 0 -5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "solder jumper SPST"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "SolderJumper*Open*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "SolderJumper_2_Open_0_1"
+				(polyline
+					(pts
+						(xy -0.254 1.016) (xy -0.254 -1.016)
+					)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -0.254 -1.016)
+					(mid -1.2656 0)
+					(end -0.254 1.016)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(arc
+					(start 0.254 1.016)
+					(mid 1.2656 0)
+					(end 0.254 -1.016)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.254 1.016) (xy 0.254 -1.016)
+					)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "SolderJumper_2_Open_1_1"
+				(pin passive line
+					(at -5.08 0 0)
+					(length 3.81)
+					(name "A"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 0 180)
+					(length 3.81)
+					(name "B"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "custom:+0V9"
 			(power global)
 			(pin_numbers
@@ -3039,145 +3426,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "power:+9V"
-			(power global)
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "#PWR"
-				(at 0 -3.81 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "+9V"
-				(at 0 3.556 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "Power symbol creates a global label with name \"+9V\""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "global power"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "+9V_0_1"
-				(polyline
-					(pts
-						(xy -0.762 1.27) (xy 0 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 2.54) (xy 0.762 1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 0) (xy 0 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "+9V_1_1"
-				(pin power_in line
-					(at 0 0 90)
-					(length 0)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "power:GND"
 			(power global)
 			(pin_numbers
@@ -3641,145 +3889,6 @@
 				)
 			)
 			(symbol "VBUS_1_1"
-				(pin power_in line
-					(at 0 0 90)
-					(length 0)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "power:VDC"
-			(power global)
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "#PWR"
-				(at 0 -3.81 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "VDC"
-				(at 0 3.556 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "Power symbol creates a global label with name \"VDC\""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "global power"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "VDC_0_1"
-				(polyline
-					(pts
-						(xy -0.762 1.27) (xy 0 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 2.54) (xy 0.762 1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 0) (xy 0 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "VDC_1_1"
 				(pin power_in line
 					(at 0 0 90)
 					(length 0)
@@ -5850,7 +5959,7 @@
 						)
 					)
 				)
-				(pin power_in line
+				(pin passive line
 					(at 0 -15.24 0)
 					(length 5.08)
 					(name "VLO_1"
@@ -5868,7 +5977,7 @@
 						)
 					)
 				)
-				(pin power_in line
+				(pin passive line
 					(at 0 -17.78 0)
 					(length 5.08)
 					(name "VLO_2"
@@ -5886,7 +5995,7 @@
 						)
 					)
 				)
-				(pin power_in line
+				(pin passive line
 					(at 0 -20.32 0)
 					(length 5.08)
 					(name "VSS_DCDC_1"
@@ -5904,7 +6013,7 @@
 						)
 					)
 				)
-				(pin power_in line
+				(pin passive line
 					(at 0 -22.86 0)
 					(length 5.08)
 					(name "VCC_DCDC_1"
@@ -5922,7 +6031,7 @@
 						)
 					)
 				)
-				(pin power_in line
+				(pin passive line
 					(at 0 -25.4 0)
 					(length 5.08)
 					(name "VCC_DCDC_2"
@@ -6447,7 +6556,7 @@
 				(pin passive line
 					(at 0 -99.06 0)
 					(length 5.08)
-					(name "P210/T_MS/S_WDIO"
+					(name "P210/TMS/SWDIO"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -6753,7 +6862,7 @@
 				(pin passive line
 					(at 0 -142.24 0)
 					(length 5.08)
-					(name "P211/T_CK/S_WCLK"
+					(name "P211/TCK/SWCLK"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -11793,10 +11902,22 @@
 		(uuid "122e0706-b015-4f55-b4a3-461fbe9ad396")
 	)
 	(junction
+		(at 97.79 511.81)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "15fe7990-6b36-45c3-b6b9-f83b62ce3a1f")
+	)
+	(junction
 		(at 228.6 58.42)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "168f2d5b-26dc-4e37-96f1-e05aa773fd6b")
+	)
+	(junction
+		(at 151.13 490.22)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "18a0185d-93b9-42ab-8f94-c17e02f02be3")
 	)
 	(junction
 		(at 76.2 538.48)
@@ -11877,6 +11998,12 @@
 		(uuid "2d85b8b2-da50-48ef-a109-081ed2757952")
 	)
 	(junction
+		(at 200.66 342.9)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "2febbd33-75b5-4875-adeb-00935504bb34")
+	)
+	(junction
 		(at 290.83 360.68)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -11917,6 +12044,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "382a29f0-f078-47d8-be9c-5a1d16cafa6d")
+	)
+	(junction
+		(at 97.79 497.84)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "395895d6-d050-441c-9814-52954c89606a")
 	)
 	(junction
 		(at 307.34 134.62)
@@ -11961,7 +12094,7 @@
 		(uuid "455a17b4-4733-4765-820a-1a5da302f436")
 	)
 	(junction
-		(at 104.14 504.19)
+		(at 114.3 504.19)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "46973caa-d175-4028-9311-d3443f9bb42b")
@@ -12015,6 +12148,12 @@
 		(uuid "597bc2ac-5196-4cef-b7b2-642c827e0422")
 	)
 	(junction
+		(at 279.4 373.38)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "5c143eaa-a9d6-4a14-be1e-dfed3234a591")
+	)
+	(junction
 		(at 166.37 490.22)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -12031,12 +12170,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "674e10d3-8e93-43ed-9914-9f69f77f8731")
-	)
-	(junction
-		(at 97.79 511.81)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "6bbd8bca-efa2-47ab-9701-abb26916b33c")
 	)
 	(junction
 		(at 322.58 147.32)
@@ -12159,10 +12292,22 @@
 		(uuid "900f0721-ece3-496a-9ce2-1f9e0aed12c5")
 	)
 	(junction
+		(at 97.79 516.89)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "943b15ee-2602-4b03-8976-5cfb24110210")
+	)
+	(junction
 		(at 274.32 58.42)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "964e8af8-3be2-4c83-849d-50cf5fad137e")
+	)
+	(junction
+		(at 203.2 342.9)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "9744f991-b11c-487a-8e8b-679189e77215")
 	)
 	(junction
 		(at 279.4 360.68)
@@ -12309,16 +12454,16 @@
 		(uuid "d1b9781c-663d-4eab-95b6-da22f9aafbd6")
 	)
 	(junction
+		(at 80.01 538.48)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "d5083529-ea52-47a2-94b4-4a9a9db5673e")
+	)
+	(junction
 		(at 207.01 501.65)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "d72ec501-cccf-4b10-8bc4-d4e0d10434e6")
-	)
-	(junction
-		(at 97.79 516.89)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "db8c7e72-6e8c-47c4-b435-d72bf0b8621c")
 	)
 	(junction
 		(at 246.38 134.62)
@@ -12423,20 +12568,248 @@
 		(uuid "fe3d6ead-9e49-4835-92a6-580d5b42b2c3")
 	)
 	(no_connect
+		(at 107.95 353.06)
+		(uuid "05c4c579-1caf-44c6-afe9-a477b8f6ad6d")
+	)
+	(no_connect
+		(at 46.99 241.3)
+		(uuid "074dfbc3-7b2c-48d3-8cd1-b321e19c9d3e")
+	)
+	(no_connect
+		(at 46.99 256.54)
+		(uuid "0b898d76-c673-40fa-8105-45e67e816193")
+	)
+	(no_connect
 		(at 95.25 525.78)
 		(uuid "0f806c5f-fd7d-4be7-9b2d-08130ab3b825")
+	)
+	(no_connect
+		(at 107.95 347.98)
+		(uuid "12dcb7c1-a5f7-4fb8-9af5-b943d974e841")
+	)
+	(no_connect
+		(at 107.95 421.64)
+		(uuid "131c32b5-8620-4e14-adb9-d142b996a3a0")
+	)
+	(no_connect
+		(at 107.95 307.34)
+		(uuid "18c6f6c3-e0e4-4eac-8690-a54c16d9fdbc")
+	)
+	(no_connect
+		(at 46.99 287.02)
+		(uuid "18e28b91-8aef-4ea7-b855-301e6c136452")
+	)
+	(no_connect
+		(at 46.99 208.28)
+		(uuid "1af18c5c-2c79-469f-beb1-2cc3e278b1ab")
+	)
+	(no_connect
+		(at 107.95 332.74)
+		(uuid "20b43427-c654-4d86-9895-7e5f0fbc3f97")
+	)
+	(no_connect
+		(at 46.99 302.26)
+		(uuid "2285eaa4-8e2d-44a7-96eb-b2e4fc745100")
+	)
+	(no_connect
+		(at 107.95 396.24)
+		(uuid "26d12bbe-edeb-4db3-b38d-e41d2d901080")
 	)
 	(no_connect
 		(at 194.31 506.73)
 		(uuid "2a132d35-fd64-47d0-8794-ea265cd09687")
 	)
 	(no_connect
+		(at 107.95 337.82)
+		(uuid "2af141ff-0960-4b1d-891a-577ca69d554e")
+	)
+	(no_connect
+		(at 107.95 454.66)
+		(uuid "2b5fcf33-fcc6-467e-99ca-d75c380dcfd9")
+	)
+	(no_connect
+		(at 46.99 259.08)
+		(uuid "2cf2ee4a-f18b-4417-964a-3161ed739a3c")
+	)
+	(no_connect
+		(at 107.95 388.62)
+		(uuid "33e3d200-645f-479c-86e8-19ae85baeaba")
+	)
+	(no_connect
+		(at 107.95 254)
+		(uuid "345f6b58-01cd-49ac-ba0d-69c9b1293214")
+	)
+	(no_connect
+		(at 107.95 340.36)
+		(uuid "36fc5d05-d918-46dc-852e-306e6c1fe331")
+	)
+	(no_connect
+		(at 46.99 345.44)
+		(uuid "38d32ab8-c41e-47c1-8d2f-823f2be77724")
+	)
+	(no_connect
+		(at 107.95 320.04)
+		(uuid "3adfa2d9-ec0b-4275-a3bf-1d1854bcc5dc")
+	)
+	(no_connect
+		(at 107.95 411.48)
+		(uuid "3f16f2d3-0204-4b2a-b303-1757b1ceb943")
+	)
+	(no_connect
+		(at 46.99 251.46)
+		(uuid "40e64cb4-3aa8-4521-b6a6-1d010de8551b")
+	)
+	(no_connect
+		(at 107.95 198.12)
+		(uuid "4109aedd-788c-4154-a462-d388f8732a70")
+	)
+	(no_connect
+		(at 107.95 238.76)
+		(uuid "41b3dcb8-6129-42eb-8c77-c4e9f6c7fc21")
+	)
+	(no_connect
+		(at 46.99 246.38)
+		(uuid "4438f096-ec51-4e9b-a7b4-f83a877fc519")
+	)
+	(no_connect
+		(at 46.99 106.68)
+		(uuid "449978c7-214f-418c-bbad-4c07b7c164cd")
+	)
+	(no_connect
+		(at 107.95 220.98)
+		(uuid "492da415-a69e-464b-8105-e9d9fbb62e49")
+	)
+	(no_connect
+		(at 107.95 246.38)
+		(uuid "4c48fa64-aa45-40d6-997a-ddfdbf32b10a")
+	)
+	(no_connect
+		(at 107.95 406.4)
+		(uuid "51a86256-a9ed-49d2-b073-10661334de32")
+	)
+	(no_connect
+		(at 107.95 342.9)
+		(uuid "51b1bdc9-cfaf-4e39-a20a-e85141ae763e")
+	)
+	(no_connect
+		(at 107.95 264.16)
+		(uuid "5a2ba24b-e9a7-45a9-b2f3-869a51a3aece")
+	)
+	(no_connect
+		(at 46.99 294.64)
+		(uuid "5b2ced79-7333-4a35-ab72-ab73c8ae0f44")
+	)
+	(no_connect
+		(at 107.95 383.54)
+		(uuid "5e43358f-aac9-4f83-ba45-f129af0b697b")
+	)
+	(no_connect
+		(at 107.95 190.5)
+		(uuid "5e66d3d5-e16b-440d-828d-45399c4e0999")
+	)
+	(no_connect
+		(at 46.99 264.16)
+		(uuid "5ffa3630-ca71-4049-80de-5613c4c12648")
+	)
+	(no_connect
+		(at 107.95 266.7)
+		(uuid "601b3cf0-eb5d-4cbf-a449-0e1e5c49da95")
+	)
+	(no_connect
+		(at 107.95 393.7)
+		(uuid "609c2ded-f393-4a36-a89c-ae69e21c5fec")
+	)
+	(no_connect
+		(at 107.95 248.92)
+		(uuid "635ebe22-dc04-4d2a-9326-3e328042db86")
+	)
+	(no_connect
+		(at 46.99 205.74)
+		(uuid "647ad3a4-b3b9-49a9-b8dc-cf596197489e")
+	)
+	(no_connect
+		(at 46.99 200.66)
+		(uuid "6667aac4-b98e-4cff-841f-a0cefb8bf425")
+	)
+	(no_connect
+		(at 107.95 294.64)
+		(uuid "69d7ce12-2e08-4ae0-ae0f-8906946574e0")
+	)
+	(no_connect
+		(at 107.95 231.14)
+		(uuid "6a18f615-9925-47ef-8009-210a35331319")
+	)
+	(no_connect
+		(at 46.99 297.18)
+		(uuid "6b25b84e-3489-4988-a250-ac59ffe96936")
+	)
+	(no_connect
+		(at 46.99 276.86)
+		(uuid "708028f5-600c-4637-9232-543f3eceabe7")
+	)
+	(no_connect
+		(at 107.95 335.28)
+		(uuid "73098dc5-1c7c-4300-8472-d4fd23a3cba8")
+	)
+	(no_connect
+		(at 107.95 426.72)
+		(uuid "8046a170-55d8-486e-895d-af7b2cb042d0")
+	)
+	(no_connect
+		(at 107.95 299.72)
+		(uuid "80b68418-8084-4014-bbf1-8e8d8b61275a")
+	)
+	(no_connect
+		(at 46.99 190.5)
+		(uuid "8114cf20-143e-4519-9096-780a0213c9f7")
+	)
+	(no_connect
+		(at 107.95 187.96)
+		(uuid "8200a509-5e96-447e-8f63-aaf4693856dc")
+	)
+	(no_connect
+		(at 46.99 198.12)
+		(uuid "82749bfb-3665-40f5-81d6-e148ed967e12")
+	)
+	(no_connect
+		(at 46.99 261.62)
+		(uuid "82fb1268-59d6-4f53-9af7-557e39683bd0")
+	)
+	(no_connect
+		(at 107.95 302.26)
+		(uuid "8320a697-49ca-4b32-b753-763cea1021c8")
+	)
+	(no_connect
+		(at 46.99 299.72)
+		(uuid "8553ce78-da3d-4ca8-8d72-4ecab2c47938")
+	)
+	(no_connect
+		(at 107.95 345.44)
+		(uuid "8578a65c-99c4-4f58-b9b3-fb06fab77cc3")
+	)
+	(no_connect
+		(at 107.95 271.78)
+		(uuid "8685e9da-b184-47b6-b8d3-96735a0ad2f9")
+	)
+	(no_connect
 		(at 166.37 171.45)
 		(uuid "88a8b709-6e05-4dc9-9c2a-539332693eb1")
 	)
 	(no_connect
+		(at 107.95 276.86)
+		(uuid "8b7e91e4-dab1-4d6c-b155-144f60770c40")
+	)
+	(no_connect
+		(at 107.95 309.88)
+		(uuid "8df5faa1-41a8-48b8-a7f2-7b84941752ea")
+	)
+	(no_connect
 		(at 194.31 511.81)
 		(uuid "8e8925f3-f041-4ff5-8d62-8a186f9994fa")
+	)
+	(no_connect
+		(at 107.95 195.58)
+		(uuid "9047c587-bfab-440f-97c7-2e45572b7a27")
 	)
 	(no_connect
 		(at 95.25 528.32)
@@ -12447,24 +12820,180 @@
 		(uuid "949105eb-1992-4565-a06d-a5b732cbc543")
 	)
 	(no_connect
+		(at 46.99 337.82)
+		(uuid "9844ed47-0675-4f99-9462-156cbfaec551")
+	)
+	(no_connect
+		(at 107.95 297.18)
+		(uuid "9cb3a8d5-70bb-4b13-9791-3aee2ec1b9ee")
+	)
+	(no_connect
+		(at 46.99 254)
+		(uuid "a1c58d93-2c49-44ff-9183-a9cc0ed6996a")
+	)
+	(no_connect
+		(at 46.99 360.68)
+		(uuid "ab823b94-e59a-4f36-ae36-3f56f9cd3ac3")
+	)
+	(no_connect
+		(at 46.99 134.62)
+		(uuid "b34471c6-7d9c-47df-8ca2-b85525c66e9f")
+	)
+	(no_connect
+		(at 107.95 228.6)
+		(uuid "b3ee4da6-0248-49d2-836c-ff206ab089be")
+	)
+	(no_connect
+		(at 46.99 289.56)
+		(uuid "b7d0d7ee-e73b-4947-9e50-9146a8718911")
+	)
+	(no_connect
+		(at 46.99 203.2)
+		(uuid "bac6028f-8e5f-49b9-8aff-56b2e10ecba7")
+	)
+	(no_connect
 		(at 313.69 392.43)
 		(uuid "bd7a8311-302c-4cb8-bb10-098856e2fcc0")
+	)
+	(no_connect
+		(at 107.95 386.08)
+		(uuid "be435952-33cb-4698-9cc4-f97feed48803")
+	)
+	(no_connect
+		(at 107.95 304.8)
+		(uuid "c1c09398-9bc6-4177-872b-2e147c38c404")
+	)
+	(no_connect
+		(at 107.95 259.08)
+		(uuid "c2a08d5b-499d-43a2-aa79-cab355857b7b")
+	)
+	(no_connect
+		(at 107.95 292.1)
+		(uuid "c82f8138-2600-4a70-8886-7d91d2141c49")
+	)
+	(no_connect
+		(at 107.95 327.66)
+		(uuid "c9c715a6-bf2a-4f32-9431-4e849c63e72a")
+	)
+	(no_connect
+		(at 46.99 127)
+		(uuid "cb54a367-32c1-4826-9ddc-04536e3e818a")
+	)
+	(no_connect
+		(at 46.99 238.76)
+		(uuid "cd92fcb3-4626-493a-b64f-3c085a4a775c")
+	)
+	(no_connect
+		(at 107.95 381)
+		(uuid "d03c4145-5435-42f9-aa14-589e5456aa75")
+	)
+	(no_connect
+		(at 107.95 436.88)
+		(uuid "d05c9a6a-dd55-4a2b-a71a-e764f1bc765c")
+	)
+	(no_connect
+		(at 46.99 292.1)
+		(uuid "d32258f9-73d9-4479-acf4-6f587f66c92e")
+	)
+	(no_connect
+		(at 107.95 398.78)
+		(uuid "d4ffccdb-4c1f-4806-a9e7-de6fa6bbbc1b")
+	)
+	(no_connect
+		(at 46.99 383.54)
+		(uuid "d5cedcff-6f8f-4025-ba89-11c8377239cb")
+	)
+	(no_connect
+		(at 107.95 269.24)
+		(uuid "d73e7c03-3cac-4017-af24-ca8a206441d4")
+	)
+	(no_connect
+		(at 107.95 365.76)
+		(uuid "d88343aa-fcba-417e-a31e-d93055776c13")
 	)
 	(no_connect
 		(at 166.37 173.99)
 		(uuid "dc9a6c2a-7d29-4e51-8e31-d0c60200bff0")
 	)
 	(no_connect
+		(at 46.99 172.72)
+		(uuid "dec3b453-d460-4fa2-afcf-f127d39cebe2")
+	)
+	(no_connect
+		(at 107.95 439.42)
+		(uuid "dfb439a9-0f6d-466a-8b60-0fdc368c31c3")
+	)
+	(no_connect
+		(at 107.95 213.36)
+		(uuid "e0a96b3e-39ba-4a5d-87d6-92e063053508")
+	)
+	(no_connect
+		(at 46.99 243.84)
+		(uuid "e4e698fe-dee3-4908-85f0-6defe4bc7b9b")
+	)
+	(no_connect
+		(at 107.95 256.54)
+		(uuid "e879a9f1-fae6-4a62-af79-7cae17052f8e")
+	)
+	(no_connect
+		(at 46.99 279.4)
+		(uuid "ea80569b-42fd-4d51-a11d-e3560a8782f3")
+	)
+	(no_connect
 		(at 107.95 152.4)
 		(uuid "ed6b84ee-df48-4dd9-b923-92a755392c9b")
+	)
+	(no_connect
+		(at 107.95 314.96)
+		(uuid "ee21f9d0-840a-4ccc-810f-e2f40443a1d4")
+	)
+	(no_connect
+		(at 107.95 350.52)
+		(uuid "eefcae30-1169-48af-b707-996ee49457fb")
+	)
+	(no_connect
+		(at 107.95 284.48)
+		(uuid "ef33af42-0908-4c6d-b092-3f4f1fc90770")
+	)
+	(no_connect
+		(at 107.95 261.62)
+		(uuid "f01c8b18-10da-4a9e-a21c-c33937dc3ca8")
 	)
 	(no_connect
 		(at 201.93 130.81)
 		(uuid "f2551431-1ef4-46ed-b6f2-8cc714c39a09")
 	)
 	(no_connect
+		(at 46.99 340.36)
+		(uuid "f71e3864-cf91-4d30-967f-5b164a8ad743")
+	)
+	(no_connect
 		(at 201.93 133.35)
 		(uuid "f77bd795-4030-4982-99e6-10c1987ce489")
+	)
+	(no_connect
+		(at 46.99 307.34)
+		(uuid "f7daf791-e25b-4b8c-9e61-57cf76f4eae0")
+	)
+	(no_connect
+		(at 107.95 274.32)
+		(uuid "fab88c85-8b2b-461d-8f0f-f5eb1c9b8516")
+	)
+	(no_connect
+		(at 46.99 386.08)
+		(uuid "fb4cb7fe-d5e0-4b5d-b2ce-b0034376576e")
+	)
+	(no_connect
+		(at 107.95 233.68)
+		(uuid "fb9477bf-4e11-42fb-8b0c-da1a6252d58f")
+	)
+	(no_connect
+		(at 107.95 360.68)
+		(uuid "fbffd4b8-6a41-404d-8e6c-a7f3a2b5b5cb")
+	)
+	(no_connect
+		(at 107.95 431.8)
+		(uuid "fc80ff2a-8977-44e0-bcf4-a532d845d076")
 	)
 	(no_connect
 		(at 313.69 400.05)
@@ -12742,6 +13271,16 @@
 	)
 	(wire
 		(pts
+			(xy 200.66 340.36) (xy 200.66 342.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2188de2a-cc3c-4a1a-bc2d-1f05d7a12917")
+	)
+	(wire
+		(pts
 			(xy 116.84 45.72) (xy 109.22 45.72)
 		)
 		(stroke
@@ -12829,6 +13368,16 @@
 			(type default)
 		)
 		(uuid "29069927-9ded-423e-b1d2-4d0aeb6dc04f")
+	)
+	(wire
+		(pts
+			(xy 203.2 342.9) (xy 203.2 345.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "29ac84f5-d98a-4208-b2ab-22863b76f1ff")
 	)
 	(wire
 		(pts
@@ -13102,6 +13651,16 @@
 	)
 	(wire
 		(pts
+			(xy 200.66 342.9) (xy 203.2 342.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3b7320f6-0d1e-4682-bf8d-5cb69dd0f014")
+	)
+	(wire
+		(pts
 			(xy 269.24 134.62) (xy 269.24 137.16)
 		)
 		(stroke
@@ -13129,6 +13688,16 @@
 			(type default)
 		)
 		(uuid "3dc15474-4688-4e3b-ac5f-aa675e6894fe")
+	)
+	(wire
+		(pts
+			(xy 105.41 502.92) (xy 95.25 502.92)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3eb0121c-155e-4a02-81fe-c9b024a2158c")
 	)
 	(wire
 		(pts
@@ -13192,7 +13761,17 @@
 	)
 	(wire
 		(pts
-			(xy 104.14 505.46) (xy 102.87 505.46)
+			(xy 151.13 490.22) (xy 152.4 490.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "43cad761-d1ee-4584-877e-b3ea497b5fb3")
+	)
+	(wire
+		(pts
+			(xy 114.3 505.46) (xy 113.03 505.46)
 		)
 		(stroke
 			(width 0)
@@ -13322,7 +13901,7 @@
 	)
 	(wire
 		(pts
-			(xy 104.14 504.19) (xy 104.14 505.46)
+			(xy 114.3 504.19) (xy 114.3 505.46)
 		)
 		(stroke
 			(width 0)
@@ -13402,6 +13981,16 @@
 	)
 	(wire
 		(pts
+			(xy 149.86 490.22) (xy 151.13 490.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5e365872-a8eb-4205-8b52-089b7425abe3")
+	)
+	(wire
+		(pts
 			(xy 238.76 134.62) (xy 231.14 134.62)
 		)
 		(stroke
@@ -13432,7 +14021,7 @@
 	)
 	(wire
 		(pts
-			(xy 97.79 516.89) (xy 107.95 516.89)
+			(xy 97.79 516.89) (xy 99.06 516.89)
 		)
 		(stroke
 			(width 0)
@@ -13462,7 +14051,7 @@
 	)
 	(wire
 		(pts
-			(xy 102.87 502.92) (xy 104.14 502.92)
+			(xy 113.03 502.92) (xy 114.3 502.92)
 		)
 		(stroke
 			(width 0)
@@ -13679,6 +14268,16 @@
 			(type default)
 		)
 		(uuid "761de918-0f67-4d9e-b216-3f6b9a801250")
+	)
+	(wire
+		(pts
+			(xy 203.2 342.9) (xy 205.74 342.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "76291dfd-a23d-4b13-893a-5c8ed86c978b")
 	)
 	(wire
 		(pts
@@ -13969,6 +14568,16 @@
 			(type default)
 		)
 		(uuid "91162c60-d9ff-4c82-bbcf-a7602ba5b140")
+	)
+	(wire
+		(pts
+			(xy 105.41 505.46) (xy 95.25 505.46)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9146c0dc-4bb2-42e2-9611-e4d67e32cae2")
 	)
 	(wire
 		(pts
@@ -14422,7 +15031,7 @@
 	)
 	(wire
 		(pts
-			(xy 97.79 511.81) (xy 107.95 511.81)
+			(xy 97.79 511.81) (xy 99.06 511.81)
 		)
 		(stroke
 			(width 0)
@@ -14532,7 +15141,7 @@
 	)
 	(wire
 		(pts
-			(xy 104.14 502.92) (xy 104.14 504.19)
+			(xy 114.3 502.92) (xy 114.3 504.19)
 		)
 		(stroke
 			(width 0)
@@ -14602,7 +15211,7 @@
 	)
 	(wire
 		(pts
-			(xy 104.14 504.19) (xy 105.41 504.19)
+			(xy 114.3 504.19) (xy 115.57 504.19)
 		)
 		(stroke
 			(width 0)
@@ -15192,6 +15801,16 @@
 	)
 	(wire
 		(pts
+			(xy 189.23 342.9) (xy 200.66 342.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "eb6b6bbe-918e-4bd5-82d1-ebb1b7a61128")
+	)
+	(wire
+		(pts
 			(xy 290.83 358.14) (xy 290.83 360.68)
 		)
 		(stroke
@@ -15432,6 +16051,30 @@
 			)
 		)
 	)
+	(global_label "~{RESET}"
+		(shape input)
+		(at 46.99 233.68 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "097eb0b0-860e-46d8-bf77-85b196ea7b00")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 38.2597 233.68 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "A10"
 		(shape input)
 		(at 166.37 214.63 180)
@@ -15504,6 +16147,30 @@
 			)
 		)
 	)
+	(global_label "SWO"
+		(shape input)
+		(at 189.23 353.06 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "0fa0d7ae-ae43-4aa4-845c-6f5a06d2c628")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 196.2066 353.06 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
 	(global_label "CKE"
 		(shape output)
 		(at 46.99 180.34 180)
@@ -15554,7 +16221,7 @@
 	)
 	(global_label "USB_D-"
 		(shape bidirectional)
-		(at 107.95 511.81 0)
+		(at 99.06 511.81 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -15564,7 +16231,7 @@
 		)
 		(uuid "126f7817-c107-4bc4-8d9b-9524060a54f7")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 119.6665 511.81 0)
+			(at 110.7765 511.81 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -15717,6 +16384,30 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+			)
+		)
+	)
+	(global_label "SWCLK"
+		(shape input)
+		(at 46.99 236.22 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "1e0323f1-1a0b-4c5b-8020-f91ef9a6a346")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 37.7758 236.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 			)
 		)
 	)
@@ -16488,6 +17179,30 @@
 			)
 		)
 	)
+	(global_label "OUT_L"
+		(shape input)
+		(at 336.55 447.04 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "542848e2-4176-4053-8969-fb7bdbc8fd8f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 327.9405 447.04 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "CKE"
 		(shape input)
 		(at 201.93 115.57 0)
@@ -16645,6 +17360,30 @@
 		(uuid "5c3f71fc-ac4f-40b2-aa71-0f7589e3a5d0")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 157.254 107.95 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "SWDIO"
+		(shape bidirectional)
+		(at 46.99 193.04 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "5c7a457e-06cf-4fb3-8935-b15aa2bce080")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 37.0273 193.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -17666,7 +18405,7 @@
 	)
 	(global_label "USB_D+"
 		(shape bidirectional)
-		(at 107.95 516.89 0)
+		(at 99.06 516.89 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -17676,7 +18415,7 @@
 		)
 		(uuid "abb4f6e0-2625-452a-b0fe-3bba3d14803b")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 119.6665 516.89 0)
+			(at 110.7765 516.89 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -17701,6 +18440,30 @@
 		(uuid "ac0a0205-f3a1-410d-ab0a-0eb62f7b91d4")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 244.5438 384.81 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "IN_L"
+		(shape output)
+		(at 336.55 441.96 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "aef61372-bb55-4225-b54e-b5cfe20f31ba")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 329.6338 441.96 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18024,6 +18787,30 @@
 			)
 		)
 	)
+	(global_label "OUT_R"
+		(shape input)
+		(at 336.55 449.58 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "bb13ba13-4477-4d43-ab5a-630e1e4df075")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 327.6986 449.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "DQ7"
 		(shape bidirectional)
 		(at 201.93 153.67 0)
@@ -18096,7 +18883,31 @@
 			)
 		)
 	)
-	(global_label "CODEC_ERROR"
+	(global_label "SWCLK"
+		(shape output)
+		(at 189.23 347.98 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "c05ce5a0-08d0-4c27-b02c-660dc2728db3")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 198.4442 347.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(global_label "SSI_ERROR"
 		(shape output)
 		(at 273.05 420.37 180)
 		(fields_autoplaced yes)
@@ -18108,7 +18919,7 @@
 		)
 		(uuid "c263c248-35ac-4169-9e80-04a9c4e39f82")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 256.5182 420.37 0)
+			(at 259.7839 420.37 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18373,6 +19184,30 @@
 		(uuid "d42d716f-4a4d-4f11-9ea1-6480db5adb81")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 160.5802 303.53 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "SSI_ERROR"
+		(shape input)
+		(at 46.99 347.98 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "d50d2716-982e-4095-be0f-3c58b6a9a392")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 33.7239 347.98 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -18672,6 +19507,30 @@
 			)
 		)
 	)
+	(global_label "SWO"
+		(shape output)
+		(at 46.99 281.94 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "e6f35c0d-12c3-4735-a498-12649dfd83f2")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 40.0134 281.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "EXTAL"
 		(shape output)
 		(at 191.77 269.24 0)
@@ -18888,6 +19747,54 @@
 			)
 		)
 	)
+	(global_label "~{RESET}"
+		(shape output)
+		(at 205.74 342.9 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "ef699867-a2ae-4e45-90f4-d84d8900b55d")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 214.4703 342.9 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(global_label "IN_R"
+		(shape output)
+		(at 336.55 444.5 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "f08e15be-1ea5-4945-b0fc-79ac268bc21d")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 329.3919 444.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "μSD_CMD"
 		(shape input)
 		(at 173.99 298.45 180)
@@ -18981,6 +19888,30 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+			)
+		)
+	)
+	(global_label "SWDIO"
+		(shape bidirectional)
+		(at 189.23 350.52 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "ff1320d4-0a89-4005-b841-bac312793f5c")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 199.1927 350.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 			)
 		)
 	)
@@ -19089,6 +20020,85 @@
 	)
 	(symbol
 		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 44.45 149.86 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "00f3ad9f-19c4-45db-8299-bd51d6302ee5")
+		(property "Reference" "J40"
+			(at 44.45 149.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "P303"
+			(at 39.37 149.8599 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 44.45 149.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 44.45 149.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 44.45 149.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "734b837a-7dd9-40d8-b023-472b685793ba")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J40")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
 		(at 110.49 449.58 0)
 		(unit 1)
 		(body_style 1)
@@ -19161,6 +20171,85 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "J7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 336.55 431.8 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "026fb354-d89f-4751-b0ae-9d409b1657a6")
+		(property "Reference" "#PWR0132"
+			(at 340.36 431.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 332.74 431.7999 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 336.55 431.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 336.55 431.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3V3\""
+			(at 336.55 431.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "db745d4f-c1da-4c6e-af07-d640c531b6b6")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "#PWR0132")
 					(unit 1)
 				)
 			)
@@ -19566,6 +20655,164 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 373.38 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "0acaca7e-ef91-4fc7-93ee-bac8483e9d85")
+		(property "Reference" "J39"
+			(at 110.49 373.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "P205"
+			(at 115.57 373.3799 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 373.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 373.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 373.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c5f2b78f-7d5c-49a4-85c4-b47a170e53cd")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J39")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 44.45 124.46 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "0ad44b6e-ba3c-4e91-ab87-1103ed09f436")
+		(property "Reference" "J21"
+			(at 44.45 124.46 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GTIOC13B"
+			(at 39.37 124.4599 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 44.45 124.46 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 44.45 124.46 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 44.45 124.46 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "437426f7-30de-42b0-afe3-570147c8742d")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J21")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 304.8 52.07 0)
 		(unit 1)
@@ -19720,6 +20967,85 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "C59")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 97.79 497.84 270)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "0d981ef1-a6db-4bbd-9bca-7037172b277e")
+		(property "Reference" "#FLG06"
+			(at 99.695 497.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 101.6 497.8399 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 97.79 497.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 97.79 497.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 97.79 497.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "7670c6da-a7cb-425b-bb67-76a04b138af8")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "#FLG06")
 					(unit 1)
 				)
 			)
@@ -19948,6 +21274,85 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "C26")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 44.45 132.08 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "11a4d0b9-ad41-4faa-9ac6-5445653db4fc")
+		(property "Reference" "J24"
+			(at 44.45 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GTIOC11B"
+			(at 39.37 132.0799 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 44.45 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 44.45 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 44.45 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "2efbf569-290c-4084-aaa8-a3556713d183")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J24")
 					(unit 1)
 				)
 			)
@@ -20507,6 +21912,84 @@
 		)
 	)
 	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 151.13 490.22 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "17a1407b-29de-4308-91e1-7b28ed60e664")
+		(property "Reference" "#FLG07"
+			(at 151.13 488.315 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 151.13 485.14 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 151.13 490.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 151.13 490.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 151.13 490.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "a380c174-600e-4920-ac3e-6f4e63d3d8a6")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "#FLG07")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 46.99 454.66 270)
 		(unit 1)
@@ -20661,6 +22144,85 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "C7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 416.56 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "186b6022-65bc-4e51-9b77-5d5354d70938")
+		(property "Reference" "J17"
+			(at 110.49 416.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SSLA0_A"
+			(at 115.57 416.5599 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 416.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 416.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 416.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "4562bddd-b218-4a24-87d1-a5736e27a129")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J17")
 					(unit 1)
 				)
 			)
@@ -20904,6 +22466,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 355.6 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "1ac1097e-6d28-4816-87df-b55b8df07eb4")
+		(property "Reference" "J34"
+			(at 110.49 355.6 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "ADC1_5"
+			(at 115.57 355.5999 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 355.6 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 355.6 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 355.6 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "33c175c1-61dc-4d9b-b852-3aacb4e88e9c")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J34")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R_US")
 		(at 326.39 402.59 0)
 		(unit 1)
@@ -20980,6 +22621,164 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "R2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 279.4 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "1c2f82a4-d4be-4266-97d3-09ce071235de")
+		(property "Reference" "J42"
+			(at 110.49 279.4 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "P711"
+			(at 115.57 279.3999 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 279.4 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 279.4 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 279.4 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "176b45dd-f399-47c8-9324-ac8aca223371")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J42")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 44.45 121.92 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "1d308316-0afd-49ae-a0df-cb9145206129")
+		(property "Reference" "J30"
+			(at 44.45 121.92 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "VCOUT"
+			(at 39.37 121.9199 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 44.45 121.92 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 44.45 121.92 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 44.45 121.92 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "4350a441-00d5-4c7d-94eb-f583d5911ff6")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J30")
 					(unit 1)
 				)
 			)
@@ -21543,6 +23342,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 419.1 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "22bc026d-9d06-4fad-8726-a7afe2fac10b")
+		(property "Reference" "J15"
+			(at 110.49 419.1 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "MOSIA_A"
+			(at 115.57 419.0999 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 419.1 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 419.1 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 419.1 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "152f427a-26c9-4445-8952-da88212aeb9d")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J15")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 203.2 295.91 90)
 		(unit 1)
@@ -21783,6 +23661,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 401.32 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "276dada2-20e8-4fe1-8760-8a4a737b8b21")
+		(property "Reference" "J35"
+			(at 110.49 401.32 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "ADC1_7"
+			(at 115.57 401.3199 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 401.32 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 401.32 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 401.32 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "a45be1b5-6d5d-405d-b2f8-b346bf98215c")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J35")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:L")
 		(at 351.79 45.72 90)
 		(unit 1)
@@ -21857,6 +23814,85 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "L1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 339.09 436.88 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "29f36cf3-9424-48b8-9f9a-3fd9b8058179")
+		(property "Reference" "J50"
+			(at 339.09 436.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 344.17 436.8799 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 339.09 436.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 339.09 436.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 339.09 436.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c19ba805-3b78-4455-8d64-bfc6cb4676e8")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J50")
 					(unit 1)
 				)
 			)
@@ -22255,6 +24291,85 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "#PWR083")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 339.09 444.5 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "304d007b-8c9e-45ee-b4fd-bf7fee9e3c26")
+		(property "Reference" "J53"
+			(at 339.09 444.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "IN_R"
+			(at 344.17 444.4999 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 339.09 444.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 339.09 444.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 339.09 444.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "faa2de94-78e3-4eca-9051-0f392c3256f0")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J53")
 					(unit 1)
 				)
 			)
@@ -22730,6 +24845,85 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "#PWR092")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 44.45 167.64 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "3684fccf-ed6a-45a5-97e8-24c9adc8c66a")
+		(property "Reference" "J23"
+			(at 44.45 167.64 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GTIOC12B"
+			(at 39.37 167.6399 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 44.45 167.64 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 44.45 167.64 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 44.45 167.64 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "9d7db815-ad6c-4581-8c92-4fa848f69e82")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J23")
 					(unit 1)
 				)
 			)
@@ -23772,6 +25966,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 339.09 449.58 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "451f8893-a00a-4731-854b-a97e65a89c55")
+		(property "Reference" "J55"
+			(at 339.09 449.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "OUT_R"
+			(at 344.17 449.5799 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 339.09 449.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 339.09 449.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 339.09 449.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "e8de064c-6eb4-4175-9003-caa3fe48318a")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J55")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 201.93 173.99 90)
 		(unit 1)
@@ -24005,85 +26278,6 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "#PWR022")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+9V")
-		(at 152.4 490.22 90)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "4cabb681-4417-4cde-b206-08a829b887c9")
-		(property "Reference" "#PWR0132"
-			(at 156.21 490.22 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "+9V"
-			(at 148.59 490.2199 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 152.4 490.22 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 152.4 490.22 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+9V\""
-			(at 152.4 490.22 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "a9fcd727-2bf0-415d-800c-7906268604ba")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "#PWR0132")
 					(unit 1)
 				)
 			)
@@ -24667,6 +26861,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 339.09 431.8 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "508a9150-2429-4612-be21-46e8fe7e2a72")
+		(property "Reference" "J48"
+			(at 339.09 431.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 344.17 431.7999 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 339.09 431.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 339.09 431.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 339.09 431.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "3b959cec-d81d-4587-9797-b4ee568d5017")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J48")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+3V3")
 		(at 313.69 420.37 270)
 		(unit 1)
@@ -24896,6 +27169,85 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "#PWR0118")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 312.42 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "53c8b5ee-bbb9-4b1f-ba05-7c049c67123f")
+		(property "Reference" "J31"
+			(at 110.49 312.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "IVREF1"
+			(at 115.57 312.4199 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 312.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 312.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 312.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "3974aad6-a974-4f3d-82ab-494d27a6cb60")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J31")
 					(unit 1)
 				)
 			)
@@ -25212,6 +27564,85 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "#PWR010")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 44.45 129.54 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "560d20a2-500b-49fc-80f3-89d9563f61e8")
+		(property "Reference" "J20"
+			(at 44.45 129.54 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GTIOC13A"
+			(at 39.37 129.5399 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 44.45 129.54 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 44.45 129.54 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 44.45 129.54 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "1551aec5-8e37-4c65-a0ec-a0fe31be7574")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J20")
 					(unit 1)
 				)
 			)
@@ -25694,6 +28125,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 358.14 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "5a0c8b6d-35ea-40ba-89bb-f76a54d0cd69")
+		(property "Reference" "J33"
+			(at 110.49 358.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "ADC1_3"
+			(at 115.57 358.1399 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 358.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 358.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 358.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f4a98fa1-d05f-4518-bcab-e01bd029ef4d")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J33")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 322.58 140.97 0)
 		(unit 1)
@@ -26047,6 +28557,85 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "#PWR060")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 339.09 447.04 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "5c460a4a-31d0-4674-8610-8c5a8118eaff")
+		(property "Reference" "J54"
+			(at 339.09 447.04 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "OUT_L"
+			(at 344.17 447.0399 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 339.09 447.04 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 339.09 447.04 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 339.09 447.04 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "6080a01c-835e-4273-8029-25ea5860d656")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J54")
 					(unit 1)
 				)
 			)
@@ -26448,6 +29037,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:+3V3A")
+		(at 336.55 434.34 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "63744dda-4829-47bb-98a0-08129054331f")
+		(property "Reference" "#PWR0134"
+			(at 340.36 434.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3A"
+			(at 332.74 434.3399 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 336.55 434.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 336.55 434.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3V3A\""
+			(at 336.55 434.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "a27ff94b-4f74-4ca3-a456-d9bcbbdeef76")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "#PWR0134")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 107.95 104.14 90)
 		(unit 1)
@@ -26689,7 +29357,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_US")
-		(at 99.06 505.46 90)
+		(at 109.22 505.46 90)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -26699,7 +29367,7 @@
 		(dnp no)
 		(uuid "666ee4f2-a063-49f9-abe1-d742f51fb64b")
 		(property "Reference" "R6"
-			(at 103.632 507.492 90)
+			(at 113.792 507.492 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -26709,7 +29377,7 @@
 			)
 		)
 		(property "Value" "5.1k"
-			(at 103.632 510.032 90)
+			(at 113.792 510.032 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -26719,7 +29387,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 99.314 504.444 90)
+			(at 109.474 504.444 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -26730,7 +29398,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 99.06 505.46 0)
+			(at 109.22 505.46 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -26741,7 +29409,7 @@
 			)
 		)
 		(property "Description" "Resistor, US symbol"
-			(at 99.06 505.46 0)
+			(at 109.22 505.46 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -26761,6 +29429,85 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "R6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 44.45 304.8 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "6700eea5-1b20-45d0-8b4d-f2c5d7bd2811")
+		(property "Reference" "J38"
+			(at 44.45 304.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PDMDAT2"
+			(at 39.37 304.7999 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 44.45 304.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 44.45 304.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 44.45 304.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "fb25aff5-55dd-461c-97dc-a3de592bcf87")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J38")
 					(unit 1)
 				)
 			)
@@ -27484,6 +30231,85 @@
 		)
 	)
 	(symbol
+		(lib_id "power:+3V3")
+		(at 46.99 195.58 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7523af19-77c4-422d-b454-5ed17c8c4457")
+		(property "Reference" "#PWR0143"
+			(at 50.8 195.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 43.18 195.5799 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 46.99 195.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 46.99 195.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3V3\""
+			(at 46.99 195.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "2350800e-6ff9-4285-8ed8-eec8cc1500b7")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "#PWR0143")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 182.88 60.96 0)
 		(unit 1)
@@ -28039,6 +30865,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 339.09 434.34 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7aeaa9fe-ea7c-492d-9a2b-d5f78cc59240")
+		(property "Reference" "J49"
+			(at 339.09 434.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3A"
+			(at 344.17 434.3399 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 339.09 434.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 339.09 434.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 339.09 434.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "7e5e1faa-dc44-4abf-b08e-60910ae51ac5")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J49")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 309.88 360.68 90)
 		(unit 1)
@@ -28114,6 +31019,164 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "C51")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GNDA")
+		(at 336.55 439.42 270)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7c99302d-dab8-4204-8f8f-9f0f89aa5d3a")
+		(property "Reference" "#PWR0147"
+			(at 330.2 439.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GNDA"
+			(at 332.74 439.4199 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 336.55 439.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 336.55 439.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GNDA\" , analog ground"
+			(at 336.55 439.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "cb00d74b-fcb8-4e44-8028-0dfd8ce11b64")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "#PWR0147")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 339.09 441.96 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7e810ec0-af0d-4ffb-91e5-265bbb62e8c7")
+		(property "Reference" "J52"
+			(at 339.09 441.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "IN_L"
+			(at 344.17 441.9599 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 339.09 441.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 339.09 441.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 339.09 441.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "e3c9e1b5-0c3d-4bb2-bc8c-e7d055a6c982")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J52")
 					(unit 1)
 				)
 			)
@@ -28432,6 +31495,166 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "C39")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_US")
+		(at 200.66 336.55 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "817fdd74-ac2f-4684-9ead-f02761d4d164")
+		(property "Reference" "R7"
+			(at 203.2 335.2799 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10k"
+			(at 203.2 337.8199 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 201.676 336.804 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 200.66 336.55 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor, US symbol"
+			(at 200.66 336.55 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "38f0b13f-9683-413b-b931-fa002c9bde70")
+		)
+		(pin "2"
+			(uuid "c8cbef1d-7ea3-497b-9920-984cac4ac647")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "R7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:VBUS")
+		(at 179.07 337.82 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8189e1c1-87f5-48cc-a590-bc6167e35187")
+		(property "Reference" "#PWR0141"
+			(at 179.07 341.63 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "VBUS"
+			(at 179.07 332.74 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 179.07 337.82 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 179.07 337.82 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"VBUS\""
+			(at 179.07 337.82 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "b6da2b38-267f-42b6-9d76-b2d3b9f4bdb1")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "#PWR0141")
 					(unit 1)
 				)
 			)
@@ -29669,6 +32892,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 339.09 439.42 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "865895ff-d577-49ca-b801-6b8454dd65eb")
+		(property "Reference" "J51"
+			(at 339.09 439.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GNDA"
+			(at 344.17 439.4199 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 339.09 439.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 339.09 439.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 339.09 439.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f6f4eb43-5f59-48cd-bc57-27cb73e2a46f")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J51")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 107.95 223.52 90)
 		(unit 1)
@@ -30460,6 +33762,243 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 281.94 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8c9a2d8c-85e4-456d-afca-b49607ab3502")
+		(property "Reference" "J43"
+			(at 110.49 281.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "P713"
+			(at 115.57 281.9399 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 281.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 281.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 281.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "9af63a01-5f93-4335-9bd5-a7d0a0929b58")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J43")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 287.02 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8d7beb07-b3b5-46fc-9912-807479a33eae")
+		(property "Reference" "J28"
+			(at 110.49 287.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TXD0_B"
+			(at 115.57 287.0199 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 287.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 287.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 287.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "9fc06ee9-cfee-4eb0-b271-f941c401bdfd")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J28")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 44.45 210.82 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8dcc5113-9833-460c-9fee-f35ef3eda718")
+		(property "Reference" "J18"
+			(at 44.45 210.82 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "CTX0"
+			(at 39.37 210.8199 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 44.45 210.82 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 44.45 210.82 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 44.45 210.82 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "b5477533-d6e9-48a1-8cbd-f9a19296dc26")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J18")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 281.94 52.07 0)
 		(unit 1)
@@ -30535,6 +34074,164 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "C25")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 325.12 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8e831ee5-b7e5-431e-9d19-355520b6d430")
+		(property "Reference" "J41"
+			(at 110.49 325.12 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "P709"
+			(at 115.57 325.1199 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 325.12 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 325.12 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 325.12 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "e02ff78e-b2d1-4687-b26c-c053f5d2a24e")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J41")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 44.45 220.98 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8e8ebb59-010c-4577-af09-72487a5f1dd4")
+		(property "Reference" "J25"
+			(at 44.45 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GTIOC2A"
+			(at 39.37 220.9799 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 44.45 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 44.45 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 44.45 220.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "d0d4e4b9-09c4-4715-9bee-b9e328538ca5")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J25")
 					(unit 1)
 				)
 			)
@@ -30861,6 +34558,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 408.94 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "9447c818-9490-4aa2-b27f-701d1ec94f29")
+		(property "Reference" "J44"
+			(at 110.49 408.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "P715"
+			(at 115.57 408.9399 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 408.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 408.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 408.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "5dcf17f1-3c30-44c1-95fb-492ad6c9c6a3")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J44")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 172.72 273.05 0)
 		(unit 1)
@@ -31011,6 +34787,84 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "#PWR053")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 279.4 373.38 270)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "96411c43-3b17-43a7-9dee-603eeef5a796")
+		(property "Reference" "#FLG08"
+			(at 281.305 373.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 279.654 376.428 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 279.4 373.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 279.4 373.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 279.4 373.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "33c64bfb-e5eb-4150-ab08-f2f2f390c4ec")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "#FLG08")
 					(unit 1)
 				)
 			)
@@ -31568,6 +35422,85 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "#PWR054")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 375.92 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "9eb198a3-571c-46e4-a619-b5704e9d919d")
+		(property "Reference" "J14"
+			(at 110.49 375.92 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "RSPCKA_A"
+			(at 115.57 375.9199 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 375.92 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 375.92 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 375.92 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "dbcd14ed-0581-405f-aaa1-a1bdb7fcdec9")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J14")
 					(unit 1)
 				)
 			)
@@ -32207,6 +36140,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 322.58 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a5c6762b-574c-4d69-80ad-522da51f98d2")
+		(property "Reference" "J12"
+			(at 110.49 322.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SCL2_B"
+			(at 115.57 322.5799 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 322.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 322.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 322.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "09c1cb08-5e34-4b45-b738-3375c1a0de23")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J12")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R_US")
 		(at 340.36 394.97 0)
 		(unit 1)
@@ -32683,6 +36695,100 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:Conn_ARM_SWD_TagConnect_TC2030-NL")
+		(at 181.61 347.98 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "ac6ed8e3-d49c-47a2-8829-eac931fa7ff5")
+		(property "Reference" "J45"
+			(at 175.26 346.7099 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "Conn_ARM_SWD_TagConnect_TC2030-NL"
+			(at 175.26 349.2499 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Connector:Tag-Connect_TC2030-IDC-NL_2x03_P1.27mm_Vertical"
+			(at 181.61 365.76 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.tag-connect.com/wp-content/uploads/bsk-pdf-manager/TC2030-CTX_1.pdf"
+			(at 181.61 363.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Tag-Connect ARM Cortex SWD JTAG connector, 6 pin, no legs"
+			(at 181.61 347.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "6"
+			(uuid "63c79204-3f2e-4561-bf0a-8154e5ff192e")
+		)
+		(pin "2"
+			(uuid "a21622ec-8ece-4755-ba92-9b31ca6192fc")
+		)
+		(pin "3"
+			(uuid "4f3a280f-c8d0-441f-93ad-d956023ed53e")
+		)
+		(pin "5"
+			(uuid "e5688c63-abfc-4882-a241-b46f47571298")
+		)
+		(pin "1"
+			(uuid "25a3d03c-37af-4fb0-80c2-a75a819adf6c")
+		)
+		(pin "4"
+			(uuid "dfaca722-ed64-4569-8ceb-23b7e1852a6d")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J45")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "custom:+0V9")
 		(at 107.95 139.7 270)
 		(unit 1)
@@ -33073,6 +37179,84 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "#PWR093")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 200.66 332.74 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "b185d060-60f5-454a-8bd0-f58e2e496e3b")
+		(property "Reference" "#PWR0144"
+			(at 200.66 336.55 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 200.66 327.66 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 200.66 332.74 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 200.66 332.74 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3V3\""
+			(at 200.66 332.74 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "399300ea-bad6-400c-bab7-eaaba6d729ca")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "#PWR0144")
 					(unit 1)
 				)
 			)
@@ -33635,6 +37819,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 363.22 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "bb034b82-a7ac-4e76-a6e5-bcf67a847854")
+		(property "Reference" "J13"
+			(at 110.49 363.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SDA2_B"
+			(at 115.57 363.2199 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 363.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 363.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 363.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "81a2ee5d-543d-418e-bb29-ee687d646d5d")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J13")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 194.31 311.15 90)
 		(unit 1)
@@ -33715,7 +37978,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 105.41 504.19 90)
+		(at 115.57 504.19 90)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -33726,7 +37989,7 @@
 		(fields_autoplaced yes)
 		(uuid "bc31ae6e-1546-4572-b840-2f9ccc64a815")
 		(property "Reference" "#PWR0137"
-			(at 111.76 504.19 0)
+			(at 121.92 504.19 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33737,7 +38000,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 109.22 504.1899 90)
+			(at 119.38 504.1899 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -33748,7 +38011,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 105.41 504.19 0)
+			(at 115.57 504.19 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33759,7 +38022,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 105.41 504.19 0)
+			(at 115.57 504.19 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33770,7 +38033,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 105.41 504.19 0)
+			(at 115.57 504.19 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -33947,6 +38210,85 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "#PWR0130")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 44.45 170.18 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "be50c702-8a55-416e-9915-c6b29e2a033d")
+		(property "Reference" "J22"
+			(at 44.45 170.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GTIOC12A"
+			(at 39.37 170.1799 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 44.45 170.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 44.45 170.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 44.45 170.18 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "e8d11afa-dbe3-4c65-93a4-e593e36f4df4")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J22")
 					(unit 1)
 				)
 			)
@@ -34273,6 +38615,164 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 44.45 350.52 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "c3de9061-c8ab-4723-a201-33a9c8d5141b")
+		(property "Reference" "J37"
+			(at 44.45 350.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PDMCLK2"
+			(at 39.37 350.5199 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 44.45 350.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 44.45 350.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 44.45 350.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "552170ab-570a-4a2b-8947-9659e3257f60")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J37")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 80.01 538.48 270)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "c3f19d13-0331-4098-8ce8-e3775432632a")
+		(property "Reference" "#FLG05"
+			(at 81.915 538.48 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 83.82 538.4799 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 80.01 538.48 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 80.01 538.48 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 80.01 538.48 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "301b9456-98d6-49a8-b4b2-16f082cac55b")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "#FLG05")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 107.95 185.42 90)
 		(unit 1)
@@ -34590,6 +39090,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 289.56 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "c936cb60-3b92-4a7b-94fb-36c2958f9c8f")
+		(property "Reference" "J29"
+			(at 110.49 289.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "RXD0_B"
+			(at 115.57 289.5599 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 289.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 289.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 289.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "680eed26-7fd4-446e-b321-2983662c6519")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J29")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 313.69 407.67 90)
 		(unit 1)
@@ -34692,14 +39271,13 @@
 			)
 		)
 		(property "Value" "VBUS"
-			(at 148.59 497.8399 90)
+			(at 151.13 495.3 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
 			)
 		)
 		(property "Footprint" ""
@@ -34983,6 +39561,85 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "C21")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 171.45 490.22 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "cce31795-33be-4e14-b753-800d7703bae2")
+		(property "Reference" "J47"
+			(at 171.45 490.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "VDC"
+			(at 176.53 490.2199 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 171.45 490.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 171.45 490.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 171.45 490.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "10cbda43-348a-4975-bd6e-402aea9a213a")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J47")
 					(unit 1)
 				)
 			)
@@ -35545,6 +40202,166 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 203.2 355.6 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d6bc14e8-05fe-439f-97e0-130e65e42e24")
+		(property "Reference" "#PWR0145"
+			(at 203.2 361.95 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 203.2 360.68 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 203.2 355.6 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 203.2 355.6 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 203.2 355.6 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "4a76202f-b951-4527-8954-7496e2447a79")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "#PWR0145")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 203.2 350.52 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "d6c6f0e8-524c-4230-b739-52cc224859ae")
+		(property "Reference" "JP2"
+			(at 205.74 350.52 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "SolderJumper_2_Open"
+			(at 205.74 351.7899 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 203.2 350.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 210.82 350.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Solder Jumper, 2-pole, open"
+			(at 208.28 350.52 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "de684162-57e7-4fd2-972f-b13da115d093")
+		)
+		(pin "2"
+			(uuid "7a5dc7f4-4d20-44db-9ca7-f1e67254ebfd")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "JP2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 238.76 140.97 0)
 		(unit 1)
@@ -35705,6 +40522,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 378.46 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d9ae79f1-ab49-4b29-b173-0ff8c81d70bb")
+		(property "Reference" "J16"
+			(at 110.49 378.46 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "MISOA_A"
+			(at 115.57 378.4599 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 378.46 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 378.46 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 378.46 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "992f0aef-54b6-4bb4-a857-260d9fba0f58")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J16")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 107.95 127 90)
 		(unit 1)
@@ -35778,6 +40674,164 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "#PWR042")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 243.84 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "db75e159-d425-4df9-aa9e-8449406e4643")
+		(property "Reference" "J26"
+			(at 110.49 243.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GTIOC8A"
+			(at 115.57 243.8399 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 243.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 243.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 243.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "11afb98b-b4af-482d-b9f7-74ce14253cca")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J26")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 336.55 436.88 270)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "dde0a86e-6a11-4bfd-a900-585fa4ab5be0")
+		(property "Reference" "#PWR0146"
+			(at 330.2 436.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 332.74 436.8799 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 336.55 436.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 336.55 436.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 336.55 436.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "6d778cfd-ee68-4471-a4de-bc232880c54a")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "#PWR0146")
 					(unit 1)
 				)
 			)
@@ -36260,6 +41314,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 429.26 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "e0eac6c0-f37e-4ad7-9377-e28234d492d2")
+		(property "Reference" "J27"
+			(at 110.49 429.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GTIOC8B"
+			(at 115.57 429.2599 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 429.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 429.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 429.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "cbc6fd49-f5c9-4a2e-9d6b-deffcc0ef75d")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J27")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 93.98 52.07 0)
 		(unit 1)
@@ -36335,6 +41468,84 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "C6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 147.32 490.22 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "e1eebccc-755d-479f-a300-2485ed0a5adf")
+		(property "Reference" "J46"
+			(at 147.32 490.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+9V"
+			(at 141.986 490.22 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 147.32 490.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 147.32 490.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 147.32 490.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "24202c5b-6eb4-4dc9-957e-d754ad4feb91")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J46")
 					(unit 1)
 				)
 			)
@@ -36736,7 +41947,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_US")
-		(at 99.06 502.92 90)
+		(at 109.22 502.92 90)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -36746,7 +41957,7 @@
 		(dnp no)
 		(uuid "e70efb08-a928-4b5f-bb94-6baf6b0b8315")
 		(property "Reference" "R5"
-			(at 104.14 498.094 90)
+			(at 114.3 498.094 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -36756,7 +41967,7 @@
 			)
 		)
 		(property "Value" "5.1k"
-			(at 104.14 500.634 90)
+			(at 114.3 500.634 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -36766,7 +41977,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 99.314 501.904 90)
+			(at 109.474 501.904 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -36777,7 +41988,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 99.06 502.92 0)
+			(at 109.22 502.92 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -36788,7 +41999,7 @@
 			)
 		)
 		(property "Description" "Resistor, US symbol"
-			(at 99.06 502.92 0)
+			(at 109.22 502.92 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -37552,6 +42763,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 44.45 165.1 180)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "f1de61fe-3405-4f5e-8371-9671db7a391a")
+		(property "Reference" "J19"
+			(at 44.45 165.1 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "CRX0"
+			(at 39.37 165.0999 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 44.45 165.1 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 44.45 165.1 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 44.45 165.1 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "51f6c478-08b6-44a5-9225-d53cad615696")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J19")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 307.34 140.97 0)
 		(unit 1)
@@ -37627,6 +42917,84 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "C41")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 179.07 358.14 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "f280ece7-f080-4512-8da6-4be6200df962")
+		(property "Reference" "#PWR0142"
+			(at 179.07 364.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 179.07 363.22 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 179.07 358.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 179.07 358.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 179.07 358.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "1f425da2-3573-4d3c-ac21-57cbaed80c0d")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "#PWR0142")
 					(unit 1)
 				)
 			)
@@ -38300,6 +43668,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 370.84 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "f6483e67-b295-43f4-b7c3-85068a41bf81")
+		(property "Reference" "J36"
+			(at 110.49 370.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "ADTRG0"
+			(at 115.57 370.8399 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 370.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 370.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 370.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "780afacb-ad54-4390-943e-141cb0d66fc4")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J36")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "custom:+0V9")
 		(at 46.99 416.56 90)
 		(unit 1)
@@ -38775,6 +44222,85 @@
 		)
 	)
 	(symbol
+		(lib_id "custom:Connector_01x01_CastellatedEdge")
+		(at 110.49 403.86 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "fbfe8536-478c-44b3-a785-13c87dd8ec14")
+		(property "Reference" "J32"
+			(at 110.49 403.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "ADC1_1"
+			(at 115.57 403.8599 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
+			(at 110.49 403.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 403.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 110.49 403.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "06ea9d6d-222f-40bf-a1d9-9c5c686149d9")
+		)
+		(instances
+			(project "stud"
+				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
+					(reference "J32")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 201.93 156.21 90)
 		(unit 1)
@@ -38935,85 +44461,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:VDC")
-		(at 168.91 490.22 270)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "ff203087-49d4-4576-aa06-2ff348d03bd5")
-		(property "Reference" "#PWR0134"
-			(at 165.1 490.22 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "VDC"
-			(at 172.72 490.2199 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 168.91 490.22 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 168.91 490.22 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"VDC\""
-			(at 168.91 490.22 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "22c52bcb-dd23-4b08-994d-495ab3250e8a")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "#PWR0134")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:+3V3")
 		(at 107.95 330.2 270)
 		(unit 1)
@@ -39166,2613 +44613,6 @@
 			(project "stud"
 				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
 					(reference "J11")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 322.58 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "a5c6762b-574c-4d69-80ad-522da51f98d2")
-		(property "Reference" "J12"
-			(at 110.49 322.58 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "SCL2_B"
-			(at 115.57 322.5799 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 322.58 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 322.58 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 322.58 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "09c1cb08-5e34-4b45-b738-3375c1a0de23")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J12")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 363.22 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "bb034b82-a7ac-4e76-a6e5-bcf67a847854")
-		(property "Reference" "J13"
-			(at 110.49 363.22 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "SDA2_B"
-			(at 115.57 363.2199 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 363.22 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 363.22 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 363.22 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "81a2ee5d-543d-418e-bb29-ee687d646d5d")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J13")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 375.92 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "9eb198a3-571c-46e4-a619-b5704e9d919d")
-		(property "Reference" "J14"
-			(at 110.49 375.92 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "RSPCKA_A"
-			(at 115.57 375.9199 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 375.92 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 375.92 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 375.92 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "dbcd14ed-0581-405f-aaa1-a1bdb7fcdec9")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J14")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 419.1 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "22bc026d-9d06-4fad-8726-a7afe2fac10b")
-		(property "Reference" "J15"
-			(at 110.49 419.1 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "MOSIA_A"
-			(at 115.57 419.0999 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 419.1 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 419.1 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 419.1 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "152f427a-26c9-4445-8952-da88212aeb9d")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J15")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 378.46 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "d9ae79f1-ab49-4b29-b173-0ff8c81d70bb")
-		(property "Reference" "J16"
-			(at 110.49 378.46 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "MISOA_A"
-			(at 115.57 378.4599 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 378.46 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 378.46 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 378.46 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "992f0aef-54b6-4bb4-a857-260d9fba0f58")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J16")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 416.56 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "186b6022-65bc-4e51-9b77-5d5354d70938")
-		(property "Reference" "J17"
-			(at 110.49 416.56 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "SSLA0_A"
-			(at 115.57 416.5599 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 416.56 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 416.56 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 416.56 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "4562bddd-b218-4a24-87d1-a5736e27a129")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J17")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 44.45 210.82 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "8dcc5113-9833-460c-9fee-f35ef3eda718")
-		(property "Reference" "J18"
-			(at 44.45 210.82 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "CTX0"
-			(at 39.37 210.8199 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 44.45 210.82 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 44.45 210.82 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 44.45 210.82 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "b5477533-d6e9-48a1-8cbd-f9a19296dc26")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J18")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 44.45 165.1 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "f1de61fe-3405-4f5e-8371-9671db7a391a")
-		(property "Reference" "J19"
-			(at 44.45 165.1 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "CRX0"
-			(at 39.37 165.0999 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 44.45 165.1 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 44.45 165.1 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 44.45 165.1 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "51f6c478-08b6-44a5-9225-d53cad615696")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J19")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 44.45 129.54 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "560d20a2-500b-49fc-80f3-89d9563f61e8")
-		(property "Reference" "J20"
-			(at 44.45 129.54 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GTIOC13A"
-			(at 39.37 129.5399 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 44.45 129.54 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 44.45 129.54 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 44.45 129.54 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "1551aec5-8e37-4c65-a0ec-a0fe31be7574")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J20")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 44.45 124.46 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "0ad44b6e-ba3c-4e91-ab87-1103ed09f436")
-		(property "Reference" "J21"
-			(at 44.45 124.46 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GTIOC13B"
-			(at 39.37 124.4599 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 44.45 124.46 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 44.45 124.46 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 44.45 124.46 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "437426f7-30de-42b0-afe3-570147c8742d")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J21")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 44.45 170.18 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "be50c702-8a55-416e-9915-c6b29e2a033d")
-		(property "Reference" "J22"
-			(at 44.45 170.18 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GTIOC12A"
-			(at 39.37 170.1799 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 44.45 170.18 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 44.45 170.18 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 44.45 170.18 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "e8d11afa-dbe3-4c65-93a4-e593e36f4df4")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J22")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 44.45 167.64 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "3684fccf-ed6a-45a5-97e8-24c9adc8c66a")
-		(property "Reference" "J23"
-			(at 44.45 167.64 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GTIOC12B"
-			(at 39.37 167.6399 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 44.45 167.64 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 44.45 167.64 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 44.45 167.64 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "9d7db815-ad6c-4581-8c92-4fa848f69e82")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J23")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 44.45 132.08 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "11a4d0b9-ad41-4faa-9ac6-5445653db4fc")
-		(property "Reference" "J24"
-			(at 44.45 132.08 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GTIOC11B"
-			(at 39.37 132.0799 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 44.45 132.08 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 44.45 132.08 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 44.45 132.08 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "2efbf569-290c-4084-aaa8-a3556713d183")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J24")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 44.45 220.98 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "8e8ebb59-010c-4577-af09-72487a5f1dd4")
-		(property "Reference" "J25"
-			(at 44.45 220.98 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GTIOC2A"
-			(at 39.37 220.9799 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 44.45 220.98 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 44.45 220.98 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 44.45 220.98 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "d0d4e4b9-09c4-4715-9bee-b9e328538ca5")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J25")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 243.84 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "db75e159-d425-4df9-aa9e-8449406e4643")
-		(property "Reference" "J26"
-			(at 110.49 243.84 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GTIOC8A"
-			(at 115.57 243.8399 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 243.84 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 243.84 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 243.84 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "11afb98b-b4af-482d-b9f7-74ce14253cca")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J26")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 429.26 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "e0eac6c0-f37e-4ad7-9377-e28234d492d2")
-		(property "Reference" "J27"
-			(at 110.49 429.26 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GTIOC8B"
-			(at 115.57 429.2599 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 429.26 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 429.26 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 429.26 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "cbc6fd49-f5c9-4a2e-9d6b-deffcc0ef75d")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J27")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 287.02 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "8d7beb07-b3b5-46fc-9912-807479a33eae")
-		(property "Reference" "J28"
-			(at 110.49 287.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "TXD0_B"
-			(at 115.57 287.0199 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 287.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 287.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 287.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "9fc06ee9-cfee-4eb0-b271-f941c401bdfd")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J28")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 289.56 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "c936cb60-3b92-4a7b-94fb-36c2958f9c8f")
-		(property "Reference" "J29"
-			(at 110.49 289.56 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "RXD0_B"
-			(at 115.57 289.5599 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 289.56 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 289.56 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 289.56 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "680eed26-7fd4-446e-b321-2983662c6519")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J29")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 44.45 121.92 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "1d308316-0afd-49ae-a0df-cb9145206129")
-		(property "Reference" "J30"
-			(at 44.45 121.92 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "VCOUT"
-			(at 39.37 121.9199 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 44.45 121.92 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 44.45 121.92 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 44.45 121.92 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "4350a441-00d5-4c7d-94eb-f583d5911ff6")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J30")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 312.42 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "53c8b5ee-bbb9-4b1f-ba05-7c049c67123f")
-		(property "Reference" "J31"
-			(at 110.49 312.42 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "IVREF1"
-			(at 115.57 312.4199 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 312.42 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 312.42 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 312.42 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "3974aad6-a974-4f3d-82ab-494d27a6cb60")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J31")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 403.86 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "fbfe8536-478c-44b3-a785-13c87dd8ec14")
-		(property "Reference" "J32"
-			(at 110.49 403.86 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "ADC1_1"
-			(at 115.57 403.8599 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 403.86 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 403.86 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 403.86 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "06ea9d6d-222f-40bf-a1d9-9c5c686149d9")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J32")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 358.14 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "5a0c8b6d-35ea-40ba-89bb-f76a54d0cd69")
-		(property "Reference" "J33"
-			(at 110.49 358.14 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "ADC1_3"
-			(at 115.57 358.1399 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 358.14 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 358.14 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 358.14 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "f4a98fa1-d05f-4518-bcab-e01bd029ef4d")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J33")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 355.6 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "1ac1097e-6d28-4816-87df-b55b8df07eb4")
-		(property "Reference" "J34"
-			(at 110.49 355.6 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "ADC1_5"
-			(at 115.57 355.5999 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 355.6 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 355.6 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 355.6 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "33c175c1-61dc-4d9b-b852-3aacb4e88e9c")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J34")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 401.32 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "276dada2-20e8-4fe1-8760-8a4a737b8b21")
-		(property "Reference" "J35"
-			(at 110.49 401.32 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "ADC1_7"
-			(at 115.57 401.3199 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 401.32 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 401.32 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 401.32 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "a45be1b5-6d5d-405d-b2f8-b346bf98215c")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J35")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 370.84 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "f6483e67-b295-43f4-b7c3-85068a41bf81")
-		(property "Reference" "J36"
-			(at 110.49 370.84 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "ADTRG0"
-			(at 115.57 370.8399 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 370.84 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 370.84 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 370.84 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "780afacb-ad54-4390-943e-141cb0d66fc4")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J36")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 44.45 350.52 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "c3de9061-c8ab-4723-a201-33a9c8d5141b")
-		(property "Reference" "J37"
-			(at 44.45 350.52 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "PDMCLK2"
-			(at 39.37 350.5199 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 44.45 350.52 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 44.45 350.52 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 44.45 350.52 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "552170ab-570a-4a2b-8947-9659e3257f60")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J37")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 44.45 304.8 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "6700eea5-1b20-45d0-8b4d-f2c5d7bd2811")
-		(property "Reference" "J38"
-			(at 44.45 304.8 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "PDMDAT2"
-			(at 39.37 304.7999 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 44.45 304.8 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 44.45 304.8 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 44.45 304.8 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "fb25aff5-55dd-461c-97dc-a3de592bcf87")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J38")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 373.38 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "0acaca7e-ef91-4fc7-93ee-bac8483e9d85")
-		(property "Reference" "J39"
-			(at 110.49 373.38 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "P205"
-			(at 115.57 373.3799 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 373.38 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 373.38 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 373.38 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "c5f2b78f-7d5c-49a4-85c4-b47a170e53cd")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J39")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 44.45 149.86 180)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "00f3ad9f-19c4-45db-8299-bd51d6302ee5")
-		(property "Reference" "J40"
-			(at 44.45 149.86 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "P303"
-			(at 39.37 149.8599 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 44.45 149.86 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 44.45 149.86 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 44.45 149.86 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "734b837a-7dd9-40d8-b023-472b685793ba")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J40")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 325.12 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "8e831ee5-b7e5-431e-9d19-355520b6d430")
-		(property "Reference" "J41"
-			(at 110.49 325.12 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "P709"
-			(at 115.57 325.1199 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 325.12 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 325.12 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 325.12 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "e02ff78e-b2d1-4687-b26c-c053f5d2a24e")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J41")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 279.4 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "1c2f82a4-d4be-4266-97d3-09ce071235de")
-		(property "Reference" "J42"
-			(at 110.49 279.4 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "P711"
-			(at 115.57 279.3999 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 279.4 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 279.4 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 279.4 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "176b45dd-f399-47c8-9324-ac8aca223371")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J42")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 281.94 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "8c9a2d8c-85e4-456d-afca-b49607ab3502")
-		(property "Reference" "J43"
-			(at 110.49 281.94 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "P713"
-			(at 115.57 281.9399 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 281.94 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 281.94 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 281.94 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "9af63a01-5f93-4335-9bd5-a7d0a0929b58")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J43")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "custom:Connector_01x01_CastellatedEdge")
-		(at 110.49 408.94 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "9447c818-9490-4aa2-b27f-701d1ec94f29")
-		(property "Reference" "J44"
-			(at 110.49 408.94 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "P715"
-			(at 115.57 408.9399 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "custom:Connector_01x01_CastellatedEdge"
-			(at 110.49 408.94 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 110.49 408.94 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 110.49 408.94 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "5dcf17f1-3c30-44c1-95fb-492ad6c9c6a3")
-		)
-		(instances
-			(project "stud"
-				(path "/5a440a9e-b660-4605-bd2b-6a991cc5b149"
-					(reference "J44")
 					(unit 1)
 				)
 			)
