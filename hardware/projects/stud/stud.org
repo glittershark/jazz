@@ -274,7 +274,8 @@ impedance mentioned (in the SDRAM datasheet).
 ** stackup
 looks like i will, in fact, need a six-layer board, as i'm doing a ~300 pin BGA
 arrangement. dog-bone fanout should be feasible, as i have a 0.65 mm pitch
-package.
+package. chose JLC06161H-3313 six-layer stackup. see
+https://jlcpcb.com/pcb-impedance-calculator.
 * chip power
 see user manual p. 3646, datasheet p. 41 & §2.2.5. the chip has an internal
 converter for the 1.1 V (or so) core voltage, but needs an /external/ 3.3 V supply
@@ -288,4 +289,3 @@ epson.
 using SSIE's =SSI*0_A= pin set.
 * sd card
 using =SD0*_C= pin set.
-* TODO decide whether two hardware I2Cs is too much

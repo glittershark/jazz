@@ -542,6 +542,14 @@
       {
         "netclass": "SDRAM",
         "pattern": "DQ*"
+      },
+      {
+        "netclass": "SDRAM",
+        "pattern": "SDCS|SDCLK|CAS|RAS|WE"
+      },
+      {
+        "netclass": "Default",
+        "pattern": "A*"
       }
     ]
   },
@@ -673,7 +681,7 @@
         "uuid": "5a440a9e-b660-4605-bd2b-6a991cc5b149"
       }
     ],
-    "used_designators": "SW1,IC1-2,MICRO_SD1,Y1,#PWR1-151,C1-59,U1-2,D1-2,L1-2,#FLG1-9,TP1-2,R1-7,JP1-3,J1-15,J45-55",
+    "used_designators": "L1-3,#FLG1-9,R1-7,JP1-3,TP1-2,J1-55,SW1,MICRO_SD1,IC1-2,Y1,#PWR1-151,C1-59,D1-2,U1-2",
     "variants": []
   },
   "sheets": [
