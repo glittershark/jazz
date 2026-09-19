@@ -20,7 +20,6 @@ using namespace fridge;
 using namespace fridge::ui;
 
 void HeadKnobs::WriteInto(fridge::config::Head& head) const {
-  head.position = position.Get();
   head.write_amount = write_amount.Get();
   head.read_amount = read_amount.Get();
   head.erase_amount = erase_amount.Get();
@@ -28,8 +27,8 @@ void HeadKnobs::WriteInto(fridge::config::Head& head) const {
   head.pan = pan.Get();
 }
 
-void HeadKnobs::Select(const fridge::config::Head& head) {
-  position.Set(head.position);
+void HeadKnobs::Select(const fridge::config::Head& head, size_t range) {
+  position.Set(static_cast<float>(head.position) / range);
   write_amount.Set(head.write_amount);
   read_amount.Set(head.read_amount);
   erase_amount.Set(head.erase_amount);
@@ -38,7 +37,6 @@ void HeadKnobs::Select(const fridge::config::Head& head) {
 }
 
 void LFOKnobs::WriteInto(fridge::config::LFO& lfo) const {
-  lfo.range = range.Get();
   lfo.max_grain_size = max_grain_size.Get();
   lfo.min_grain_size = min_grain_size.Get();
   lfo.reverse_chance = reverse_chance.Get();
@@ -49,7 +47,6 @@ void LFOKnobs::WriteInto(fridge::config::LFO& lfo) const {
 }
 
 void LFOKnobs::Select(const fridge::config::LFO& lfo) {
-  range.Set(lfo.range);
   max_grain_size.Set(lfo.max_grain_size);
   min_grain_size.Set(lfo.min_grain_size);
   reverse_chance.Set(lfo.reverse_chance);
@@ -64,7 +61,7 @@ void ui::UI::WriteHead() {
 }
 
 void ui::UI::WriteLFO() {
-  lfo_knobs_.WriteInto(config_->Write().lfos[selected_lfo_]);
+  lfo_knobs_.WriteInto(config_->Write().lfos[selected_head_]);
 }
 
 void ui::UI::WriteMixer() {
@@ -106,7 +103,7 @@ UI::UI(io::led::Controller& led, config::ConfigStore* config)
     : config_(config),
       head_knobs_{
           // D16
-          .position = knob<OneTurnIsBufferLen>(
+          .position = knob<WrappedTurns>(
               "Position", RgbLed(led.B(2, 0), led.B(2, 1), led.B(2, 2))),
           // D22
           .write_amount = knob<SingleTurn>(
@@ -132,9 +129,6 @@ UI::UI(io::led::Controller& led, config::ConfigStore* config)
                          }),
       },
       lfo_knobs_{
-          // D5
-          .range = knob<OneTurnIsBufferLen>(
-              "Range", RgbLed(led.B(0, 3), led.B(0, 4), led.B(0, 5))),
           // D11
           .max_grain_size = knob<OneTurnIsBufferLen>(
               "Max Grain Size", RgbLed(led.B(1, 3), led.B(1, 4), led.B(1, 5))),
@@ -160,6 +154,9 @@ UI::UI(io::led::Controller& led, config::ConfigStore* config)
               knob<SingleTurn>("High Octave Chance",
                                RgbLed(led.B(7, 3), led.B(7, 4), led.B(7, 5))),
       },
+      // D5: region range, shared by every head assigned to that region.
+      range_knob_(knob<OneTurnIsBufferLen>(
+          "Range", RgbLed(led.B(0, 3), led.B(0, 4), led.B(0, 5)))),
       // D4
       dry_knob_(knob<SingleTurn>(
           "Dry", RgbLed(led.B(0, 0), led.B(0, 1), led.B(0, 2)))),
@@ -169,7 +166,7 @@ UI::UI(io::led::Controller& led, config::ConfigStore* config)
 
       // D1, D7, D13, D19, D25, D31, D37, D43
       head_select_(
-          std::array<RgbLed, 8U>{
+          std::array<RgbLed, kNumHeads>{
               RgbLed(led.A(0, 0), led.A(0, 1), led.A(0, 2)),
               RgbLed(led.A(1, 0), led.A(1, 1), led.A(1, 2)),
               RgbLed(led.A(2, 0), led.A(2, 1), led.A(2, 2)),
@@ -178,13 +175,13 @@ UI::UI(io::led::Controller& led, config::ConfigStore* config)
               RgbLed(led.A(5, 0), led.A(5, 1), led.A(5, 2)),
               RgbLed(led.A(6, 0), led.A(6, 1), led.A(6, 2)),
               RgbLed(led.A(7, 0), led.A(7, 1), led.A(7, 2)),
-          },
-          kRadioButtonConfig),
-      // D2, D8, D14, D20, D26, D32, D38, D44
-      lfo_select_(
-          std::array<RgbLed, 8U>{
               RgbLed(led.A(0, 3), led.A(0, 4), led.A(0, 5)),
               RgbLed(led.A(1, 3), led.A(1, 4), led.A(1, 5)),
+          },
+          kRadioButtonConfig),
+      // D14, D20, D26, D32, D38, D44
+      region_select_(
+          std::array<RgbLed, kNumRegions>{
               RgbLed(led.A(2, 3), led.A(2, 4), led.A(2, 5)),
               RgbLed(led.A(3, 3), led.A(3, 4), led.A(3, 5)),
               RgbLed(led.A(4, 3), led.A(4, 4), led.A(4, 5)),
@@ -193,8 +190,7 @@ UI::UI(io::led::Controller& led, config::ConfigStore* config)
               RgbLed(led.A(7, 3), led.A(7, 4), led.A(7, 5)),
           },
           kRadioButtonConfig) {
-  head_knobs_.Select(config_->Read().heads[selected_head_]);
-  lfo_knobs_.Select(config_->Read().lfos[selected_lfo_]);
+  LoadSelection();
   dry_knob_.Set(config_->Read().dry);
   wet_knob_.Set(config_->Read().wet);
 
@@ -205,6 +201,15 @@ UI::UI(io::led::Controller& led, config::ConfigStore* config)
 
   lfo_knobs_.OnChange(TypedCallback<UI>{
       .callback = +[](UI* self) { self->WriteLFO(); },
+      .data = this,
+  });
+
+  head_knobs_.position.OnChange(TypedCallback<UI>{
+      .callback = +[](UI* self) { self->WritePosition(); },
+      .data = this,
+  });
+  range_knob_.OnChange(TypedCallback<UI>{
+      .callback = +[](UI* self) { self->WriteRange(); },
       .data = this,
   });
 
@@ -220,211 +225,99 @@ UI::UI(io::led::Controller& led, config::ConfigStore* config)
       .data = this,
   });
 
-  lfo_select_.OnChange(TypedCallback<UI, uint8_t>{
-      .callback = +[](UI* self, uint8_t lfo) { self->SelectLFO(lfo); },
+  region_select_.OnChange(TypedCallback<UI, uint8_t>{
+      .callback = +[](UI* self, uint8_t region) { self->AssignRegion(region); },
       .data = this,
   });
 
-  head_select_.Select(selected_head_);
-  lfo_select_.Select(selected_lfo_);
+  head_select_.Select(selected_head_, /*instantaneous=*/true);
 
 #ifndef UNIT_TEST
   {
     daisy::TimerHandle::Config timer_config;
     timer_config.periph = daisy::TimerHandle::Config::Peripheral::TIM_4;
     timer_config.enable_irq = true;
+    timer_config.enable_irq = true;
     timer_.Init(timer_config);
-    timer_.SetCallback(UI::timer_callback_, this);
-    timer_.SetPeriod(timer_.GetFreq());
+    timer_.SetCallback(
+        +[](void* self) { static_cast<UI*>(self)->Tick(); }, this);
+    timer_.SetPeriod(timer_.GetFreq() / 20);
     timer_.Start();
   };
 #endif
 }
 
-bool UI::HeadsAndLFOsAreLocked() const {
-  for (uint8_t lfo_idx = 0; lfo_idx < kNumLfos; ++lfo_idx) {
-    for (const auto& target : config_->Read().lfos[lfo_idx].targets) {
-      if (!target.has_value()) {
-        continue;
-      }
-      if (target->object != config::TargetObject::kHead ||
-          target->object_idx != lfo_idx) {
-        return false;
-      }
-    }
-  }
-  return true;
+void UI::LoadSelection() {
+  const auto& config = config_->Read();
+  const auto& head = config.heads[selected_head_];
+  const size_t range = config.regions[head.region].range;
+  head_knobs_.Select(head, range);
+  lfo_knobs_.Select(config.lfos[selected_head_]);
+  range_knob_.Set(range);
+  region_select_.Select(head.region, /*instantaneous=*/true, /*notify=*/false);
+  range_rejected_at_.reset();
+  range_flash_on_.reset();
 }
 
 void UI::SelectHead(uint8_t head) {
+  if (head >= kNumHeads) {
+    return;
+  }
   selected_head_ = head;
+  head_select_.Select(head, /*instantaneous=*/true, /*notify=*/false);
+  LoadSelection();
+}
 
-  if (!AmBlinking()) {
-    head_knobs_.Select(config_->Read().heads[head]);
-
-    if (HeadsAndLFOsAreLocked() && selected_lfo_ != head) {
-      lfo_select_.Select(head, /*instantaneous=*/true);
-    }
+void UI::AssignRegion(uint8_t region) {
+  if (region >= kNumRegions) {
+    return;
   }
+  config_->Write().AssignRegion(selected_head_, region);
+  LoadSelection();
 }
 
-void UI::SelectLFO(uint8_t lfo) {
-  selected_lfo_ = lfo;
+void UI::WritePosition() {
+  auto& config = config_->Write();
+  auto& head = config.heads[selected_head_];
+  const size_t range = config.regions[head.region].range;
+  head.position = static_cast<size_t>(
+                      static_cast<float>(head_knobs_.position.Get()) * range) %
+                  range;
+}
 
-  if (!AmBlinking()) {
-    lfo_knobs_.Select(config_->Read().lfos[lfo]);
-
-    if (HeadsAndLFOsAreLocked() && selected_head_ != lfo) {
-      head_select_.Select(lfo, /*instantaneous=*/true);
-    }
+void UI::WriteRange() {
+  auto config = config_->Read();
+  const uint8_t region = config.heads[selected_head_].region;
+  if (!config.ResizeRegion(region, range_knob_.Get())) {
+    range_knob_.Set(config.regions[region].range);
+    range_rejected_at_ = Now();
+    range_flash_on_.reset();
+    return;
   }
+  config_->Write() = config;
+  head_knobs_.position.Set(
+      static_cast<float>(config.heads[selected_head_].position) /
+      config.regions[region].range);
+  range_rejected_at_.reset();
+  range_flash_on_.reset();
 }
 
-void UI::StartBlinking() {
-  StartBlinking(Now());
-}
-void UI::StartBlinking(uint32_t now) {
-  head_knobs_.StartBlinking();
-  head_knobs_.SetEnabled(false);
-
-  head_select_.StartBlinking();
-  lfo_select_.StartBlinking();
-
-  lfo_knobs_.StartBlinking();
-  lfo_knobs_.SetEnabled(false);
-
-  wet_knob_.StartBlinking();
-  wet_knob_.SetEnabled(false);
-  dry_knob_.StartBlinking();
-  dry_knob_.SetEnabled(false);
-
-  blink_state_ =
-      std::make_optional(BlinkState{.blink = true, .last_toggle = now});
-}
-
-void UI::StopBlinking() {
-  // The selection may have moved while we were blinking, so reload the knobs.
-  head_knobs_.Select(config_->Read().heads[selected_head_]);
-  head_knobs_.StopBlinking();
-  head_knobs_.SetEnabled(true);
-
-  head_select_.StopBlinking();
-  lfo_select_.StopBlinking();
-
-  lfo_knobs_.Select(config_->Read().lfos[selected_lfo_]);
-  lfo_knobs_.StopBlinking();
-  lfo_knobs_.SetEnabled(true);
-
-  wet_knob_.StopBlinking();
-  wet_knob_.SetEnabled(true);
-  dry_knob_.StopBlinking();
-  dry_knob_.SetEnabled(true);
-
-  blink_state_ = std::nullopt;
-}
-
-void UI::TickTargetSelect() {
-  auto held_lfo = lfo_select_.held();
-  // Are we currently holding down an LFO button?
-  if (held_lfo.has_value()) {
-    auto now = Now();
-    // Are we currently blinking?
-    if (blink_state_.has_value()) {
-      // Yes, so toggle the blink if enough time has passed
-      if (now - blink_state_->last_toggle > kBlinkFreqMs) {
-        blink_state_->blink = !blink_state_->blink;
-        blink_state_->last_toggle = Now();
-      }
-    } else if (now - held_lfo->since > kHoldDelayMs) {
-      // We're not currently blinking, but we *have* been holding down the LFO
-      // button long enough that we should *start* blinking
-      StartBlinking(now);
-    } else {
-      // No blink is occurring, or should start occurring; do nothing (yet)
-      return;
-    }
-
-    for (const auto& target : config_->Read().lfos[held_lfo->which].targets) {
-      if (!target.has_value()) {
-        continue;
-      }
-      switch (target->object) {
-      case fridge::config::TargetObject::kHead: {
-        // Blink the target head's selector
-        auto target_head_idx = target->object_idx;
-        head_select_.Blink(blink_state_->blink, target_head_idx);
-
-        // If the head is selected currently, also blink the relevant knob
-        if (head_select_.selected() == target_head_idx) {
-          KNOB(*this, target->parameter,
-               [&](auto* knob) { knob->Blink(blink_state_->blink); });
-        }
-        break;
-      }
-      case fridge::config::TargetObject::kLFO: {
-        // Blink the target lfo's selector
-        auto target_lfo_idx = target->object_idx;
-        lfo_select_.Blink(blink_state_->blink, target_lfo_idx);
-
-        // If the lfo is selected currently, also blink the relevant knob
-        if (lfo_select_.selected() == target_lfo_idx) {
-          KNOB(*this, target->parameter,
-               [&](auto* knob) { knob->Blink(blink_state_->blink); });
-        }
-        break;
-      }
-      case fridge::config::TargetObject::kMixer: {
-        KNOB(*this, target->parameter,
-             [&](auto* knob) { knob->Blink(blink_state_->blink); });
-        break;
-      }
-      }
-    }
-  } else {
-    if (blink_state_.has_value()) {
-      // We're not holding down an LFO button, but we're currently blinking.
-      // Stop doing that.
-      StopBlinking();
-    }
+void UI::Tick(uint32_t now) {
+  if (!range_rejected_at_.has_value()) {
+    return;
   }
-}
-
-void UI::Tick() {
-  TickTargetSelect();
-}
-
-config::Target UI::TargetForSelected(config::TargetParameter param) const {
-  auto object = config::object_for_parameter(param);
-  uint8_t object_idx = 0;
-  switch (object) {
-  case config::TargetObject::kHead:
-    object_idx = selected_head_;
-    break;
-  case config::TargetObject::kLFO:
-    object_idx = selected_lfo_;
-    break;
-  case config::TargetObject::kMixer:
-    break;
+  const uint32_t elapsed = now - *range_rejected_at_;
+  if (elapsed >= 600) {
+    range_rejected_at_.reset();
+    range_flash_on_.reset();
+    range_knob_.UpdateDisplay();
+    return;
   }
-
-  return {
-      .object = object,
-      .parameter = param,
-      .object_idx = object_idx,
-  };
-}
-
-void UI::KnobPressed(config::TargetParameter param, bool pressed) {
-  if (pressed) {
-    auto held_lfo = lfo_select_.held();
-    if (held_lfo.has_value()) {
-      auto target = TargetForSelected(param);
-      auto result = config_->Write().lfos[held_lfo->which].ToggleTarget(target);
-
-      if (result == config::ToggleResult::kToggledOff) {
-        KNOB(*this, param, [&](auto* knob) { knob->BlinkOff(); });
-      }
-    }
+  const bool on = (elapsed / 100) % 2 == 0;
+  if (range_flash_on_ != on) {
+    range_knob_.rgb_led().SetOn(on);
+    range_knob_.rgb_led().SetColor(color::RGB(255, 0, 0));
+    range_flash_on_ = on;
   }
 }
 
@@ -469,7 +362,7 @@ void LFOKnobs::SetEnabled(bool enabled) {
 bool LFOKnobs::Enabled() const {
   /* All knobs are enabled+disabled together, so we just return the enabled
    * status of an arbitrary knob */
-  return range.Enabled();
+  return max_grain_size.Enabled();
 }
 
 #ifndef UNIT_TEST

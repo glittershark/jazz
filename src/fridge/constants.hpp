@@ -5,8 +5,9 @@
 
 namespace fridge {
 
-constexpr const size_t kNumHeads = 8;
-constexpr const size_t kNumLfos = 8;
+constexpr const size_t kNumHeads = 10;
+constexpr const size_t kNumLfos = 10;
+constexpr const size_t kNumRegions = 6;
 constexpr const size_t kMaxTargetParams = 8;  // ??
 
 /** Every (LFO, target) pair can be an active modulation route. */
@@ -14,6 +15,11 @@ constexpr const size_t kMaxPatches = kNumLfos * kMaxTargetParams;
 
 constexpr const size_t kSampleRateHz = 44100;
 constexpr const size_t kBufferLen = kSampleRateHz * 60 * 3; /* 3 minutes */
+
+// Regions share this pool in small pages; their audible lengths remain exact.
+constexpr size_t kRegionPageSize = 1024;
+constexpr size_t kRegionPageCount = kBufferLen / kRegionPageSize;
+constexpr size_t kRegionCapacity = kRegionPageCount * kRegionPageSize;
 
 /** How long to fade updates to the audio buffer, in samples */
 constexpr const size_t kFadeTime = 8;

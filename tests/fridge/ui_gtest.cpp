@@ -39,22 +39,11 @@ TEST_F(UITest, update_head_knobs_via_callbacks) {
   config::ConfigStore store(initial_config);
   ui::UI ui(leds, &store);
   ui.SelectHead(selected_head);
-  config::Config config;
+  config::Config config = ui.Config();
 
-  auto test_one_turn_is_buffer_len_knob =
-      [&](ui::Knob<ui::OneTurnIsBufferLen>& knob, const size_t& target,
-          float turn) {
-        ASSERT_EQ(target, 0);
-
-        auto callback = knob.GetCallback();
-        callback(garbage, turn);
-        config = ui.Config();
-
-        EXPECT_EQ(target, turn * kBufferLen);
-      };
-
-  test_one_turn_is_buffer_len_knob(ui.head_knobs().position,
-                                   config.heads[selected_head].position, .32);
+  ui.head_knobs().position.GetCallback()(garbage, 0.25f);
+  config = ui.Config();
+  EXPECT_EQ(config.heads[selected_head].position, kSampleRateHz / 4);
 
   auto test_single_turn_knob = [&](ui::Knob<ui::SingleTurn>& knob,
                                    const float& target, float increment) {
@@ -96,8 +85,8 @@ TEST_F(UITest, update_lfo_knobs_via_callbacks) {
 
   config::ConfigStore store(initial_config);
   ui::UI ui(leds, &store);
-  ui.SelectLFO(selected_lfo);
-  config::Config config;
+  ui.SelectHead(selected_lfo);
+  config::Config config = ui.Config();
 
   auto test_one_turn_is_buffer_len_knob =
       [&](ui::Knob<ui::OneTurnIsBufferLen>& knob, const size_t& target,
@@ -111,8 +100,6 @@ TEST_F(UITest, update_lfo_knobs_via_callbacks) {
         EXPECT_EQ(target, turn * kBufferLen);
       };
 
-  test_one_turn_is_buffer_len_knob(ui.lfo_knobs().range,
-                                   config.lfos[selected_lfo].range, .5);
   test_one_turn_is_buffer_len_knob(ui.lfo_knobs().max_grain_size,
                                    config.lfos[selected_lfo].max_grain_size,
                                    .17);
@@ -208,24 +195,6 @@ TEST_F(UITest, pan_survives_a_head_switch) {
   EXPECT_FLOAT_EQ(ui.Config().heads[0].pan.pan(), 0.5f);
 }
 
-TEST_F(UITest, pan_can_be_toggled_as_an_lfo_target) {
-  config::ConfigStore store;
-  ui::UI ui(leds, &store);
-
-  ui.lfo_select().Select(0);
-  ASSERT_TRUE(ui.lfo_select().held().has_value());
-
-  ui.KnobPressed(config::TargetParameter::kPan, true);
-  EXPECT_EQ(ui.Config().lfos[0].targets[0],
-            (config::Target{.object = config::TargetObject::kHead,
-                            .parameter = config::TargetParameter::kPan,
-                            .object_idx = 0}));
-
-  // Toggling back off is what runs the KNOB dispatch for kPan.
-  ui.KnobPressed(config::TargetParameter::kPan, true);
-  EXPECT_EQ(ui.Config().lfos[0].targets[0], std::nullopt);
-}
-
 TEST_F(UITest, wet_knob_uses_led_to_display) {
   config::ConfigStore store;
   ui::UI ui(leds, &store);
@@ -290,15 +259,15 @@ TEST_F(UITest, change_selected_head_via_radio_buttons) {
   ui.head_knobs().position.GetCallback()(0, 0.5);
 
   auto config = ui.Config();
-  EXPECT_EQ(config.heads[2].position, 0.5 * kBufferLen);
+  EXPECT_EQ(config.heads[2].position, 0.5 * kSampleRateHz);
 }
 
-TEST_F(UITest, change_selected_lfo_via_radio_buttons) {
+TEST_F(UITest, head_button_selects_the_paired_lfo) {
   config::ConfigStore store;
   ui::UI ui(leds, &store);
 
-  ui.lfo_select().Select(2);
-  EXPECT_EQ(ui.selected_lfo(), 2);
+  ui.head_select().Select(2);
+  EXPECT_EQ(ui.selected_head(), 2);
 
   EXPECT_EQ(ui.Config().lfos[2].high_octave_chance, 0);
 
@@ -308,62 +277,95 @@ TEST_F(UITest, change_selected_lfo_via_radio_buttons) {
   EXPECT_FLOAT_EQ(config.lfos[2].high_octave_chance, 0.5f);
 }
 
-TEST_F(UITest, heads_and_lfo_are_locked) {
-  initial_config.lfos[0].targets[0] = {
-      .object = config::TargetObject::kHead,
-      .parameter = config::TargetParameter::kPosition,
-      .object_idx = 0,
+TEST_F(UITest, all_ten_pairs_and_six_regions_are_selectable) {
+  config::ConfigStore store;
+  ui::UI ui(leds, &store);
+  for (uint8_t head = 0; head < kNumHeads; ++head) {
+    ui.head_select().Select(head);
+    EXPECT_EQ(ui.selected_head(), head);
+    ui.lfo_knobs().reverse_chance.GetCallback()(0, 0.25f);
+    EXPECT_FLOAT_EQ(store.Read().lfos[head].reverse_chance, 0.25f);
+    for (uint8_t region = 0; region < kNumRegions; ++region) {
+      ui.region_select().Select(region);
+      EXPECT_EQ(store.Read().heads[head].region, region);
+      EXPECT_EQ(ui.selected_head(), head);
+    }
+  }
+}
+
+TEST_F(UITest, selection_loads_region_without_reassigning_the_head) {
+  initial_config.heads[9].region = 5;
+  initial_config.regions[5].range = 2000;
+  config::ConfigStore store(initial_config);
+  ui::UI ui(leds, &store);
+  ui.head_select().Select(9);
+  EXPECT_EQ(ui.region_select().selected(), 5);
+  EXPECT_EQ(ui.range_knob().Get(), 2000);
+  EXPECT_EQ(store.Read(), initial_config);
+}
+
+TEST_F(UITest, position_wraps_within_region_and_assignment_preserves_fraction) {
+  initial_config.regions[0].range = 1000;
+  initial_config.regions[5].range = 2000;
+  config::ConfigStore store(initial_config);
+  ui::UI ui(leds, &store);
+  ui.head_knobs().position.GetCallback()(0, -0.25f);
+  EXPECT_EQ(store.Read().heads[0].position, 750);
+  ui.region_select().Select(5);
+  EXPECT_EQ(store.Read().heads[0].position, 1500);
+  ui.head_knobs().position.GetCallback()(0, 0.5f);
+  EXPECT_EQ(store.Read().heads[0].position, 500);
+}
+
+TEST_F(UITest, range_is_shared_and_does_not_edit_lfo_parameters) {
+  initial_config.heads[9].position = kSampleRateHz / 2;
+  config::ConfigStore store(initial_config);
+  ui::UI ui(leds, &store);
+  ui.range_knob().GetCallback()(0, 0.25f);
+  const size_t range = kSampleRateHz + kBufferLen / 4;
+  EXPECT_EQ(store.Read().regions[0].range, range);
+  EXPECT_EQ(store.Read().heads[9].position, range / 2);
+  EXPECT_EQ(store.Read().lfos, initial_config.lfos);
+  ui.head_select().Select(9);
+  EXPECT_EQ(ui.range_knob().Get(), range);
+  EXPECT_FLOAT_EQ(ui.head_knobs().position.Get(), 0.5f);
+}
+
+TEST_F(UITest, rejected_range_is_unchanged_and_flashes_then_recovers) {
+  for (auto& region : initial_config.regions) {
+    region.range = kRegionPageSize;
+  }
+  initial_config.regions[0].range =
+      kRegionCapacity - (kNumRegions - 1) * kRegionPageSize;
+  config::ConfigStore store(initial_config);
+  ui::UI ui(leds, &store);
+  ui.range_knob().GetCallback()(0, 0.25f);
+  EXPECT_EQ(store.Read(), initial_config);
+  EXPECT_FALSE(store.dirty());
+  EXPECT_EQ(ui.range_knob().Get(), initial_config.regions[0].range);
+  ui.Tick(0);
+  EXPECT_TRUE(ui.range_knob().rgb_led().red().on());
+  EXPECT_EQ(ui.range_knob().rgb_led().red().duty(), 255);
+  EXPECT_EQ(ui.range_knob().rgb_led().green().duty(), 0);
+  ui.Tick(100);
+  EXPECT_FALSE(ui.range_knob().rgb_led().red().on());
+  ui.Tick(600);
+  EXPECT_TRUE(ui.range_knob().rgb_led().red().on());
+  ui.range_knob().GetCallback()(0, -0.25f);
+  EXPECT_LT(store.Read().regions[0].range, initial_config.regions[0].range);
+}
+
+TEST_F(UITest, stored_generic_targets_do_not_decouple_selection_or_change) {
+  initial_config.lfos[9].targets[0] = config::Target{
+      .object = config::TargetObject::kMixer,
+      .parameter = config::TargetParameter::kDry,
   };
-  initial_config.lfos[1].targets[0] = {
-      .object = config::TargetObject::kHead,
-      .parameter = config::TargetParameter::kPosition,
-      .object_idx = 1,
-  };
-
-  {
-    config::ConfigStore store(initial_config);
-    ui::UI ui(leds, &store);
-    EXPECT_TRUE(ui.HeadsAndLFOsAreLocked());
-  }
-
-  // Targeting another head's position
-  {
-    initial_config.lfos[1].targets[1] = {
-        .object = config::TargetObject::kHead,
-        .parameter = config::TargetParameter::kPosition,
-        .object_idx = 2,
-    };
-
-    config::ConfigStore store(initial_config);
-    ui::UI ui(leds, &store);
-    EXPECT_FALSE(ui.HeadsAndLFOsAreLocked());
-  }
-
-  // Targeting another parameter
-  {
-    initial_config.lfos[1].targets[1] = {
-        .object = config::TargetObject::kHead,
-        .parameter = config::TargetParameter::kPan,
-        .object_idx = 1,
-    };
-
-    config::ConfigStore store(initial_config);
-    ui::UI ui(leds, &store);
-    EXPECT_TRUE(ui.HeadsAndLFOsAreLocked());
-  }
-
-  // Targeting another LFO
-  {
-    initial_config.lfos[1].targets[1] = {
-        .object = config::TargetObject::kLFO,
-        .parameter = config::TargetParameter::kHighOctaveChance,
-        .object_idx = 2,
-    };
-
-    config::ConfigStore store(initial_config);
-    ui::UI ui(leds, &store);
-    EXPECT_FALSE(ui.HeadsAndLFOsAreLocked());
-  }
+  config::ConfigStore store(initial_config);
+  ui::UI ui(leds, &store);
+  ui.head_select().Select(9);
+  ui.lfo_knobs().reverse_chance.GetCallback()(0, 0.5f);
+  EXPECT_FLOAT_EQ(store.Read().lfos[9].reverse_chance, 0.5f);
+  EXPECT_EQ(store.Read().lfos[9].targets, initial_config.lfos[9].targets);
 }
 
 }  // namespace

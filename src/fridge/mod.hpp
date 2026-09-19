@@ -78,25 +78,14 @@ struct LfoParams {
  * value advances by speed * direction each sample, wrapped to [0, range).
  */
 class LFOEngine {
-  LfoParams params_{};
-  Rng rng_{};
-  float value_ = 0.0f;
-  float speed_ = 1.0f;
-  uint32_t grain_remaining_ = 0;
-  uint32_t grain_size_ = 0;
-  Direction direction_ = Direction::kForwards;
-
-  std::optional<LFOTransition> StartNewGrain(bool initial_grain);
-  uint32_t SampleGrainSize();
-  float SampleSpeed();
-  float Wrap(float value) const;
-
  public:
   LFOEngine() = default;
   explicit LFOEngine(const config::LFO& config);
   LFOEngine(const config::LFO& config, uint32_t seed);
 
-  void SetParams(const LfoParams& params);
+  /** Optionally preserve relative progress when the scalar range changes;
+   * speed, direction, grain timing, and RNG state remain untouched. */
+  void SetParams(const LfoParams& params, bool preserve_phase = false);
   void SetConfig(const config::LFO& config);
   void Reset(float initial_value = 0.0f,
              Direction direction = Direction::kForwards);
@@ -114,6 +103,20 @@ class LFOEngine {
   }
   size_t grain_size() const { return grain_size_; }
   Direction direction() const { return direction_; }
+
+ private:
+  LfoParams params_{};
+  Rng rng_{};
+  float value_ = 0.0f;
+  float speed_ = 1.0f;
+  uint32_t grain_remaining_ = 0;
+  uint32_t grain_size_ = 0;
+  Direction direction_ = Direction::kForwards;
+
+  std::optional<LFOTransition> StartNewGrain(bool initial_grain);
+  uint32_t SampleGrainSize();
+  float SampleSpeed();
+  float Wrap(float value) const;
 };
 
 /** What Sound consumes each sample: scaled head contributions plus the mix. */
@@ -122,6 +125,8 @@ struct Frame {
   size_t head_count = 0;
   float dry = 1.0f;
   float wet = 1.0f;
+  // Borrowed from the modulator; consume before its next control update.
+  const std::array<config::Region, kNumRegions>* regions = nullptr;
 };
 
 /**
@@ -165,6 +170,7 @@ class Modulator {
     float old_position = 0.0f;  // keeps moving with the old motion during fade
     float old_velocity = 0.0f;  // signed samples per sample
     uint32_t remaining = 0;     // samples left; 0 → inactive
+    size_t range = kBufferLen;
   };
 
   const Frame& frame() const { return frame_; }
@@ -226,6 +232,7 @@ class Modulator {
   LfoParams EffectiveLfoParams(size_t lfo_idx) const;
   void UpdateEffectiveHead(size_t head_idx);
   void BeginFades(size_t lfo_idx, const LFOTransition& transition);
+  void BeginHeadFade(size_t head_idx, float velocity, size_t range);
   void AddHead(config::Head head, float weight);
   void BuildFrame();
   void AdvanceFades();

@@ -643,6 +643,42 @@ using SingleTurn = Bounded<Turns, 0.0f, 1.0f>;
 using OneTurnIsBufferLen =
     Bounded<ScaledIntegralTurns<size_t, kBufferLen>, 0, kBufferLen>;
 
+/** One encoder revolution sweeps a region, wrapping in either direction. */
+class WrappedTurns {
+ public:
+  using Raw_type = float;
+
+  WrappedTurns() = default;
+  WrappedTurns(float value) : value_(Wrap(value)) {}
+  WrappedTurns(int, float turns) : value_(Wrap(turns)) {}
+
+  WrappedTurns& Increment(int, float turns) {
+    value_ = Wrap(value_ + turns);
+    return *this;
+  }
+  operator float() const { return value_; }
+  WrappedTurns operator+(const WrappedTurns& rhs) const {
+    return WrappedTurns(value_ + rhs.value_);
+  }
+  WrappedTurns& operator+=(const WrappedTurns& rhs) {
+    value_ = Wrap(value_ + rhs.value_);
+    return *this;
+  }
+  uint8_t GetDisplay() const { return static_cast<uint8_t>(value_ * 255); }
+  void Print(const char* key) const { Turns(value_).Print(key); }
+
+ private:
+  float value_ = 0.0f;
+
+  // ----- Validation
+  static float Wrap(float value) {
+    if (!std::isfinite(value)) {
+      return 0.0f;
+    }
+    return value - std::floor(value);
+  }
+};
+
 namespace radio_buttons {
 struct Config {
   color::RGB selected_color;
@@ -737,7 +773,14 @@ class RadioButtons {
 
   void OnChange(Callback<uint8_t> on_change) { on_change_ = on_change; }
 
-  void Select(std::uint8_t which, bool instantaneous = false) {
+  void Select(std::uint8_t which, bool instantaneous = false,
+              bool notify = true) {
+    if (which >= N) {
+      return;
+    }
+    if (instantaneous) {
+      ClearHeld();
+    }
     const bool changed = which != selected_;
 
     if (held_.has_value() && held_->which == selected_) {
@@ -755,7 +798,7 @@ class RadioButtons {
       held_ = Held{.which = which, .since = Now()};
     }
 
-    if (changed && on_change_) {
+    if (changed && notify && on_change_) {
       on_change_(which);
     }
   }
@@ -795,7 +838,7 @@ template <DisplayableBackingValue V>
 using CieInterpKnob = KnobWithDisplay<V, value_display::CieInterp>;
 
 struct HeadKnobs {
-  CieInterpKnob<OneTurnIsBufferLen> position;
+  CieInterpKnob<WrappedTurns> position;
   CieInterpKnob<SingleTurn> write_amount;
   CieInterpKnob<SingleTurn> read_amount;
   CieInterpKnob<SingleTurn> erase_amount;
@@ -804,7 +847,7 @@ struct HeadKnobs {
   // NOTE: If you add new knobs here, remember to also add them under
   // EACH_HEAD_KNOB!
 
-  void Select(const config::Head& head);
+  void Select(const config::Head& head, size_t range);
   void WriteInto(config::Head& head) const;
 
   void OnChange(Callback<> on_change);
@@ -827,7 +870,6 @@ struct HeadKnobs {
   }
 
 struct LFOKnobs {
-  CieInterpKnob<OneTurnIsBufferLen> range;
   CieInterpKnob<OneTurnIsBufferLen> max_grain_size;
   CieInterpKnob<OneTurnIsBufferLen> min_grain_size;
   CieInterpKnob<SingleTurn> reverse_chance;
@@ -852,7 +894,6 @@ struct LFOKnobs {
 
 #define EACH_LFO_KNOB(lfo_knobs, f)    \
   {                                    \
-    f(&lfo_knobs->range);              \
     f(&lfo_knobs->max_grain_size);     \
     f(&lfo_knobs->min_grain_size);     \
     f(&lfo_knobs->reverse_chance);     \
@@ -904,142 +945,48 @@ struct TempoButton {
 #endif  // UNIT_TEST
 
 class UI {
-  // The authoritative, live config of the effect.
+ public:
+  UI(io::led::Controller& led_controller, config::ConfigStore* config);
+
+  const config::Config& Config() const { return config_->Read(); }
+  uint8_t selected_head() const { return selected_head_; }
+  HeadKnobs& head_knobs() { return head_knobs_; }
+  LFOKnobs& lfo_knobs() { return lfo_knobs_; }
+  CieInterpKnob<OneTurnIsBufferLen>& range_knob() { return range_knob_; }
+  CieInterpKnob<SingleTurn>& dry_knob() { return dry_knob_; }
+  CieInterpKnob<SingleTurn>& wet_knob() { return wet_knob_; }
+  TempoButton& tempo_button() { return tempo_button_; }
+  RadioButtons<kNumHeads>& head_select() { return head_select_; }
+  RadioButtons<kNumRegions>& region_select() { return region_select_; }
+
+  void SelectHead(uint8_t head);
+  void AssignRegion(uint8_t region);
+  void Tick(uint32_t now = Now());
+
+ private:
   config::ConfigStore* config_;
-
-  /* Which LFO is the source of the current target selection workflow, if any */
-  std::optional<uint8_t> lfo_target_source_ = std::nullopt;
-
-  struct BlinkState {
-    bool blink;
-    uint32_t last_toggle;
-  };
-
-  // If anything is blinking, whether it is currently on or off.
-  std::optional<BlinkState> blink_state_ = std::nullopt;
-  bool AmBlinking() const { return blink_state_.has_value(); }
-
-#ifndef UNIT_TEST
-  daisy::TimerHandle timer_;
-#endif  // UNIT_TEST
-
-  config::Target TargetForSelected(config::TargetParameter param) const;
-
-  static void timer_callback_(void* self) { static_cast<UI*>(self)->Tick(); }
-
   uint8_t selected_head_ = 0;
-  uint8_t selected_lfo_ = 0;
-
   HeadKnobs head_knobs_;
   LFOKnobs lfo_knobs_;
-
+  CieInterpKnob<OneTurnIsBufferLen> range_knob_;
   CieInterpKnob<SingleTurn> dry_knob_;
   CieInterpKnob<SingleTurn> wet_knob_;
   TempoButton tempo_button_;
-
   RadioButtons<kNumHeads> head_select_;
-  RadioButtons<kNumLfos> lfo_select_;
+  RadioButtons<kNumRegions> region_select_;
+  std::optional<uint32_t> range_rejected_at_;
+  std::optional<bool> range_flash_on_;
+#ifndef UNIT_TEST
+  daisy::TimerHandle timer_;
+#endif
 
-  void StartBlinking();
-  void StartBlinking(uint32_t now);
-  void StopBlinking();
-
-  /** Tick the lfo target selection state machine once
-   */
-  void TickTargetSelect();
-
+  void LoadSelection();
+  void WritePosition();
   void WriteHead();
   void WriteLFO();
+  void WriteRange();
   void WriteMixer();
-
- public:
-  const config::Config& Config() const { return config_->Read(); }
-
-  UI(io::led::Controller& led_controller, config::ConfigStore* config);
-
-  void KnobPressed(config::TargetParameter param, bool pressed);
-
-  uint8_t selected_head() const { return selected_head_; }
-  uint8_t selected_lfo() const { return selected_lfo_; }
-
-  HeadKnobs& head_knobs() { return head_knobs_; }
-  LFOKnobs& lfo_knobs() { return lfo_knobs_; }
-
-  CieInterpKnob<SingleTurn>& dry_knob() { return dry_knob_; }
-  CieInterpKnob<SingleTurn>& wet_knob() { return wet_knob_; }
-
-  TempoButton& tempo_button() { return tempo_button_; }
-
-  RadioButtons<kNumHeads>& head_select() { return head_select_; }
-  RadioButtons<kNumLfos>& lfo_select() { return lfo_select_; }
-
-  /** Tick the UI once */
-  void Tick();
-
-  /** True if each LFO is only targeting parameters in the head of the same
-   * index.
-   *
-   * If this is true, selecting either heads or LFOs also selects the other
-   */
-  bool HeadsAndLFOsAreLocked() const;
-
-  void SelectHead(uint8_t head);
-  void SelectLFO(uint8_t lfo);
 };
-
-#define KNOB(ui, param, doto)                        \
-  {                                                  \
-    switch (param) {                                 \
-    case config::TargetParameter::kPosition:         \
-      (doto)(&head_knobs_.position);                 \
-      break;                                         \
-    case config::TargetParameter::kWriteAmount:      \
-      (doto)(&head_knobs_.write_amount);             \
-      break;                                         \
-    case config::TargetParameter::kReadAmount:       \
-      (doto)(&head_knobs_.read_amount);              \
-      break;                                         \
-    case config::TargetParameter::kEraseAmount:      \
-      (doto)(&head_knobs_.erase_amount);             \
-      break;                                         \
-    case config::TargetParameter::kFeedbackAmount:   \
-      (doto)(&head_knobs_.feedback);                 \
-      break;                                         \
-    case config::TargetParameter::kRange:            \
-      (doto)(&lfo_knobs_.range);                     \
-      break;                                         \
-    case config::TargetParameter::kMaxGrainSize:     \
-      (doto)(&lfo_knobs_.max_grain_size);            \
-      break;                                         \
-    case config::TargetParameter::kMinGrainSize:     \
-      (doto)(&lfo_knobs_.min_grain_size);            \
-      break;                                         \
-    case config::TargetParameter::kReverseChance:    \
-      (doto)(&lfo_knobs_.reverse_chance);            \
-      break;                                         \
-    case config::TargetParameter::kTeleportChance:   \
-      (doto)(&lfo_knobs_.teleport_chance);           \
-      break;                                         \
-    case config::TargetParameter::kPitchShiftChance: \
-      (doto)(&lfo_knobs_.pitch_shift_chance);        \
-      break;                                         \
-    case config::TargetParameter::kLowOctaveChance:  \
-      (doto)(&lfo_knobs_.low_octave_chance);         \
-      break;                                         \
-    case config::TargetParameter::kHighOctaveChance: \
-      (doto)(&lfo_knobs_.high_octave_chance);        \
-      break;                                         \
-    case config::TargetParameter::kDry:              \
-      (doto)(&dry_knob_);                            \
-      break;                                         \
-    case config::TargetParameter::kWet:              \
-      (doto)(&wet_knob_);                            \
-      break;                                         \
-    case config::TargetParameter::kPan:              \
-      (doto)(&head_knobs_.pan);                      \
-      break;                                         \
-    };                                               \
-  }
 
 }  // namespace fridge::ui
 

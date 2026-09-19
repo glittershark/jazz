@@ -4,6 +4,8 @@
 #include <bit>
 #include <cmath>
 
+#include "regions.hpp"
+
 namespace fridge::mod {
 
 namespace {
@@ -41,15 +43,6 @@ void MergeTransition(LFOTickResult& result,
   } else {
     result.transition = transition;
   }
-}
-
-/* Wraps a fading head's extrapolated position back into the sample buffer. */
-size_t WrapBufferPosition(float position) {
-  float wrapped = std::fmod(position, static_cast<float>(kBufferLen));
-  if (wrapped < 0.0f) {
-    wrapped += static_cast<float>(kBufferLen);
-  }
-  return static_cast<size_t>(std::lround(wrapped)) % kBufferLen;
 }
 
 }  // namespace
@@ -101,7 +94,10 @@ LFOEngine::LFOEngine(const config::LFO& config, uint32_t seed) : rng_(seed) {
   Reset();
 }
 
-void LFOEngine::SetParams(const LfoParams& params) {
+void LFOEngine::SetParams(const LfoParams& params, bool preserve_phase) {
+  if (preserve_phase && params_.range != 0) {
+    value_ *= static_cast<float>(params.range) / params_.range;
+  }
   params_ = params;
   value_ = Wrap(value_);
 }
@@ -278,7 +274,17 @@ size_t Modulator::ClampSize(float value, size_t minimum) {
 config::Config Modulator::SanitizeConfig(const config::Config& root_config) {
   config::Config sanitized = root_config;
 
+  if (!config::RegionsFit(sanitized.regions)) {
+    sanitized.regions = {};
+  }
+
   for (config::Head& head : sanitized.heads) {
+    if (head.region >= kNumRegions) {
+      head.region = 0;
+    }
+    if (sanitized.routing == config::Routing::kPairedRegions) {
+      head.position %= sanitized.regions[head.region].range;
+    }
     head.write_amount = ClampFinite(head.write_amount);
     head.read_amount = ClampFinite(head.read_amount);
     head.erase_amount = ClampFinite(head.erase_amount);
@@ -377,6 +383,18 @@ void Modulator::CompilePatches() {
   modulated_lfos_ = 0;
   mixer_modulated_ = false;
 
+  if (base_.routing == config::Routing::kPairedRegions) {
+    static_assert(kNumHeads == kNumLfos);
+    for (size_t i = 0; i < kNumHeads; ++i) {
+      patches_[patch_count_++] = Patch{
+          .slot = static_cast<uint16_t>(i * kHeadParamCount),
+          .lfo = static_cast<uint8_t>(i),
+      };
+      modulated_heads_ |= 1u << i;
+    }
+    return;
+  }
+
   for (size_t lfo_idx = 0; lfo_idx < kNumLfos; ++lfo_idx) {
     for (const std::optional<config::Target>& target :
          base_.lfos[lfo_idx].targets) {
@@ -414,6 +432,7 @@ void Modulator::Initialize(const config::Config& root_config) {
 
   for (size_t i = 0; i < kNumLfos; ++i) {
     engines_[i] = LFOEngine(base_.lfos[i], seed_ + static_cast<uint32_t>(i));
+    engines_[i].SetParams(EffectiveLfoParams(i));
     engines_[i].Reset(0.0f, Direction::kForwards);
     anchors_[i] = engines_[i].value();
   }
@@ -429,13 +448,40 @@ void Modulator::SetConfig(const config::Config& root_config) {
     return;
   }
 
+  const config::Config previous = base_;
   base_ = SanitizeConfig(root_config);
+  // Invalid control updates keep the existing regions intact.
+  if (!config::RegionsFit(root_config.regions)) {
+    base_.regions = previous.regions;
+    base_.heads = previous.heads;
+  }
   CompilePatches();
   mod_ = {};
   RecomputeMods();
 
   for (size_t i = 0; i < kNumLfos; ++i) {
-    engines_[i].SetParams(EffectiveLfoParams(i));
+    const LfoParams params = EffectiveLfoParams(i);
+    const bool paired = base_.routing == config::Routing::kPairedRegions;
+    if (paired) {
+      const auto& old_head = previous.heads[i];
+      const auto& head = base_.heads[i];
+      const size_t old_range = previous.regions[old_head.region].range;
+      if (head.region != old_head.region ||
+          head.position != old_head.position || params.range != old_range) {
+        BeginHeadFade(
+            i,
+            engines_[i].speed() * DirectionMultiplier(engines_[i].direction()),
+            old_range);
+      }
+      if (engines_[i].params().range != 0) {
+        anchors_[i] *=
+            static_cast<float>(params.range) / engines_[i].params().range;
+      }
+    }
+    engines_[i].SetParams(params, paired);
+  }
+  if (base_.routing == config::Routing::kPairedRegions) {
+    RecomputeMods();
   }
 
   eff_heads_ = base_.heads;
@@ -479,6 +525,11 @@ LfoParams Modulator::EffectiveLfoParams(size_t lfo_idx) const {
       .high_octave_chance = base.high_octave_chance,
   };
 
+  if (base_.routing == config::Routing::kPairedRegions) {
+    params.range = base_.regions[base_.heads[lfo_idx].region].range;
+    return params;
+  }
+
   if ((modulated_lfos_ & (1u << lfo_idx)) == 0) {
     return params;
   }
@@ -503,6 +554,12 @@ void Modulator::UpdateEffectiveHead(size_t head_idx) {
   config::Head& head = eff_heads_[head_idx];
 
   head.position = ClampSize(static_cast<float>(base.position) + mod[0], 0);
+  head.region = base.region;
+  if (base_.routing == config::Routing::kPairedRegions) {
+    head.position =
+        regions::WrapPosition(static_cast<float>(base.position) + mod[0],
+                              base_.regions[base.region].range);
+  }
   head.write_amount = ClampFinite(base.write_amount + mod[1]);
   head.read_amount = ClampFinite(base.read_amount + mod[2]);
   head.erase_amount = ClampFinite(base.erase_amount + mod[3]);
@@ -516,25 +573,34 @@ void Modulator::BeginFades(size_t lfo_idx, const LFOTransition& transition) {
     return;
   }
 
-  for (const std::optional<config::Target>& target :
-       base_.lfos[lfo_idx].targets) {
-    if (!target.has_value() || target->object != config::TargetObject::kHead ||
-        target->parameter != config::TargetParameter::kPosition ||
-        target->object_idx >= kNumHeads) {
+  for (size_t p = 0; p < patch_count_; ++p) {
+    const Patch& patch = patches_[p];
+    if (patch.lfo != lfo_idx || patch.slot >= kLfoParamBase ||
+        patch.slot % kHeadParamCount != 0) {
       continue;
     }
 
     // eff_heads_ still holds last sample's values here, so the fade departs
     // from where the head actually was before the jump.
-    const size_t head_idx = target->object_idx;
-    fades_[head_idx] = Fade{
-        .old_head = eff_heads_[head_idx],
-        .old_position = static_cast<float>(eff_heads_[head_idx].position),
-        .old_velocity = transition.old_speed *
-                        DirectionMultiplier(transition.old_direction),
-        .remaining = static_cast<uint32_t>(fade_time_),
-    };
+    const size_t head_idx = patch.slot / kHeadParamCount;
+    const size_t range = base_.routing == config::Routing::kPairedRegions
+                             ? base_.regions[base_.heads[head_idx].region].range
+                             : kBufferLen;
+    BeginHeadFade(
+        head_idx,
+        transition.old_speed * DirectionMultiplier(transition.old_direction),
+        range);
   }
+}
+
+void Modulator::BeginHeadFade(size_t head_idx, float velocity, size_t range) {
+  fades_[head_idx] = Fade{
+      .old_head = eff_heads_[head_idx],
+      .old_position = static_cast<float>(eff_heads_[head_idx].position),
+      .old_velocity = velocity,
+      .remaining = static_cast<uint32_t>(fade_time_),
+      .range = range,
+  };
 }
 
 float Modulator::effective_dry() const {
@@ -564,6 +630,9 @@ void Modulator::BuildFrame() {
   frame_.head_count = 0;
   frame_.dry = effective_dry();
   frame_.wet = effective_wet();
+  frame_.regions = base_.routing == config::Routing::kPairedRegions
+                       ? &base_.regions
+                       : nullptr;
 
   for (size_t h = 0; h < kNumHeads; ++h) {
     const Fade& fade = fades_[h];
@@ -575,7 +644,11 @@ void Modulator::BuildFrame() {
     const float old_weight =
         static_cast<float>(fade.remaining) / static_cast<float>(fade_time_);
     config::Head old_head = fade.old_head;
-    old_head.position = WrapBufferPosition(fade.old_position);
+    const size_t range =
+        frame_.regions == nullptr
+            ? fade.range
+            : std::min(fade.range, base_.regions[old_head.region].range);
+    old_head.position = regions::WrapPosition(fade.old_position, range);
     AddHead(old_head, old_weight);
     AddHead(eff_heads_[h], 1.0f - old_weight);
   }

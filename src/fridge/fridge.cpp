@@ -23,199 +23,26 @@ using jazz::units::Samples;
 
 DaisySeed hw;
 
-constexpr const config::Config kInitialConfig{
-    .heads{
-        {
-            {.position = 0,
-             .write_amount = 0.0f,
-             .read_amount = 0.0f,
-             .erase_amount = 0.0f,
-             .feedback =
-                 {
-                     .kind = config::Feedback::Kind::kRead,
-                     .amount = 0.0f,
-                 }},
-            {.position = 0,
-             .write_amount = 0.0f,
-             .read_amount = 0.0f,
-             .erase_amount = 0.0f,
-             .feedback =
-                 {
-                     .kind = config::Feedback::Kind::kRead,
-                     .amount = 0.0f,
-                 }},
-            {.position = 0,
-             .write_amount = 0.0f,
-             .read_amount = 0.0f,
-             .erase_amount = 0.0f,
-             .feedback =
-                 {
-                     .kind = config::Feedback::Kind::kRead,
-                     .amount = 0.0f,
-                 }},
-            {.position = 0,
-             .write_amount = 0.0f,
-             .read_amount = 0.0f,
-             .erase_amount = 0.0f,
-             .feedback =
-                 {
-                     .kind = config::Feedback::Kind::kRead,
-                     .amount = 0.0f,
-                 }},
-            {.position = 0,
-             .write_amount = 0.0f,
-             .read_amount = 0.0f,
-             .erase_amount = 0.0f,
-             .feedback =
-                 {
-                     .kind = config::Feedback::Kind::kRead,
-                     .amount = 0.0f,
-                 }},
-            {.position = 0,
-             .write_amount = 0.0f,
-             .read_amount = 0.0f,
-             .erase_amount = 0.0f,
-             .feedback =
-                 {
-                     .kind = config::Feedback::Kind::kRead,
-                     .amount = 0.0f,
-                 }},
-            {.position = 0,
-             .write_amount = 0.0f,
-             .read_amount = 0.0f,
-             .erase_amount = 0.0,
-             .feedback =
-                 {
-                     .kind = config::Feedback::Kind::kRead,
-                     .amount = 0.0f,
-                 }},
-            {.position = 0,
-             .write_amount = 0.0f,
-             .read_amount = 0.0f,
-             .erase_amount = 0.0,
-             .feedback =
-                 {
-                     .kind = config::Feedback::Kind::kRead,
-                     .amount = 0.0f,
-                 }},
-        },
+constexpr config::Config InitialConfig() {
+  config::Config config;
+  for (size_t i = 0; i < kNumHeads; ++i) {
+    config.heads[i].region = static_cast<uint8_t>(i % kNumRegions);
+    config.lfos[i].min_grain_size = kSampleRateHz;
+    config.lfos[i].max_grain_size = kSampleRateHz;
+  }
+  config.dry = 0.5f;
+  config.wet = 0.5f;
+  return config;
+}
 
-    },
-    .lfos{{
-        {
-            .range = kSampleRateHz,
-            .max_grain_size = kSampleRateHz,
-            .min_grain_size = kSampleRateHz,
-            .reverse_chance = 0.f,
-            .teleport_chance = 0.f,
-            .pitch_shift_chance = 0.f,
-            .targets{{{{
-                .object = config::TargetObject::kHead,
-                .parameter = config::TargetParameter::kPosition,
-                .object_idx = 0,
-            }}}},
-        },
-        {
-            .range = kSampleRateHz,
-            .max_grain_size = kSampleRateHz,
-            .min_grain_size = kSampleRateHz,
-            .reverse_chance = 0.f,
-            .teleport_chance = 0.f,
-            .pitch_shift_chance = 0.f,
-            .targets{{{{
-                .object = config::TargetObject::kHead,
-                .parameter = config::TargetParameter::kPosition,
-                .object_idx = 1,
-            }}}},
-        },
-        {
-            .range = kSampleRateHz,
-            .max_grain_size = kSampleRateHz,
-            .min_grain_size = kSampleRateHz,
-            .reverse_chance = 0.f,
-            .teleport_chance = 0.f,
-            .pitch_shift_chance = 0.f,
-            .targets{{{{
-                .object = config::TargetObject::kHead,
-                .parameter = config::TargetParameter::kPosition,
-                .object_idx = 2,
-            }}}},
-        },
-        {
-            .range = kSampleRateHz,
-            .max_grain_size = kSampleRateHz,
-            .min_grain_size = kSampleRateHz,
-            .reverse_chance = 0.f,
-            .teleport_chance = 0.f,
-            .pitch_shift_chance = 0.f,
-            .targets{{{{
-                .object = config::TargetObject::kHead,
-                .parameter = config::TargetParameter::kPosition,
-                .object_idx = 3,
-            }}}},
-        },
-        {
-            .range = kSampleRateHz,
-            .max_grain_size = kSampleRateHz,
-            .min_grain_size = kSampleRateHz,
-            .reverse_chance = 0.f,
-            .teleport_chance = 0.f,
-            .pitch_shift_chance = 0.f,
-            .targets{{{{
-                .object = config::TargetObject::kHead,
-                .parameter = config::TargetParameter::kPosition,
-                .object_idx = 4,
-            }}}},
-        },
-        {
-            .range = kSampleRateHz,
-            .max_grain_size = kSampleRateHz,
-            .min_grain_size = kSampleRateHz,
-            .reverse_chance = 0.f,
-            .teleport_chance = 0.f,
-            .pitch_shift_chance = 0.f,
-            .targets{{{{
-                .object = config::TargetObject::kHead,
-                .parameter = config::TargetParameter::kPosition,
-                .object_idx = 5,
-            }}}},
-        },
-        {
-            .range = kSampleRateHz,
-            .max_grain_size = kSampleRateHz,
-            .min_grain_size = kSampleRateHz,
-            .reverse_chance = 0.f,
-            .teleport_chance = 0.f,
-            .pitch_shift_chance = 0.f,
-            .targets{{{{
-                .object = config::TargetObject::kHead,
-                .parameter = config::TargetParameter::kPosition,
-                .object_idx = 6,
-            }}}},
-        },
-        {
-            .range = kSampleRateHz,
-            .max_grain_size = kSampleRateHz,
-            .min_grain_size = kSampleRateHz,
-            .reverse_chance = 0.f,
-            .teleport_chance = 0.f,
-            .pitch_shift_chance = 0.f,
-            .targets{{{{
-                .object = config::TargetObject::kHead,
-                .parameter = config::TargetParameter::kPosition,
-                .object_idx = 7,
-            }}}},
-        },
-    }},
-    .dry = 0.5f,
-    .wet = 0.5f,
-};
+constexpr config::Config kInitialConfig = InitialConfig();
 
 sound::Sound* sound;
 engine::Engine* engine = nullptr;
 
-char DSY_SDRAM_BSS sound_memory[sizeof(sound::Sound)];
-char engine_memory[sizeof(engine::Engine)];
+static_assert(sizeof(sound::Sound) <= 64 * 1024 * 1024);
+alignas(sound::Sound) char DSY_SDRAM_BSS sound_memory[sizeof(sound::Sound)];
+alignas(engine::Engine) char engine_memory[sizeof(engine::Engine)];
 
 constexpr const Samples<uint32_t> kAudioBlockSize = Samples(2);
 

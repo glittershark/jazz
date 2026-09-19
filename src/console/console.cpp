@@ -54,6 +54,7 @@ fridge::config::Config DefaultFridgeConfig() {
       .erase_amount = 0.999f,
   };
 
+  config.regions[0].range = 24000;
   config.lfos[0] = {
       .range = 24000,
       .max_grain_size = 24000,
@@ -517,6 +518,15 @@ bool ApplyFridgeTargetParameter(const std::string& value,
 
 bool ApplyFridgeHeadValue(const std::string& field, const std::string& value,
                           fridge::config::Head* head, std::string* error) {
+  if (field == "region") {
+    size_t region = 0;
+    if (!ParseFridgeSize(value, 0, fridge::kNumRegions - 1,
+                        "fridge head region", &region, error)) {
+      return false;
+    }
+    head->region = static_cast<uint8_t>(region);
+    return true;
+  }
   if (field == "position") {
     return ParseFridgeSize(value, 0, fridge::kBufferLen - 1,
                            "fridge head position", &head->position, error);
@@ -638,6 +648,34 @@ bool ApplyFridgeConfigKV(const std::string& key, const std::string& value,
   if (k == "fridge_wet") {
     return ParseFloatInRange(value, 0.0f, 4.0f, "fridge wet", &config->wet,
                              error);
+  }
+
+  if (k == "fridge_routing") {
+    if (value == "paired_regions") {
+      config->routing = fridge::config::Routing::kPairedRegions;
+    } else if (value == "assignable") {
+      config->routing = fridge::config::Routing::kAssignable;
+    } else {
+      *error = "fridge_routing must be paired_regions or assignable";
+      return false;
+    }
+    return true;
+  }
+
+  constexpr const char* region_prefix = "fridge_region_";
+  if (k.starts_with(region_prefix)) {
+    size_t region = 0;
+    std::string field;
+    if (!ParseIndexedField(k.substr(std::strlen(region_prefix)), &region,
+                           &field) || region >= fridge::kNumRegions ||
+        field != "range") {
+      *error = "invalid fridge region key";
+      return false;
+    }
+    // Validate the combined budget after every preset field has been read.
+    return ParseFridgeSize(value, 1, fridge::kRegionCapacity,
+                           "fridge region range", &config->regions[region].range,
+                           error);
   }
 
   constexpr const char* head_prefix = "fridge_head_";
@@ -817,25 +855,35 @@ std::vector<FridgeLfoTracePoint> CollectFridgeLfoTrace(
 }
 
 bool GetFridgeLfoForChart(const Options& options,
-                          const fridge::config::LFO** lfo) {
+                          fridge::config::LFO* lfo) {
   const size_t lfo_idx = options.fridge_lfo_chart_index;
   if (lfo_idx >= fridge::kNumLfos) {
     std::cerr << "invalid --fridge-lfo-index: " << lfo_idx << "\n";
     return false;
   }
 
-  *lfo = &options.params.fridge_config.lfos[lfo_idx];
+  const auto& config = options.params.fridge_config;
+  *lfo = config.lfos[lfo_idx];
+  if (config.routing == fridge::config::Routing::kPairedRegions) {
+    lfo->range = config.regions[config.heads[lfo_idx].region].range;
+    lfo->targets = {};
+    lfo->targets[0] = fridge::config::Target{
+        .object = fridge::config::TargetObject::kHead,
+        .parameter = fridge::config::TargetParameter::kPosition,
+        .object_idx = static_cast<uint8_t>(lfo_idx),
+    };
+  }
   return true;
 }
 
 bool PrintFridgeLfoCsv(const Options& options) {
-  const fridge::config::LFO* lfo = nullptr;
+  fridge::config::LFO lfo;
   if (!GetFridgeLfoForChart(options, &lfo)) {
     return false;
   }
 
   const std::vector<FridgeLfoTracePoint> points = CollectFridgeLfoTrace(
-      *lfo, options.fridge_lfo_chart_duration, options.fridge_lfo_chart_points);
+      lfo, options.fridge_lfo_chart_duration, options.fridge_lfo_chart_points);
 
   std::cout << "time,value\n";
   for (const FridgeLfoTracePoint& point : points) {
@@ -847,7 +895,7 @@ bool PrintFridgeLfoCsv(const Options& options) {
 }
 
 bool PrintFridgeLfoChart(const Options& options) {
-  const fridge::config::LFO* lfo = nullptr;
+  fridge::config::LFO lfo;
   if (!GetFridgeLfoForChart(options, &lfo)) {
     return false;
   }
@@ -855,9 +903,9 @@ bool PrintFridgeLfoChart(const Options& options) {
   const size_t width = std::max<size_t>(2, options.fridge_lfo_chart_width);
   const size_t height = std::max<size_t>(2, options.fridge_lfo_chart_height);
   const uint32_t duration = options.fridge_lfo_chart_duration;
-  const float max_value = std::max(1.0f, static_cast<float>(lfo->range));
+  const float max_value = std::max(1.0f, static_cast<float>(lfo.range));
   const std::vector<FridgeLfoTracePoint> points =
-      CollectFridgeLfoTrace(*lfo, duration, width);
+      CollectFridgeLfoTrace(lfo, duration, width);
 
   std::vector<std::string> grid(height, std::string(width, ' '));
 
@@ -873,14 +921,14 @@ bool PrintFridgeLfoChart(const Options& options) {
   }
 
   std::cout << "fridge LFO " << options.fridge_lfo_chart_index
-            << " range=" << lfo->range << " duration=" << duration << " samples"
+            << " range=" << lfo.range << " duration=" << duration << " samples"
             << " width=" << width << " seed=1234\n";
   std::cout << "targets:";
   bool has_target = false;
-  for (const auto& target : lfo->targets) {
+  for (const auto& target : lfo.targets) {
     if (target.has_value()) {
       std::cout << " " << FridgeTargetObjectName(target->object) << "."
-                << target->object_idx << "."
+                << static_cast<unsigned>(target->object_idx) << "."
                 << FridgeTargetParameterName(target->parameter);
       has_target = true;
     }
@@ -1100,7 +1148,7 @@ void PrintUsage(const char* argv0) {
       << " --fridge-lfo-chart-width N"
       << " --fridge-lfo-chart-height N\n"
       << "  fridge preset keys: fridge_dry, fridge_wet,"
-      << " fridge_head_N_*, fridge_lfo_N_*\n";
+      << " fridge_head_N_*, fridge_lfo_N_*, fridge_region_N_range, fridge_routing\n";
 }
 
 ParseResult ParseArgs(int argc, char** argv) {
@@ -1347,6 +1395,11 @@ ParseResult ParseArgs(int argc, char** argv) {
   if (!options.play && !options.output_path.has_value() &&
       !options.fridge_lfo_chart) {
     std::cerr << "nothing to do: enable playback or provide --output\n";
+    return result;
+  }
+
+  if (!fridge::config::RegionsFit(options.params.fridge_config.regions)) {
+    std::cerr << "fridge regions exceed the shared memory budget\n";
     return result;
   }
 

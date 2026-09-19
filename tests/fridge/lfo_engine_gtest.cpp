@@ -223,3 +223,39 @@ TEST(FridgeLFOTest, TickWithEventsReportsTeleportTransition) {
   EXPECT_TRUE(result.transition->teleported);
   EXPECT_NE(result.transition->old_value, result.transition->new_value);
 }
+
+TEST(FridgeLFOTest, PhasePreservingRangeChangeKeepsMotionAndGrainState) {
+  LFOEngine engine(DeterministicLfo(100, 50), 1234);
+  engine.Reset(80, Direction::kBackwards);
+  engine.Tick(Samples(10));
+  auto params = engine.params();
+  params.range = 200;
+  engine.SetParams(params, /*preserve_phase=*/true);
+  EXPECT_FLOAT_EQ(engine.value(), 140);
+  EXPECT_EQ(engine.direction(), Direction::kBackwards);
+  EXPECT_FLOAT_EQ(engine.speed(), 1);
+  EXPECT_FLOAT_EQ(engine.grain_time_remaining(), 40);
+  EXPECT_FLOAT_EQ(engine.Tick(Samples(1)), 139);
+}
+
+TEST(FridgeLFOTest, PhaseResizeDoesNotConsumeRandomness) {
+  LFO config = DeterministicLfo(100, 10);
+  config.min_grain_size = 2;
+  config.reverse_chance = 0.5f;
+  config.pitch_shift_chance = 0.5f;
+  config.low_octave_chance = 0.5f;
+  config.high_octave_chance = 0.5f;
+  LFOEngine original(config, 1234);
+  LFOEngine resized(config, 1234);
+  auto params = resized.params();
+  params.range = 200;
+  resized.SetParams(params, /*preserve_phase=*/true);
+  for (int i = 0; i < 100; ++i) {
+    original.Tick(Samples(1));
+    resized.Tick(Samples(1));
+    EXPECT_EQ(original.direction(), resized.direction());
+    EXPECT_EQ(original.speed(), resized.speed());
+    EXPECT_EQ(original.grain_size(), resized.grain_size());
+    EXPECT_EQ(original.grain_time_remaining(), resized.grain_time_remaining());
+  }
+}

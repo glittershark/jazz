@@ -10,6 +10,7 @@
 #include "libjazz/slab.hpp"
 #include "libjazz/stereo_sample.hpp"
 #include "mod.hpp"
+#include "regions.hpp"
 
 namespace fridge::sound {
 namespace {
@@ -254,6 +255,7 @@ class Sound {
   std::array<IndicesToUpdate*, kFadeTime> indices_to_update_{};
   std::array<BufferValue, kBufferLen> left_buffer_;
   std::array<BufferValue, kBufferLen> right_buffer_;
+  regions::Memory regions_;
 
   /** Perform pre-tick housekeeping */
   void PreHousekeeping(size_t clock_time);
@@ -281,7 +283,8 @@ class Sound {
    * */
   void Erase(size_t position, StereoSample amount);
 
-  StereoSample ApplyHead(const fridge::config::Head& head, StereoSample sample);
+  StereoSample ApplyHead(const fridge::config::Head& head, StereoSample sample,
+                         bool use_regions);
 
  public:
   /**

@@ -3,6 +3,7 @@ jazz_add_firmware(fridge SOURCES
   pwm.cpp
   io.cpp
   mod.cpp
+  regions.cpp
   sound.cpp
   ui.cpp
   value_display.cpp
@@ -11,6 +12,12 @@ jazz_add_firmware(fridge SOURCES
   engine.cpp
   config.cpp
 )
+
+if(CMAKE_CROSSCOMPILING)
+  # The panel runs at control rate. Keep its template expansions compact so
+  # the audio engine and general routing still fit in the Seed's 128 KB flash.
+  set_source_files_properties(ui.cpp PROPERTIES COMPILE_OPTIONS "-Os")
+endif()
 
 if(NOT CMAKE_CROSSCOMPILING AND TARGET fridge)
   # color.hpp pulls in rapidcheck generators for the host/test build

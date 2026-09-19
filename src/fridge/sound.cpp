@@ -1,5 +1,7 @@
 #include "sound.hpp"
 
+#include <memory>
+
 #include "config.hpp"
 #include "constants.hpp"
 #include "libjazz/stereo_sample.hpp"
@@ -263,12 +265,31 @@ void Sound::Erase(size_t position, StereoSample amount) {
 }
 
 StereoSample Sound::ApplyHead(const fridge::config::Head& head,
-                              StereoSample sample) {
+                              StereoSample sample, bool use_regions) {
   auto wet_signal = StereoSample::Zero();
+  if (head.read_amount <= 0.0f && head.write_amount <= 0.0f &&
+      head.erase_amount >= 1.0f) {
+    return wet_signal;
+  }
 
   // Wrap once here so a position past the end of the tape can never index
   // out of the buffer.
   size_t position = head.position % kBufferLen;
+  if (use_regions) {
+    if (head.region >= kNumRegions) {
+      return wet_signal;
+    }
+    const auto address = regions_.Resolve(head.region, head.position);
+    position = address.index;
+    if (address.fresh) {
+      // Clear only samples touched by a head. Destruction also releases any
+      // pending writes/erases belonging to this page's previous owner.
+      std::destroy_at(&left_buffer_[position]);
+      std::destroy_at(&right_buffer_[position]);
+      std::construct_at(&left_buffer_[position]);
+      std::construct_at(&right_buffer_[position]);
+    }
+  }
 
   if (head.read_amount > 0.f) {
     auto value = Read(position);
@@ -290,10 +311,13 @@ StereoSample Sound::ProcessSample(const fridge::mod::Frame& frame,
                                   StereoSample sample) {
   PreHousekeeping(global_clock_);
 
+  const bool valid_regions =
+      frame.regions == nullptr || regions_.SetRegions(*frame.regions);
+
   auto wet_signal = StereoSample::Zero();
 
-  for (size_t i = 0; i < frame.head_count; ++i) {
-    wet_signal += ApplyHead(frame.heads[i], sample);
+  for (size_t i = 0; valid_regions && i < frame.head_count; ++i) {
+    wet_signal += ApplyHead(frame.heads[i], sample, frame.regions != nullptr);
   }
 
   global_clock_ = (global_clock_ + 1) % global_clock_max_;

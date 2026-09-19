@@ -1,6 +1,8 @@
 add_library(jazz-console-fridge STATIC
   ../fridge/mod.cpp
   ../fridge/sound.cpp
+  ../fridge/regions.cpp
+  ../fridge/config.cpp
 )
 target_link_libraries(jazz-console-fridge PUBLIC jazz::libjazz)
 target_include_directories(jazz-console-fridge PUBLIC

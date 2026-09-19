@@ -35,6 +35,7 @@ struct Feedback {
 // the config explicitly turns on touch the tape.
 struct Head {
   size_t position = 0;
+  uint8_t region = 0;
   float write_amount = 0.0f;
   float read_amount = 0.0f;
   float erase_amount = 1.0f;
@@ -116,14 +117,37 @@ struct LFO {
   ToggleResult ToggleTarget(const Target& target);
 };
 
+struct Region {
+  size_t range = kSampleRateHz;
+
+  bool operator==(const Region& rhs) const = default;
+};
+
+// The engine and target lists remain available independently of the panel's
+// current fixed-pair workflow.
+enum class Routing { kPairedRegions, kAssignable };
+
 struct Config {
   std::array<Head, kNumHeads> heads{};
   std::array<LFO, kNumLfos> lfos{};
+  std::array<Region, kNumRegions> regions{};
+  Routing routing = Routing::kPairedRegions;
   float dry = 1.0f;
   float wet = 1.0f;
 
   bool operator==(const Config& rhs) const = default;
+
+  bool AssignRegion(size_t head, size_t region);
+  bool ResizeRegion(size_t region, size_t range);
+
+ private:
+  bool CanAssignRegion(size_t head, size_t region) const;
+  bool CanResizeRegion(size_t region, size_t range) const;
 };
+
+// ----- Validation
+
+bool RegionsFit(const std::array<Region, kNumRegions>& regions);
 
 /**
  * The one live copy of the config, plus whether the audio engine has caught up

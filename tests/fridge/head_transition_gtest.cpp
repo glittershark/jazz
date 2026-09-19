@@ -16,6 +16,7 @@ namespace {
  * grain boundary (every `grain_size` samples). */
 Config ReversingHeadConfig(size_t grain_size) {
   Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.heads[0].position = 10;
   config.heads[0].read_amount = 1.0f;
   config.heads[0].write_amount = 0.5f;
@@ -34,6 +35,7 @@ Config ReversingHeadConfig(size_t grain_size) {
 
 TEST(FridgeHeadFadeTest, StaticConfigProducesOneContributionPerHead) {
   Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.heads[0].position = 44;
   config.heads[0].read_amount = 0.5f;
 

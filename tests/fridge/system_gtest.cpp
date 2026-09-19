@@ -25,6 +25,7 @@ LFO DeterministicLfo(size_t range = 10, size_t grain_size = 4) {
 
 TEST(FridgeLFOSystemTest, ResetStartsAtStaticKnobPositions) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.heads[0].position = 12;
   config.heads[0].write_amount = 0.25f;
   config.heads[0].feedback.amount = 0.75f;
@@ -49,6 +50,7 @@ TEST(FridgeLFOSystemTest, ResetStartsAtStaticKnobPositions) {
 
 TEST(FridgeLFOSystemTest, ResetAndUpdateReturnStableConfigReference) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.lfos[0] = DeterministicLfo();
   config.lfos[0].targets[0] = Target{.object = TargetObject::kMixer,
                                      .parameter = TargetParameter::kDry};
@@ -64,6 +66,7 @@ TEST(FridgeLFOSystemTest, ResetAndUpdateReturnStableConfigReference) {
 
 TEST(FridgeLFOSystemTest, UpdateCreatesVirtualHeadKnobPositions) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.heads[0].write_amount = 0.25f;
   config.lfos[0] = DeterministicLfo();
   config.lfos[0].targets[0] = Target{.object = TargetObject::kHead,
@@ -84,6 +87,7 @@ TEST(FridgeLFOSystemTest, UpdateCreatesVirtualHeadKnobPositions) {
 
 TEST(FridgeLFOSystemTest, LfoCanModulateMixerKnobs) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.dry = 0.2f;
   config.wet = 0.4f;
   config.lfos[0] = DeterministicLfo();
@@ -102,6 +106,7 @@ TEST(FridgeLFOSystemTest, LfoCanModulateMixerKnobs) {
 
 TEST(FridgeLFOSystemTest, LfoCanModulateHeadPan) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.heads[0].pan = Pan::Left(1.0f);
   config.lfos[0] = DeterministicLfo();
   config.lfos[0].targets[0] = Target{.object = TargetObject::kHead,
@@ -120,6 +125,7 @@ TEST(FridgeLFOSystemTest, LfoCanModulateHeadPan) {
 
 TEST(FridgeLFOSystemTest, LfoModulatesAnotherLfoOnTheNextTick) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.dry = 0.0f;
   config.lfos[0] = DeterministicLfo(10, 4);
   config.lfos[0].targets[0] =
@@ -149,6 +155,7 @@ TEST(FridgeLFOSystemTest, LfoModulatesAnotherLfoOnTheNextTick) {
 
 TEST(FridgeLFOSystemTest, ResetRestoresStaticVirtualState) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.heads[0].position = 9;
   config.lfos[0] = DeterministicLfo();
   config.lfos[0].targets[0] = Target{.object = TargetObject::kHead,
@@ -168,6 +175,7 @@ TEST(FridgeLFOSystemTest, ResetRestoresStaticVirtualState) {
 
 TEST(FridgeLFOSystemTest, InvalidTargetsAreIgnored) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.heads[0].write_amount = 0.25f;
   config.lfos[0] = DeterministicLfo();
   config.lfos[0].targets[0] = Target{.object = TargetObject::kHead,
@@ -186,6 +194,7 @@ TEST(FridgeLFOSystemTest, InvalidTargetsAreIgnored) {
 
 TEST(FridgeLFOSystemTest, ModulatedLfoRangeAffectsNextTick) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.dry = 0.0f;
   config.lfos[0] = DeterministicLfo(10, 4);
   config.lfos[0].targets[0] = Target{.object = TargetObject::kLFO,
@@ -208,6 +217,7 @@ TEST(FridgeLFOSystemTest, ModulatedLfoRangeAffectsNextTick) {
 
 TEST(FridgeLFOSystemTest, NonPositiveDtReturnsCurrentVirtualConfig) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.lfos[0] = DeterministicLfo();
   config.lfos[0].targets[0] = Target{.object = TargetObject::kMixer,
                                      .parameter = TargetParameter::kDry};
@@ -223,6 +233,7 @@ TEST(FridgeLFOSystemTest, NonPositiveDtReturnsCurrentVirtualConfig) {
 
 TEST(FridgeLFOSystemTest, RootConfigChangesRebaseTheCurrentVirtualConfig) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.dry = 0.25f;
   config.lfos[0] = DeterministicLfo();
   config.lfos[0].targets[0] = Target{.object = TargetObject::kMixer,
@@ -244,6 +255,7 @@ TEST(FridgeLFOSystemTest, RootConfigChangesRebaseTheCurrentVirtualConfig) {
 
 TEST(FridgeLFOSystemTest, UpdateWithoutResetAutoInitializesFromRootConfig) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.heads[0].read_amount = 0.5f;
   config.lfos[0] = DeterministicLfo();
   config.lfos[0].targets[0] = Target{.object = TargetObject::kHead,
@@ -259,6 +271,7 @@ TEST(FridgeLFOSystemTest, UpdateWithoutResetAutoInitializesFromRootConfig) {
 
 TEST(FridgeLFOSystemTest, ResetSanitizesNonFiniteTargetedFloatValues) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.dry = std::numeric_limits<float>::infinity();
   config.heads[0].feedback.amount = std::numeric_limits<float>::quiet_NaN();
   config.lfos[3].teleport_chance = std::numeric_limits<float>::infinity();
@@ -288,6 +301,7 @@ TEST(FridgeLFOSystemTest, ResetSanitizesNonFiniteTargetedFloatValues) {
 
 TEST(FridgeLFOSystemTest, UpdateClampsNonFiniteProbabilityInputsForEngines) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.lfos[0] = DeterministicLfo();
 
   Modulator system(1234);
@@ -310,6 +324,7 @@ TEST(FridgeLFOSystemTest, UpdateClampsNonFiniteProbabilityInputsForEngines) {
 
 TEST(FridgeLFOSystemTest, LfoCanModulateRemainingHeadTargets) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.heads[0].read_amount = 0.25f;
   config.heads[1].erase_amount = 0.5f;
   config.heads[2].feedback.amount = 0.75f;
@@ -339,6 +354,7 @@ TEST(FridgeLFOSystemTest, LfoCanModulateRemainingHeadTargets) {
 
 TEST(FridgeLFOSystemTest, LfoCanModulateRemainingLfoTargets) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.lfos[7].max_grain_size = 2;
   config.lfos[7].min_grain_size = 3;
   config.lfos[7].reverse_chance = 0.25f;
@@ -395,6 +411,7 @@ TEST(FridgeLFOSystemTest, LfoCanModulateRemainingLfoTargets) {
 
 TEST(FridgeLFOSystemTest, UnsupportedAndInvalidTargetsAreIgnored) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.dry = 0.3f;
   config.heads[0].write_amount = 0.4f;
 
@@ -426,6 +443,7 @@ TEST(FridgeLFOSystemTest, UnsupportedAndInvalidTargetsAreIgnored) {
 
 TEST(FridgeLFOSystemTest, HeadPositionReverseCreatesTransitionEvent) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.heads[0].position = 10;
   config.lfos[0] = LFO{.range = 20,
                        .max_grain_size = 1,
@@ -449,6 +467,7 @@ TEST(FridgeLFOSystemTest, HeadPositionReverseCreatesTransitionEvent) {
 
 TEST(FridgeLFOSystemTest, NonHeadPositionLfoTransitionIsNotRecorded) {
   fridge::config::Config config;
+  config.routing = fridge::config::Routing::kAssignable;
   config.lfos[0] = LFO{.range = 20,
                        .max_grain_size = 1,
                        .min_grain_size = 1,

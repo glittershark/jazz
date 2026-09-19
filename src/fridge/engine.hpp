@@ -58,7 +58,6 @@ struct HeadKnobs {
 };
 
 struct LfoKnobs {
-  io::PushbuttonQuadratureEncoder range;
   io::PushbuttonQuadratureEncoder max_grain_size;
   io::PushbuttonQuadratureEncoder min_grain_size;
   io::PushbuttonQuadratureEncoder reverse_chance;
@@ -85,8 +84,9 @@ class Engine {
   io::PushbuttonQuadratureEncoder wet_;
   HeadKnobs head_;
   LfoKnobs lfo_;
+  io::PushbuttonQuadratureEncoder range_;
   std::array<io::Button, kNumHeads> head_select_;
-  std::array<io::Button, kNumLfos> lfo_select_;
+  std::array<io::Button, kNumRegions> region_select_;
 
   // config_ and leds_ must both be declared before ui_: C++ initializes
   // members in declaration order, and the UI constructor reads the config and

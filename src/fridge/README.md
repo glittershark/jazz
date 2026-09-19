@@ -1,339 +1,133 @@
 # Fridge
 
-`fridge` is a multi-head tape/freezer buffer. Each head points at one sample
-position in a long circular-ish audio buffer, can read from that position into
-the wet signal, can write the current input sample into that position, and can
-erase that position over time.
+Fridge has 10 heads, 10 independent granular LFOs, and 6 shared regions. Each
+region is its own circular stereo buffer. All six draw memory from one pool
+of approximately three minutes at 44.1 kHz.
+
+## Panel
+
+The first 10 selection buttons select head/LFO pairs. The remaining 6 assign
+the selected pair to a region. Selecting another head loads that head's LFO
+settings and shows its current region; it does not change the assignment.
+
+The physical order follows the existing button banks: SW0 channels 0–7 are
+pairs 0–7, SW1 channels 0–1 are pairs 8–9, and SW1 channels 2–7 are regions 0–5.
+The corresponding LEDs follow the same mapping.
+
+- **Position:** one encoder revolution sweeps the selected head around its
+  region. It wraps in either direction and offsets the ongoing LFO motion.
+- **Range:** changes the size of the selected head's region. Every head
+  assigned to that region uses the new size. It does not edit LFO parameters.
+- **Region buttons:** preserve the moving head's percentage through its
+  region. A head 35% through a 100-sample region moves to sample 70 in a
+  200-sample region. Its LFO keeps its direction, speed, grain timing, and
+  random sequence.
+- **Head controls:** write, read, erase, feedback, and pan remain per head.
+- **LFO controls:** grain sizes and reverse, teleport, pitch shift, and octave
+  probabilities remain independent for each pair.
+- **Dry/wet:** global mixer gains.
+
+Changing a region's range also preserves the relative positions of all its
+heads. Playback speed is unchanged, so a larger region takes longer to
+traverse. Position edits and region changes use the existing short head fades.
+The old and new contributions retain their own region assignments during a
+reassignment fade.
+
+On startup, each region is one second long. Hardware heads start inert and
+are distributed across the six regions in order, repeating for heads 6–9.
+Host configs assign heads to region 0 unless the preset says otherwise;
+the console demo default makes region 0 24000 samples long. A region's minimum range is one sample.
+
+## Region memory
+
+Regions grow and shrink independently. Resizing one does not move or overwrite
+recordings in another. The retained prefix survives a resize; space removed
+by shrinking is discarded, and newly added space starts silent.
+
+`regions::Memory` maps local positions onto 1024-sample pages in a fixed stereo
+sample pool. Lengths remain exact in samples; each region's memory allocation
+is rounded up to whole pages. `config::RegionsFit` checks the total page budget
+before accepting a change. No heap allocation or copying of recorded audio is
+needed to resize. A validity bitmap clears newly used samples lazily, including
+old pending writes and erases, so recycled memory cannot leak another region's
+audio. This bookkeeping and sample storage fit in the Seed's 64 MiB SDRAM.
+
+If a Range change would exceed the budget, the entire requested change is
+rejected. The knob retains its old value and flashes red in 100 ms intervals
+for 600 ms. Further rejected turns restart the flash. Turning back down frees
+space for other regions. Host presets that exceed the combined budget fail
+validation before processing audio.
+
+## LFO and routing boundaries
+
+`LFOEngine` only consumes scalar `LfoParams` and produces values and transition
+events. It has no region, head, button, or assignment logic. Its range can be
+changed while preserving relative phase without resetting the grain or RNG.
+
+`Modulator` resolves routing:
+
+- `config::Routing::kPairedRegions` is the default. LFO N drives head N's local
+  position, using that head's assigned region range. Stored generic targets
+  and the LFO config's standalone range are retained but inactive.
+- `config::Routing::kAssignable` retains the original target-list behavior:
+  LFOs can target heads, other LFOs, and mixer parameters. Positions address
+  the original shared tape in this mode. This path remains covered by the
+  general-routing tests so flexible assignment can be brought back later.
+
+The current hardware panel exposes fixed pairing. Holding buttons or pressing
+encoder switches no longer enters target assignment.
+
+The audio path is `Modulator::TickSample()` → `Frame` → `Sound::ProcessSample()`
+on both firmware and host. Region-backed frames contain local sample positions;
+`Sound` resolves their physical storage. A frame borrows its region definitions
+from its modulator and must be consumed before the next config update.
+
+## Signal and motion controls
+
+For each head, reads contribute stored audio times `read_amount` to the wet
+mix. Writes add input times `write_amount` to the region. Erase multiplies the
+stored audio by `erase_amount`: **1 means no erasure; 0 clears it**. Writes and
+erases fade over `kFadeTime` samples. Pan applies to reads, writes, and erase
+strength. The output is `input * dry + sum(head reads) * wet`; heads are not
+normalized by count. Feedback is retained in config and UI but is not yet
+applied by `Sound`.
+
+An LFO advances in samples at unity speed by default, wrapping within its
+range. At each grain boundary it can reverse, teleport to a random position,
+and choose a new speed. Grain length is sampled between the minimum and
+maximum grain size. Reverse and teleport probabilities are independent.
+
+If the pitch-shift roll succeeds, low/high octave weights select 0.5× or 2×
+speed. If it fails, or both octave weights are zero, speed is 1×. Range changes
+never scale this playback speed.
+
+## Host presets
 
-The implementation currently has:
-
-- 8 heads
-- 8 LFOs
-- a 6 minute buffer, `BUFFER_LEN = 44100 * 60 * 6`
-- 128 sample fades for pending writes, erases, and head discontinuities
-
-The host console uses presets with keys like `fridge_head_0_position` and
-`fridge_lfo_0_range`. The hardware UI edits one selected head and one selected
-LFO through the same underlying config fields. Selection controls are still a
-TODO in `ui.hpp`, so the firmware defaults to selected head 0 and selected LFO 0
-unless code changes those indices.
-
-The host processor applies the LFO transform and the head transition mixer
-before audio processing. The firmware path currently calls the transform from
-`Engine::Tick`, but the audio callback still passes the raw `config` directly
-to `Sound`, so LFO modulation is effectively a host-console behavior until the
-firmware path feeds the transformed config or transition frame into audio.
-
-## Signal Model
-
-For each input sample `x[n]`, every active head contributes to the wet signal:
-
-```text
-wet_head = read(buffer[position]) * read_amount
-```
-
-Then the head may schedule two buffer updates at the same `position`:
-
-```text
-write: buffer[position] += x[n] * write_amount
-erase: buffer[position] *= erase_amount
-```
-
-Writes and erases are not applied as hard instantaneous changes. They are
-scheduled over `FADE_TIME` samples, which is currently 128, so reads see a
-short fade instead of an immediate step.
-
-The final sample is:
-
-```text
-y[n] = x[n] * dry + sum(wet_head) * wet
-```
-
-There is no normalization by head count in `Sound`, so multiple heads can add
-gain quickly.
-
-## Head Knobs
-
-These knobs edit `config::Head` for the selected head.
-
-### Position
-
-`position` is the buffer index the head reads, writes, and erases.
-
-- Host preset key: `fridge_head_N_position`
-- Host range: `0 .. BUFFER_LEN - 1`
-- Hardware UI value type: encoder ticks, clamped to roughly the buffer range
-
-If an LFO targets head position, the LFO delta is added to this static knob
-position. A head position jump caused by LFO reversal or teleport can be
-crossfaded by `HeadTransitionMixer`.
-
-### Write Amount
-
-`write_amount` controls how much of the current input sample is written into
-the buffer at `position`.
-
-- Host preset key: `fridge_head_N_write_amount`
-- Range: `0.0 .. 1.0`
-- Formula: scheduled write value is `input * write_amount`
-
-At `0.0`, the head does not write. At `1.0`, the full input sample is written.
-Because writes add into the stored sample, repeated writes can build up level.
-
-### Read Amount
-
-`read_amount` controls how much of the stored buffer sample is added to the wet
-signal.
-
-- Host preset key: `fridge_head_N_read_amount`
-- Range: `0.0 .. 1.0`
-- Formula: wet contribution is `buffer[position] * read_amount`
-
-At `0.0`, the head is silent. At `1.0`, it contributes the full stored sample
-to the wet bus.
-
-### Erase Amount
-
-`erase_amount` controls how much of the stored value remains after an erase.
-This is easy to misread: it is a residual multiplier, not an "amount erased"
-control.
-
-- Host preset key: `fridge_head_N_erase_amount`
-- Range: `0.0 .. 1.0`
-- Formula: scheduled erase is `buffer[position] *= erase_amount`
-
-At `1.0`, nothing is erased. At `0.5`, the stored value is halved. At `0.0`,
-the stored value is cleared. The sound code only schedules an erase when
-`erase_amount < 1.0`.
-
-### Feedback
-
-The config has a signed feedback-style control split into `kind` and `amount`.
-In the UI model, positive turns become read feedback and negative turns become
-erase feedback:
-
-```text
-feedback >= 0: kind = read,  amount = feedback
-feedback <  0: kind = erase, amount = -feedback
-```
-
-- Host preset keys: `fridge_head_N_feedback_kind`,
-  `fridge_head_N_feedback_amount`
-- `feedback_kind`: `read` or `erase`
-- `feedback_amount`: `0.0 .. 1.0`
-
-Current implementation note: `feedback` is parsed and can be modulated, but
-`sound.cpp` does not currently use it in the audio path.
-
-## Mixer Knobs
-
-### Dry
-
-`dry` is the linear gain applied to the unprocessed input sample.
-
-- Host preset key: `fridge_dry`
-- Host range: `0.0 .. 4.0`
-- Hardware UI range: `0.0 .. 1.0`
-- Formula: dry contribution is `input * dry`
-
-### Wet
-
-`wet` is the linear gain applied to the summed head output.
-
-- Host preset key: `fridge_wet`
-- Host range: `0.0 .. 4.0`
-- Hardware UI range: `0.0 .. 1.0`
-- Formula: wet contribution is `sum(head outputs) * wet`
-
-## LFO Knobs
-
-Each LFO is a random-grain ramp generator. Its value moves linearly inside
-`0 .. range`, wrapping around the range. At each grain boundary it can reverse,
-teleport, and/or choose a new speed. LFOs do not affect audio by themselves;
-they add their current delta to all configured targets.
-
-The effective modulation is:
-
-```text
-target_value = static_knob_value + (lfo_value - lfo_initial_value)
-```
-
-For example, if a head starts at position `12000` and its LFO moves from `0`
-to `300`, the transformed head position is `12300`.
-
-### Range
-
-`range` is the size of the LFO's wrapped value space.
-
-- Host preset key: `fridge_lfo_N_range`
-- Host range: `0 .. BUFFER_LEN - 1`
-- Hardware UI range: `0 .. 255`
-
-With `range = 0`, the LFO value wraps to `0` and produces no useful motion.
-For position modulation, `range` is measured in samples. For other targets, it
-is still added as a raw delta, so large ranges can push those targets hard into
-their clamps.
-
-### Min Grain Size
-
-`min_grain_size` is the lower bound, in samples/ticks, for the length of each
-LFO grain.
-
-- Host preset key: `fridge_lfo_N_min_grain_size`
-- Host range: `1 .. BUFFER_LEN`
-- Hardware UI range: `0 .. 255`, sanitized to at least `1` in the transform
-
-At the start of each grain, the engine samples an integer grain length from the
-inclusive range between the effective min and max grain sizes.
-
-### Max Grain Size
-
-`max_grain_size` is the upper bound, in samples/ticks, for the length of each
-LFO grain.
-
-- Host preset key: `fridge_lfo_N_max_grain_size`
-- Host range: `1 .. BUFFER_LEN`
-- Hardware UI range: `0 .. 255`, sanitized to at least `1` in the transform
-
-If `min_grain_size` is greater than `max_grain_size`, the implementation still
-builds a valid range by using the smaller value as the lower bound and the
-larger value as the upper bound.
-
-### Reverse Chance
-
-`reverse_chance` is the probability that the LFO flips direction at a grain
-boundary.
-
-- Host preset key: `fridge_lfo_N_reverse_chance`
-- Range: `0.0 .. 1.0`
-
-At `0.0`, the LFO keeps its current direction. At `1.0`, it reverses at every
-grain boundary. A reversal on a head-position target starts a short
-old-motion/new-motion crossfade.
-
-### Teleport Chance
-
-`teleport_chance` is the probability that the LFO jumps to a new random value
-at a grain boundary.
-
-- Host preset key: `fridge_lfo_N_teleport_chance`
-- Range: `0.0 .. 1.0`
-- New value distribution: uniform over `0.0 .. range`
-
-A teleport on a head-position target starts a short crossfade from the old
-motion to the new motion.
-
-### Pitch Shift Chance
-
-`pitch_shift_chance` is the probability that a new grain uses an octave-shifted
-speed instead of normal speed.
-
-- Host preset key: `fridge_lfo_N_pitch_shift_chance`
-- Range: `0.0 .. 1.0`
-
-If this roll fails, speed is `1.0`. If it succeeds, the LFO chooses either
-`0.5` speed or `2.0` speed using the low/high octave weights below.
-
-### Low Octave Chance
-
-`low_octave_chance` is the relative weight for choosing `0.5` speed after a
-successful pitch-shift roll.
-
-- Host preset key: `fridge_lfo_N_low_octave_chance`
-- Range: `0.0 .. 1.0`
-
-This is not rolled independently. Once pitch shift is active:
-
-```text
-P(low octave) = low_octave_chance /
-                (low_octave_chance + high_octave_chance)
-```
-
-If both low and high weights are `0.0`, speed falls back to `1.0`.
-
-### High Octave Chance
-
-`high_octave_chance` is the relative weight for choosing `2.0` speed after a
-successful pitch-shift roll.
-
-- Host preset key: `fridge_lfo_N_high_octave_chance`
-- Range: `0.0 .. 1.0`
-
-Once pitch shift is active:
-
-```text
-P(high octave) = high_octave_chance /
-                 (low_octave_chance + high_octave_chance)
-```
-
-## LFO Targets
-
-Host presets can wire each LFO to one or more targets:
+Indices are zero-based: heads/LFOs 0–9, regions 0–5. Region ranges and head
+positions are measured in samples. Head position is local to its region and
+wraps there. Use `Config::AssignRegion` and `Config::ResizeRegion` for live
+changes that need to preserve relative position.
 
 ```toml
-fridge_lfo_0_target_0_object = "head"
-fridge_lfo_0_target_0_parameter = "position"
-fridge_lfo_0_target_0_index = 0
-```
-
-Objects:
-
-- `head`
-- `lfo`
-- `mixer`
-
-Supported target parameters:
-
-- Head: `position`, `write_amount`, `read_amount`, `erase_amount`,
-  `feedback_amount`
-- LFO: `range`, `max_grain_size`, `min_grain_size`, `reverse_chance`,
-  `teleport_chance`, `pitch_shift_chance`, `low_octave_chance`,
-  `high_octave_chance`
-- Mixer: `dry`, `wet`
-
-Target indices are zero-based. There are 8 heads and 8 LFOs.
-
-## Current Implementation Notes
-
-- `feedback` exists in config/UI/preset parsing, but it is not used by
-  `Sound::ApplyHead`.
-- The host processor applies LFO modulation and head-transition crossfades.
-  The firmware audio callback currently processes the raw config directly.
-- The hardware `feedback` encoder is declared, but `engine.cpp` currently
-  registers the position callback twice instead of registering the feedback
-  callback.
-- The hardware `wet` encoder currently registers the dry callback, so it edits
-  dry instead of wet. Host presets still set `fridge_wet` correctly.
-- Host preset ranges and hardware UI ranges are not identical. In particular,
-  LFO size knobs are limited to `0 .. 255` in the hardware UI type, while host
-  presets can set sample-scale values up to the buffer length.
-
-## Example
-
-`presets/host/fridge_demo.toml` sets head 0 to read, write, and slowly erase
-one moving tap. LFO 0 targets head 0 position, scans over 24000 samples, and
-reverses every 12000 sample grain:
-
-```toml
+fridge_routing = "paired_regions"
+fridge_region_0_range = 24000
+fridge_head_0_region = 0
 fridge_head_0_position = 0
 fridge_head_0_write_amount = 1.0
 fridge_head_0_read_amount = 1.0
 fridge_head_0_erase_amount = 0.0001
-
-fridge_lfo_0_range = 24000
 fridge_lfo_0_min_grain_size = 12000
 fridge_lfo_0_max_grain_size = 12000
 fridge_lfo_0_reverse_chance = 1.0
-
-fridge_lfo_0_target_0_object = "head"
-fridge_lfo_0_target_0_parameter = "position"
-fridge_lfo_0_target_0_index = 0
 ```
 
-To render it through the host CLI:
+The complete example is `presets/host/fridge_demo.toml`:
 
-```shell
+```sh
 ./build-test/src/console/jazz-console input.mp3 \
-  --preset presets/host/fridge_demo.toml \
-  --output fridge_demo.mp3
+  --preset presets/host/fridge_demo.toml --output fridge_demo.mp3
 ```
+
+LFO charts also resolve the paired region's range. To run an existing preset
+with general target assignment, explicitly set `fridge_routing = "assignable"`;
+its `fridge_lfo_N_range` and `fridge_lfo_N_target_M_*` fields then apply as before.
