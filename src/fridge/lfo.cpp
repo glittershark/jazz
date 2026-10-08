@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 namespace fridge::mod {
 
@@ -79,12 +80,14 @@ bool Rng::Chance(float chance) {
 }
 
 uint32_t Rng::Between(uint32_t lo, uint32_t hi) {
-  return hi > lo ? lo + Next() % (hi - lo + 1) : lo;
+  if (hi <= lo) {
+    return lo;
+  }
+  const uint32_t width = hi - lo + 1;
+  return width == 0 ? Next() : lo + Next() % width;
 }
 
 // ----- LFOEngine
-
-LFOEngine::LFOEngine(const config::LFO& config) : LFOEngine(config, 1) {}
 
 LFOEngine::LFOEngine(const config::LFO& config, uint32_t seed) : rng_(seed) {
   SetConfig(config);
@@ -92,10 +95,12 @@ LFOEngine::LFOEngine(const config::LFO& config, uint32_t seed) : rng_(seed) {
 }
 
 void LFOEngine::SetParams(const LfoParams& params, bool preserve_phase) {
-  if (preserve_phase && params_.range != 0) {
-    value_ *= static_cast<float>(params.range) / params_.range;
+  const auto sanitized = SanitizeParams(params);
+  if (preserve_phase && params_.range != 0 &&
+      params_.range != sanitized.range) {
+    value_ *= static_cast<float>(sanitized.range) / params_.range;
   }
-  params_ = params;
+  params_ = sanitized;
   value_ = Wrap(value_);
 }
 
@@ -132,7 +137,7 @@ void LFOEngine::Reset(float initial_value, Direction direction) {
 }
 
 float LFOEngine::Wrap(float value) const {
-  if (params_.range == 0) {
+  if (params_.range == 0 || !std::isfinite(value)) {
     return 0.0f;
   }
   const float range = static_cast<float>(params_.range);
@@ -236,6 +241,23 @@ float LFOEngine::SampleSpeed() {
   }
 
   return rng_.Chance(high / total) ? 2.0f : 0.5f;
+}
+
+// ----- Validation
+
+LfoParams LFOEngine::SanitizeParams(LfoParams params) {
+  params.range = std::min(params.range, kBufferLen);
+  const size_t max_grain = std::numeric_limits<uint32_t>::max();
+  params.min_grain_size =
+      std::clamp(params.min_grain_size, size_t{1}, max_grain);
+  params.max_grain_size =
+      std::clamp(params.max_grain_size, size_t{1}, max_grain);
+  for (float* chance : {&params.reverse_chance, &params.teleport_chance,
+                        &params.pitch_shift_chance, &params.low_octave_chance,
+                        &params.high_octave_chance}) {
+    *chance = std::isfinite(*chance) ? std::clamp(*chance, 0.0f, 1.0f) : 0.0f;
+  }
+  return params;
 }
 
 }  // namespace fridge::mod

@@ -15,8 +15,6 @@ enum class Direction { kForwards = 1, kBackwards = -1 };
 
 /** xorshift32: 4 bytes of state, a few cycles per draw. */
 class Rng {
-  uint32_t state_;
-
  public:
   explicit Rng(uint32_t seed = 1);
 
@@ -27,6 +25,9 @@ class Rng {
   bool Chance(float chance);
   /** Uniform integer in [lo, hi]. */
   uint32_t Between(uint32_t lo, uint32_t hi);
+
+ private:
+  uint32_t state_;
 };
 
 struct LFOTransition {
@@ -65,8 +66,7 @@ struct LfoParams {
 class LFOEngine {
  public:
   LFOEngine() = default;
-  explicit LFOEngine(const config::LFO& config);
-  LFOEngine(const config::LFO& config, uint32_t seed);
+  explicit LFOEngine(const config::LFO& config, uint32_t seed = 1);
 
   /** Optionally preserve relative progress when the scalar range changes;
    * speed, direction, grain timing, and RNG state remain untouched. */
@@ -102,6 +102,9 @@ class LFOEngine {
   uint32_t SampleGrainSize();
   float SampleSpeed();
   float Wrap(float value) const;
+
+  // ----- Validation
+  static LfoParams SanitizeParams(LfoParams params);
 };
 
 }  // namespace fridge::mod

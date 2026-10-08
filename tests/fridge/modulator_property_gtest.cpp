@@ -1,5 +1,6 @@
 #include <cmath>
 #include <type_traits>
+
 #include "gtest/gtest.h"
 #include "mod.hpp"
 
@@ -16,10 +17,10 @@ TEST(ModulatorPropertyTest, PairedFastPathMatchesEquivalentGeneralRouting) {
     paired.lfos[i].range = paired.regions[0].range;
     paired.lfos[i].min_grain_size = 4096;
     paired.lfos[i].max_grain_size = 4096;
-    paired.lfos[i].targets[0] = config::Target{
-        .object = config::TargetObject::kHead,
-        .parameter = config::TargetParameter::kPosition,
-        .object_idx = static_cast<uint8_t>(i)};
+    paired.lfos[i].targets[0] =
+        config::Target{.object = config::TargetObject::kHead,
+                       .parameter = config::TargetParameter::kPosition,
+                       .object_idx = static_cast<uint8_t>(i)};
   }
   auto assigned = paired;
   assigned.routing = config::Routing::kAssignable;
@@ -64,18 +65,20 @@ TEST(ModulatorPropertyTest, InvalidRoutesAreIgnoredWithoutCorruptingValidOnes) {
   config::Config config;
   config.routing = config::Routing::kAssignable;
   config.lfos[0].range = 100;
-  config.lfos[0].targets[0] = config::Target{
-      .object = config::TargetObject::kHead,
-      .parameter = config::TargetParameter::kPosition, .object_idx = 255};
-  config.lfos[0].targets[1] = config::Target{
-      .object = static_cast<config::TargetObject>(255),
-      .parameter = config::TargetParameter::kPosition};
-  config.lfos[0].targets[2] = config::Target{
-      .object = config::TargetObject::kHead,
-      .parameter = config::TargetParameter::kDry};
-  config.lfos[0].targets[3] = config::Target{
-      .object = config::TargetObject::kHead,
-      .parameter = config::TargetParameter::kPosition, .object_idx = 1};
+  config.lfos[0].targets[0] =
+      config::Target{.object = config::TargetObject::kHead,
+                     .parameter = config::TargetParameter::kPosition,
+                     .object_idx = 255};
+  config.lfos[0].targets[1] =
+      config::Target{.object = static_cast<config::TargetObject>(255),
+                     .parameter = config::TargetParameter::kPosition};
+  config.lfos[0].targets[2] =
+      config::Target{.object = config::TargetObject::kHead,
+                     .parameter = config::TargetParameter::kDry};
+  config.lfos[0].targets[3] =
+      config::Target{.object = config::TargetObject::kHead,
+                     .parameter = config::TargetParameter::kPosition,
+                     .object_idx = 1};
   mod::Modulator modulator;
   const auto& result = modulator.Update(config, Samples(10u));
   EXPECT_EQ(result.heads[0].position, 0);
@@ -90,7 +93,9 @@ TEST(ModulatorPropertyTest, InstancesKeepIndependentFramesAndRandomEvolution) {
     lfo.teleport_chance = 0.7f;
   }
   mod::Modulator a(19), b(19), disturbance(77);
-  a.Reset(config); b.Reset(config); disturbance.Reset(config);
+  a.Reset(config);
+  b.Reset(config);
+  disturbance.Reset(config);
   for (size_t i = 0; i < 1000; ++i) {
     const auto& first = a.TickSample();
     disturbance.TickSample();

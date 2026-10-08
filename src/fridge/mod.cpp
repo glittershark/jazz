@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <bit>
 #include <cmath>
+#include <limits>
 
 #include "regions.hpp"
 
@@ -17,7 +18,9 @@ float DirectionMultiplier(Direction direction) {
 // ----- Modulator
 
 Modulator::Modulator(uint32_t seed, size_t fade_time)
-    : seed_(seed), fade_time_(std::max<size_t>(1, fade_time)) {}
+    : seed_(seed),
+      fade_time_(std::clamp<size_t>(fade_time, 1,
+                                    std::numeric_limits<uint32_t>::max())) {}
 
 // ----- Modulator: control plane
 
@@ -166,6 +169,9 @@ void Modulator::SetConfig(const config::Config& root_config) {
     base_.regions = previous.regions;
     base_.heads = previous.heads;
   }
+  if (base_.routing != previous.routing) {
+    fades_ = {};
+  }
   CompilePatches();
   mod_ = {};
   RecomputeMods();
@@ -177,8 +183,9 @@ void Modulator::SetConfig(const config::Config& root_config) {
       const auto& old_head = previous.heads[i];
       const auto& head = base_.heads[i];
       const size_t old_range = previous.regions[old_head.region].range;
-      if (head.region != old_head.region ||
-          head.position != old_head.position || params.range != old_range) {
+      if (previous.routing == base_.routing &&
+          (head.region != old_head.region ||
+           head.position != old_head.position || params.range != old_range)) {
         BeginHeadFade(
             i,
             engines_[i].speed() * DirectionMultiplier(engines_[i].direction()),
@@ -252,7 +259,8 @@ LfoParams Modulator::EffectiveLfoParams(size_t lfo_idx) const {
   }
 
   const float* mod = &mod_[kLfoParamBase + lfo_idx * kLfoParamCount];
-  params.range = ClampSize(static_cast<float>(base.range) + mod[0], 0);
+  params.range = std::min(ClampSize(static_cast<float>(base.range) + mod[0], 0),
+                          kBufferLen);
   params.max_grain_size =
       ClampSize(static_cast<float>(base.max_grain_size) + mod[1], 1);
   params.min_grain_size =
@@ -495,8 +503,14 @@ size_t Modulator::ClampSize(float value, size_t minimum) {
   if (!std::isfinite(value)) {
     return minimum;
   }
-  return static_cast<size_t>(
-      std::max<float>(static_cast<float>(minimum), std::lround(value)));
+  const size_t maximum = std::numeric_limits<uint32_t>::max();
+  if (value <= static_cast<float>(minimum)) {
+    return minimum;
+  }
+  if (value >= static_cast<float>(maximum)) {
+    return maximum;
+  }
+  return static_cast<size_t>(std::round(value));
 }
 
 config::Config Modulator::SanitizeConfig(const config::Config& root_config) {
@@ -521,9 +535,10 @@ config::Config Modulator::SanitizeConfig(const config::Config& root_config) {
   }
 
   for (config::LFO& lfo : sanitized.lfos) {
-    lfo.range = ClampSize(static_cast<float>(lfo.range), 0);
-    lfo.max_grain_size = ClampSize(static_cast<float>(lfo.max_grain_size), 1);
-    lfo.min_grain_size = ClampSize(static_cast<float>(lfo.min_grain_size), 1);
+    lfo.range = std::min(lfo.range, kBufferLen);
+    const size_t maximum = std::numeric_limits<uint32_t>::max();
+    lfo.max_grain_size = std::clamp(lfo.max_grain_size, size_t{1}, maximum);
+    lfo.min_grain_size = std::clamp(lfo.min_grain_size, size_t{1}, maximum);
     lfo.reverse_chance = ClampChance(lfo.reverse_chance);
     lfo.teleport_chance = ClampChance(lfo.teleport_chance);
     lfo.pitch_shift_chance = ClampChance(lfo.pitch_shift_chance);

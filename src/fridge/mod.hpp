@@ -8,8 +8,8 @@
 
 #include "config.hpp"
 #include "constants.hpp"
-#include "libjazz/units.hpp"
 #include "lfo.hpp"
+#include "libjazz/units.hpp"
 
 /**
  * The modulation system: granular LFOs, the routing of their values onto
@@ -53,6 +53,8 @@ class Modulator {
    * target (newlib has no entropy source), so hosts that want per-run
    * randomness must pass their own seed. */
   explicit Modulator(uint32_t seed = 1, size_t fade_time = kFadeTime);
+  Modulator(const Modulator&) = delete;
+  Modulator& operator=(const Modulator&) = delete;
 
   /** Replace the root config. LFO phase and current modulation offsets are
    * preserved; the new base takes effect on the next sample. */
