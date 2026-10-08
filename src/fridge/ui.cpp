@@ -399,7 +399,7 @@ void TempoButton::Tick(bool state) {
     }
 
     // 2. push the latest timestamp to the end of history
-    history_[history_.size()] = now;
+    history_.back() = now;
 
     // 3. average the delta between each pair of elements in the history
     uint64_t gap_sum = 0;
