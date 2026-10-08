@@ -69,13 +69,15 @@ TEST(MultiSegmentCieInterpTest, MultiSegmentInterpolation) {
   EXPECT_EQ(res, color::XYZ(0, 0, 255));
 
   res = interp(100);
-  EXPECT_EQ(res, color::XYZ(58, 0, 255));
+  EXPECT_NEAR(res.x, 100, 1);
+  EXPECT_EQ(res.y, 0);
+  EXPECT_EQ(res.z, 255);
 
   res = interp(160);
-  EXPECT_EQ(res, color::XYZ(181, 0, 255));
+  EXPECT_NEAR(res.x, 160, 1);
 
   res = interp(220);
-  EXPECT_EQ(res, color::XYZ(213, 0, 255));
+  EXPECT_NEAR(res.x, 220, 1);
 
   res = interp(255);
   EXPECT_EQ(res, color::XYZ(255, 0, 255));
@@ -97,3 +99,30 @@ RC_GTEST_PROP(MultiSegmentCieInterpTest, NoSegmentsIsEquivalentToInterp,
 }
 
 }  // namespace
+
+TEST(MultiSegmentCieInterpTest, AllInputsFollowTheSameLinearRampAcrossSegments) {
+  ui::value_display::MultiSegmentCieInterp<3> interp{
+      .start = color::XYZ(0, 255, 42),
+      .midpoints = {{{.color = color::XYZ(31, 224, 42), .point = 31},
+                     {.color = color::XYZ(150, 105, 42), .point = 150},
+                     {.color = color::XYZ(200, 55, 42), .point = 200}}},
+      .end = color::XYZ(255, 0, 42)};
+  for (int value = 0; value < 256; ++value) {
+    const auto result = interp(value);
+    EXPECT_NEAR(result.x, value, 1) << value;
+    EXPECT_NEAR(result.y, 255 - value, 1) << value;
+    EXPECT_EQ(result.z, 42) << value;
+  }
+}
+
+TEST(MultiSegmentCieInterpTest, ExactBoundariesReturnTheirControlColors) {
+  ui::value_display::MultiSegmentCieInterp<2> interp{
+      .start = color::XYZ(1, 2, 3),
+      .midpoints = {{{.color = color::XYZ(40, 50, 60), .point = 100},
+                     {.color = color::XYZ(70, 80, 90), .point = 200}}},
+      .end = color::XYZ(100, 110, 120)};
+  EXPECT_EQ(interp(0), interp.start);
+  EXPECT_EQ(interp(100), interp.midpoints[0].color);
+  EXPECT_EQ(interp(200), interp.midpoints[1].color);
+  EXPECT_EQ(interp(255), interp.end);
+}

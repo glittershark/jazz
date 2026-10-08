@@ -89,12 +89,9 @@ struct MultiSegmentCieInterp {
       } else if (value == interval_end.point) {
         return interval_end.color;
       } else if (value >= interval_start.point && value <= interval_end.point) {
-        auto scaled = static_cast<uint8_t>(
-            static_cast<float>(value) -
-            static_cast<float>(interval_start.point) /
-                (static_cast<float>(interval_end.point) -
-                 static_cast<float>(interval_start.point)) *
-                255.f);
+        const auto scaled = static_cast<uint8_t>(
+            static_cast<uint16_t>(value - interval_start.point) * 255 /
+            (interval_end.point - interval_start.point));
         return (CieInterp{.start = interval_start.color,
                           .end = interval_end.color})(scaled);
       }
