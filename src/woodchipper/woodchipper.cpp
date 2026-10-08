@@ -18,7 +18,7 @@ using namespace fridge;
 DaisySeed hw;
 
 // written from the scan timer IRQ, read from the main loop
-static volatile int g_bits = 32;
+static volatile int g_bits = 0;
 
 union float_cast {
   float f;
@@ -30,14 +30,18 @@ union float_cast {
 };
 
 float woodchipper(float sample_f) {
-  const float flattened = log2f(sample_f);
+  const int shift = 23;
+
+  const float flattened = roundf(log2f(ldexpf(sample_f, shift)));
+
   union float_cast crushed = {
       .f = flattened,
   };
 
-  crushed.mantissa &= ~((0x1 << g_bits) - 1);
+  // leave g_bits of upper bits in the mantissa
+  crushed.mantissa &= ~(((1 << 23) - 1) >> g_bits);
 
-  return exp2f(crushed.f);
+  return ldexpf(exp2f(crushed.f), -shift);
 }
 
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
