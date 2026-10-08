@@ -1,0 +1,19 @@
+#+title: octaver / can / crushed tomatoes
+
+* rev1 notes [5/8]
+** CANCELLED change pulldowns at I/O (?)
+CLOSED: [2026-09-09 Wed 23:27]
+** DONE make sure switches are facing the right way
+CLOSED: [2026-09-09 Wed 23:21]
+** DONE make sure *knobs* are facing the right way
+CLOSED: [2026-09-09 Wed 23:21]
+** TODO re-do holes for the enclosure with better mates for the boards
+** TODO change knob order
+| vol     | hi cut | pre-gain |
+| dry/wet | lo cut | mult     |
+** TODO change switches
+| stable | diff | int | oct |
+** DONE bomb dropping noise????
+CLOSED: [2026-09-18 Fri 23:43]
+** CANCELLED volume too big!!
+CLOSED: [2026-09-18 Fri 23:43]
