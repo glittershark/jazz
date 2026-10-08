@@ -1,0 +1,3 @@
+# macOS Objective-C runtime class initialization retains 120 bytes at exit.
+# Suppress only this system allocation stack; keep application leaks visible.
+leak:_fetchInitializingClassList
