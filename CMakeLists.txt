@@ -38,3 +38,8 @@ if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
   add_subdirectory(tests)
   add_subdirectory(src/console)
 endif()
+
+option(FRIDGE_BENCHMARKS "Build the Fridge host or Daisy throughput harness" OFF)
+if(FRIDGE_BENCHMARKS)
+  add_subdirectory(benchmarks)
+endif()

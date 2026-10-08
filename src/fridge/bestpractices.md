@@ -21,3 +21,19 @@
   128 KiB. The panel translation unit uses size optimization; audio and motion
   translation units retain the toolchain's speed optimization. Check SDRAM fit
   whenever changing sample storage or region bookkeeping.
+
+- Use unsigned 32-bit sample-clock differences; never compare absolute update
+  timestamps across rollover. Coalesce erases only when deadlines match.
+- Keep stored samples four bytes on both host and target. Do not use inactive
+  union members or pointer-sized tags to encode slab indices. Owning buffer
+  values and modulators with borrowed frames are not copyable.
+- Validate standalone LFO inputs as well as routed inputs: ranges are bounded
+  by the sample pool and grains by uint32_t. Avoid signed lround conversions
+  for values that can exceed the Seed's signed-long range.
+- Callbacks must actually accept their erased void* signature. Cast the context
+  inside the callback, never reinterpret-cast a typed function pointer.
+- Keep unfinished panel/feedback features in place and record them in the
+  README's deferred-functionality list until their behavior is decided.
+- Build the `fridge-tests` target and run the `fridge` CTest label. Benchmark
+  only optimized builds; host reduced-budget p99 checks are regression proxies,
+  while DWT worst-block measurements on a Seed establish hardware headroom.
