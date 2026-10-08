@@ -33,10 +33,8 @@ class Timer {
   std::chrono::microseconds period_;
 
   static void timer_callback_(void* this_) {
-    static_cast<Timer*>(this_)->tick_();
+    static_cast<Timer*>(this_)->callback_();
   }
-
-  void tick_() { callback_(); }
 
  public:
   Timer(const Timer&) = delete;
@@ -70,8 +68,18 @@ struct LfoKnobs {
 class Engine {
  public:
   constexpr const static size_t kMuxes = 8;
-  constexpr const static size_t kHeadKnobs = 5;
-  constexpr const static size_t kLfoKnobs = 8;
+
+  Engine(config::Config initial_config = config::Config{});
+
+  ui::UI& ui() { return ui_; }
+  const ui::UI& ui() const { return ui_; }
+
+  /** Install the live config into the modulator if the UI has touched it since
+   * we last looked. Call from the main loop, never the audio path. */
+  void SyncConfig();
+
+  /** Advance the modulation world one sample; feed the result to Sound. */
+  const mod::Frame& TickSample() { return modulator_.TickSample(); }
 
  private:
   io::mux::MultiGpioInMux<kMuxes> mux_;
@@ -95,19 +103,6 @@ class Engine {
   io::led::Controller leds_;
   ui::UI ui_;
   mod::Modulator modulator_;
-
- public:
-  Engine(config::Config initial_config = config::Config{});
-
-  ui::UI& ui() { return ui_; }
-  const ui::UI& ui() const { return ui_; }
-
-  /** Install the live config into the modulator if the UI has touched it since
-   * we last looked. Call from the main loop, never the audio path. */
-  void SyncConfig();
-
-  /** Advance the modulation world one sample; feed the result to Sound. */
-  const mod::Frame& TickSample() { return modulator_.TickSample(); }
 };
 
 }  // namespace fridge::engine

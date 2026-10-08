@@ -237,7 +237,6 @@ UI::UI(io::led::Controller& led, config::ConfigStore* config)
     daisy::TimerHandle::Config timer_config;
     timer_config.periph = daisy::TimerHandle::Config::Peripheral::TIM_4;
     timer_config.enable_irq = true;
-    timer_config.enable_irq = true;
     timer_.Init(timer_config);
     timer_.SetCallback(
         +[](void* self) { static_cast<UI*>(self)->Tick(); }, this);

@@ -182,6 +182,7 @@ class KnobWithDisplay : public Knob<V> {
   void StopBlinking() { UpdateDisplay(); }
 };
 
+// Planned unbounded knob wrapper; Increment still needs an implementation.
 template <BackingValue V>
 class Infinite {
   V value_;

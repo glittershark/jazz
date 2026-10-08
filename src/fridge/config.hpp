@@ -87,8 +87,6 @@ enum class TargetParameter : uint8_t {
   kWet,
 };
 
-TargetObject object_for_parameter(TargetParameter param);
-
 enum class ToggleResult { kToggledOn, kToggledOff, kNothingHappened };
 
 // Packed to 3 bytes so a full target list stays small; an
@@ -154,9 +152,6 @@ bool RegionsFit(const std::array<Region, kNumRegions>& regions);
  * with it. Written from the mux timer interrupt, read from the main loop.
  */
 class ConfigStore {
-  Config config_;
-  volatile bool dirty_ = false;
-
  public:
   ConfigStore() = default;
   explicit ConfigStore(const Config& config) : config_(config) {}
@@ -170,6 +165,10 @@ class ConfigStore {
 
   bool dirty() const { return dirty_; }
   void MarkClean() { dirty_ = false; }
+
+ private:
+  Config config_;
+  volatile bool dirty_ = false;
 };
 
 }  // namespace fridge::config

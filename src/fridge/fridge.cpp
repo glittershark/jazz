@@ -19,7 +19,6 @@ using jazz::units::Samples;
 
 using namespace fridge;
 using namespace daisy;
-using jazz::units::Samples;
 
 DaisySeed hw;
 

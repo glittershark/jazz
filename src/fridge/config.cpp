@@ -38,33 +38,6 @@ bool Config::ResizeRegion(size_t region, size_t range) {
   return true;
 }
 
-TargetObject object_for_parameter(TargetParameter param) {
-  switch (param) {
-  case TargetParameter::kPosition:
-  case TargetParameter::kWriteAmount:
-  case TargetParameter::kReadAmount:
-  case TargetParameter::kEraseAmount:
-  case TargetParameter::kFeedbackAmount:
-  case TargetParameter::kPan:
-    return TargetObject::kHead;
-  case TargetParameter::kRange:
-  case TargetParameter::kMaxGrainSize:
-  case TargetParameter::kMinGrainSize:
-  case TargetParameter::kReverseChance:
-  case TargetParameter::kTeleportChance:
-  case TargetParameter::kPitchShiftChance:
-  case TargetParameter::kLowOctaveChance:
-  case TargetParameter::kHighOctaveChance:
-    return TargetObject::kLFO;
-  case TargetParameter::kDry:
-  case TargetParameter::kWet:
-    return TargetObject::kMixer;
-    break;
-  default:
-    assert(false);
-  }
-}
-
 ToggleResult LFO::ToggleTarget(const Target& target) {
   // 1. attempt to disable a preexisting target
   size_t i;

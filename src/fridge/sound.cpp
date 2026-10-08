@@ -10,6 +10,10 @@ namespace fridge::sound {
 
 using jazz::audio::StereoSample;
 
+namespace {
+Slab<Update, kUpdateCap> UPDATES;
+}  // namespace
+
 Slab<BufferValue::SampleWithUpdates, kUpdateCap> BufferValue::SAMPLES;
 Slab<IndicesToUpdate, kUpdateCap> IndicesToUpdate::SLAB;
 
@@ -109,9 +113,6 @@ Update** BufferValue::FirstUpdate() {
 void BufferValue::Housekeep() {
   if (isSampleWithUpdates() && asSampleWithUpdates()->first_update == nullptr) {
     auto sample_ = sample();
-    auto sample_with_updates = asSampleWithUpdates();
-    for (auto&& _ : DrainingIterator(&*sample_with_updates)) {
-    }
     SAMPLES.FreePtr(asSampleWithUpdates());
     new (this) BufferValue(sample_);
   }

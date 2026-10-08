@@ -51,8 +51,6 @@ struct Update {
   Iterator end() const { return Iterator(nullptr); }
 };
 
-static Slab<Update, kUpdateCap> UPDATES;
-
 class IndicesToUpdate {
  private:
   size_t index_;
@@ -201,50 +199,7 @@ class BufferValue {
   /** Call before freeing a node that has been unlinked from the list */
   void OnUpdateFreed(Update* freed_update);
 
-  class DrainingIterator {
-    enum { kHead, kUpdate } kind_;
-    union {
-      SampleWithUpdates* head_;
-      Update* update_;
-    };
 
-   public:
-    using difference_type = std::ptrdiff_t;
-    using value_type = IndicesToUpdate;
-
-    DrainingIterator(SampleWithUpdates* head) : kind_(kHead), head_(head) {}
-
-    const Update& operator*() const {
-      if (kind_ == kHead) {
-        return *head_->first_update;
-      } else {
-        return *update_;
-      }
-    }
-
-    void operator++(int) { ++*this; };
-    DrainingIterator& operator++() {
-      if (kind_ == kHead) {
-        auto old = head_;
-        kind_ = kUpdate;
-        update_ = old->first_update;
-        SAMPLES.Free(old);
-      } else {
-        auto old = update_;
-        update_ = old->next_;
-        UPDATES.Free(old);
-      }
-      return *this;
-    };
-
-    bool operator!=(DrainingIterator& other) const {
-      return other.head_ == head_;
-    }
-
-    DrainingIterator begin() const { return *this; }
-    DrainingIterator end() const { return DrainingIterator(nullptr); }
-  };
-  friend DrainingIterator;
 };
 
 class Sound {
