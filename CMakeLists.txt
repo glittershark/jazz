@@ -32,6 +32,7 @@ add_subdirectory(src/high_pass_filter)
 add_subdirectory(src/cursed_low_pass_filter)
 add_subdirectory(src/cursed_high_pass_filter)
 add_subdirectory(src/la_sort)
+add_subdirectory(src/woodchipper)
 
 if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
   enable_testing()
