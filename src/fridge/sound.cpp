@@ -1,6 +1,7 @@
 #include "sound.hpp"
 
 #include <memory>
+#include <cmath>
 
 #include "config.hpp"
 #include "constants.hpp"
@@ -17,6 +18,32 @@ Slab<Update, kUpdateCap> UPDATES;
 Slab<BufferValue::SampleWithUpdates, kUpdateCap> BufferValue::SAMPLES;
 Slab<IndicesToUpdate, kUpdateCap> IndicesToUpdate::SLAB;
 
+BufferValue::BufferValue() = default;
+
+BufferValue::BufferValue(float sample) {
+  setSample(sample);
+}
+
+BufferValue::BufferValue(SlabPtr ptr)
+    : bits_(static_cast<uint32_t>(ptr.AsInt()) | kUpdateTag) {
+  static_assert(kUpdateCap < kUpdateTag);
+}
+
+float BufferValue::sample() {
+  return isSampleWithUpdates() ? asSampleWithUpdates()->sample : asSample();
+}
+
+void BufferValue::setSample(float sample) {
+  if (!std::isfinite(sample)) {
+    sample = 0.0f;
+  }
+  if (isSampleWithUpdates()) {
+    asSampleWithUpdates()->sample = sample;
+  } else {
+    bits_ = std::bit_cast<uint32_t>(std::clamp(sample, -1.0f, 1.0f) + 1.0f);
+  }
+}
+
 BufferValue::~BufferValue() {
   if (isSampleWithUpdates()) {
     auto head = asSampleWithUpdates();
@@ -32,12 +59,17 @@ BufferValue::~BufferValue() {
 
 namespace {
 inline float ComputeEraseFracOffset(float value) {
-  return (kFadeTime * value) / (1 - value);
+  return value >= 1.0f ? 0.0f : (kFadeTime * value) / (1 - value);
 }
 }  // namespace
 
 Update* BufferValue::PushBack(Update&& update) {
+  update.next_ = nullptr;
+  if (!std::isfinite(update.value)) {
+    update.value = update.kind == Update::Kind::kErase ? 1.0f : 0.0f;
+  }
   if (update.kind == Update::Kind::kErase) {
+    update.value = std::clamp(update.value, 0.0f, 1.0f);
     update.erase_frac_offset = ComputeEraseFracOffset(update.value);
   }
 

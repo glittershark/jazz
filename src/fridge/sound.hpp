@@ -3,6 +3,8 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
+#include <cstdint>
 #include <cstddef>
 
 #include "config.hpp"
@@ -134,7 +136,7 @@ class BufferValue {
     float sample;
     Update* first_update;
     Update* last_update;   // tail pointer for O(1) append
-    Update* erase_update;  // pointer to the single pending erase, or nullptr
+    Update* erase_update;  // latest pending erase, or nullptr
 
     SampleWithUpdates(float sample = 0.0f, Update* first_update = nullptr)
         : sample(sample),
@@ -145,50 +147,17 @@ class BufferValue {
   static Slab<SampleWithUpdates, kUpdateCap> SAMPLES;
   using SlabPtr = decltype(SAMPLES)::Ptr<&SAMPLES>;
 
-  union {
-    float float_;
-    SlabPtr ptr_;
-    std::ptrdiff_t pd_;
-  };
-
-  static const size_t INT_TAG = 1ull << (sizeof(void*) * 8 - 1);
-
- protected:
-  SlabPtr asSampleWithUpdates() {
-    assert(isSampleWithUpdates());
-    return SlabPtr::FromInt(pd_ & ~INT_TAG);
-  }
-  float asSample() { return float_ - 1.0f; }
-
- public:
-  BufferValue(SlabPtr ptr) : ptr_(ptr) { pd_ |= INT_TAG; }
-  BufferValue(float sample) : float_(std::clamp(sample, -1.0f, 1.0f) + 1.0) {
-    pd_ &= ~INT_TAG;
-    assert(!isSampleWithUpdates());
-  }
-  BufferValue() : BufferValue(0.0f) {}
-
+  BufferValue();
+  explicit BufferValue(float sample);
+  explicit BufferValue(SlabPtr ptr);
+  BufferValue(const BufferValue&) = delete;
+  BufferValue& operator=(const BufferValue&) = delete;
   ~BufferValue();
 
-  inline bool isSampleWithUpdates() const { return (pd_ & INT_TAG) == INT_TAG; }
-  inline bool isSample() const { return !isSampleWithUpdates(); }
-
-  float sample() {
-    if (isSampleWithUpdates()) {
-      return asSampleWithUpdates()->sample;
-    } else {
-      return asSample();
-    }
-  }
-
-  void setSample(float sample) {
-    if (isSampleWithUpdates()) {
-      asSampleWithUpdates()->sample = sample;
-    } else {
-      float_ = std::clamp(sample, -1.0f, 1.0f) + 1.0f;
-      pd_ &= ~INT_TAG;
-    }
-  }
+  bool isSampleWithUpdates() const { return (bits_ & kUpdateTag) != 0; }
+  bool isSample() const { return !isSampleWithUpdates(); }
+  float sample();
+  void setSample(float sample);
 
   Update* PushBack(Update&& update);
 
@@ -199,7 +168,17 @@ class BufferValue {
   /** Call before freeing a node that has been unlinked from the list */
   void OnUpdateFreed(Update* freed_update);
 
+ private:
+  // Nonnegative floats occupy the lower 31 bits. A tagged slab index fits
+  // in the same 32-bit word on both the host and the Seed, without union UB.
+  static constexpr uint32_t kUpdateTag = 1u << 31;
+  uint32_t bits_ = std::bit_cast<uint32_t>(1.0f);
 
+  SlabPtr asSampleWithUpdates() {
+    assert(isSampleWithUpdates());
+    return SlabPtr::FromInt(bits_ & ~kUpdateTag);
+  }
+  float asSample() const { return std::bit_cast<float>(bits_) - 1.0f; }
 };
 
 class Sound {
