@@ -194,39 +194,39 @@ UI::UI(io::led::Controller& led, config::ConfigStore* config)
   dry_knob_.Set(config_->Read().dry);
   wet_knob_.Set(config_->Read().wet);
 
-  head_knobs_.OnChange(TypedCallback<UI>{
-      .callback = +[](UI* self) { self->WriteHead(); },
+  head_knobs_.OnChange(Callback<>{
+      .callback = +[](void* self) { static_cast<UI*>(self)->WriteHead(); },
       .data = this,
   });
 
-  lfo_knobs_.OnChange(TypedCallback<UI>{
-      .callback = +[](UI* self) { self->WriteLFO(); },
+  lfo_knobs_.OnChange(Callback<>{
+      .callback = +[](void* self) { static_cast<UI*>(self)->WriteLFO(); },
       .data = this,
   });
 
-  head_knobs_.position.OnChange(TypedCallback<UI>{
-      .callback = +[](UI* self) { self->WritePosition(); },
+  head_knobs_.position.OnChange(Callback<>{
+      .callback = +[](void* self) { static_cast<UI*>(self)->WritePosition(); },
       .data = this,
   });
-  range_knob_.OnChange(TypedCallback<UI>{
-      .callback = +[](UI* self) { self->WriteRange(); },
+  range_knob_.OnChange(Callback<>{
+      .callback = +[](void* self) { static_cast<UI*>(self)->WriteRange(); },
       .data = this,
   });
 
-  auto write_mixer = TypedCallback<UI>{
-      .callback = +[](UI* self) { self->WriteMixer(); },
+  auto write_mixer = Callback<>{
+      .callback = +[](void* self) { static_cast<UI*>(self)->WriteMixer(); },
       .data = this,
   };
   dry_knob_.OnChange(write_mixer);
   wet_knob_.OnChange(write_mixer);
 
-  head_select_.OnChange(TypedCallback<UI, uint8_t>{
-      .callback = +[](UI* self, uint8_t head) { self->SelectHead(head); },
+  head_select_.OnChange(Callback<uint8_t>{
+      .callback = +[](void* self, uint8_t head) { static_cast<UI*>(self)->SelectHead(head); },
       .data = this,
   });
 
-  region_select_.OnChange(TypedCallback<UI, uint8_t>{
-      .callback = +[](UI* self, uint8_t region) { self->AssignRegion(region); },
+  region_select_.OnChange(Callback<uint8_t>{
+      .callback = +[](void* self, uint8_t region) { static_cast<UI*>(self)->AssignRegion(region); },
       .data = this,
   });
 

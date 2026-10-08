@@ -67,8 +67,8 @@ class Knob {
   bool enabled_ = true;
   Callback<> on_change_;
 
-  static void callback(Knob* this_, int ticks, float turns) {
-    this_->Increment(ticks, turns);
+  static void callback(void* self, int ticks, float turns) {
+    static_cast<Knob*>(self)->Increment(ticks, turns);
   }
 
  public:
@@ -97,7 +97,7 @@ class Knob {
   Knob(Knob&&) = delete;
   Knob(const Knob&) = delete;
 
-  TypedCallback<Knob, int, float> GetCallback() {
+  Callback<int, float> GetCallback() {
     return {
         .callback = Knob::callback,
         .data = this,
@@ -125,8 +125,8 @@ class Knob {
 
 template <DisplayableBackingValue V, ValueDisplay VD>
 class KnobWithDisplay : public Knob<V> {
-  static void callback(KnobWithDisplay<V, VD>* this_, int ticks, float turns) {
-    this_->Increment(ticks, turns);
+  static void callback(void* self, int ticks, float turns) {
+    static_cast<KnobWithDisplay<V, VD>*>(self)->Increment(ticks, turns);
   }
 
   RgbLedValueDisplay<VD> value_display_;
@@ -142,7 +142,7 @@ class KnobWithDisplay : public Knob<V> {
   KnobWithDisplay(const char* name, RgbLedValueDisplay<VD> value_display)
       : Knob<V>(name), value_display_(value_display) {};
 
-  TypedCallback<KnobWithDisplay<V, VD>, int, float> GetCallback() {
+  Callback<int, float> GetCallback() {
     return {
         .callback = KnobWithDisplay<V, VD>::callback,
         .data = this,
@@ -452,8 +452,8 @@ class FeedbackKnob : public Knob<Feedback> {
   value_display::CieInterp read_display_;
   value_display::CieInterp erase_display_;
 
-  static void callback(FeedbackKnob* this_, int ticks, float turns) {
-    this_->Increment(ticks, turns);
+  static void callback(void* self, int ticks, float turns) {
+    static_cast<FeedbackKnob*>(self)->Increment(ticks, turns);
   }
 
   color::RGB Color() {
@@ -491,7 +491,7 @@ class FeedbackKnob : public Knob<Feedback> {
     rgb_led_.SetColor(Color());
   }
 
-  TypedCallback<FeedbackKnob, int, float> GetCallback() {
+  Callback<int, float> GetCallback() {
     return {
         .callback = FeedbackKnob::callback,
         .data = this,
@@ -570,8 +570,8 @@ class PanKnob : public Knob<Pan> {
   value_display::CieInterp right_display_;
   value_display::CieInterp left_display_;
 
-  static void callback(PanKnob* this_, int ticks, float turns) {
-    this_->Increment(ticks, turns);
+  static void callback(void* self, int ticks, float turns) {
+    static_cast<PanKnob*>(self)->Increment(ticks, turns);
   }
 
   color::RGB Color() {
@@ -605,7 +605,7 @@ class PanKnob : public Knob<Pan> {
     rgb_led_.SetColor(Color());
   }
 
-  TypedCallback<PanKnob, int, float> GetCallback() {
+  Callback<int, float> GetCallback() {
     return {
         .callback = PanKnob::callback,
         .data = this,

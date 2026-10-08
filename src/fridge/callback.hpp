@@ -1,31 +1,20 @@
-#ifndef UTIL_H_
-#define UTIL_H_
+#ifndef FRIDGE_CALLBACK_H_
+#define FRIDGE_CALLBACK_H_
 
-template <typename T, typename... Args>
-struct TypedCallback;
-
+// The erased callback itself must accept void*. Casting a typed function
+// pointer to this signature and calling it is undefined behavior.
 template <typename... Args>
-using Callback = TypedCallback<void, Args...>;
+struct Callback {
+  void (*callback)(void*, Args... args) = nullptr;
+  void* data = nullptr;
 
-template <typename T, typename... Args>
-struct TypedCallback {
-  void (*callback)(T*, Args... args) = nullptr;
-  T* data = nullptr;
-
-  void operator()(Args... args) {
-    if (callback) {
+  void operator()(Args... args) const {
+    if (callback != nullptr) {
       callback(data, args...);
     }
   }
 
-  operator Callback<Args...>() {
-    return Callback<Args...>{
-        .callback = reinterpret_cast<void (*)(void*, Args...)>(callback),
-        .data = static_cast<void*>(data),
-    };
-  }
-
-  operator bool() { return callback != nullptr; }
+  explicit operator bool() const { return callback != nullptr; }
 };
 
-#endif  // UTIL_H_
+#endif
