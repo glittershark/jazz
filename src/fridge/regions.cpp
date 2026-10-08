@@ -26,7 +26,8 @@ size_t WrapPosition(float position, size_t range) {
       }
     }
   }
-  return static_cast<size_t>(std::lround(wrapped)) % range;
+  const size_t rounded = static_cast<size_t>(std::lround(wrapped));
+  return rounded >= range ? 0 : rounded;
 }
 
 Memory::Memory() {
@@ -60,7 +61,8 @@ bool Memory::SetRegions(
 
 Memory::Address Memory::Resolve(uint8_t region, size_t position) {
   assert(initialized_ && region < kNumRegions);
-  const size_t local = position % regions_[region].range;
+  const size_t range = regions_[region].range;
+  const size_t local = position < range ? position : position % range;
   const size_t page = pages_[region][local / kRegionPageSize];
   const size_t offset = local % kRegionPageSize;
   auto& samples = initialized_samples_[page];

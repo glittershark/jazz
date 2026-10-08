@@ -19,68 +19,6 @@ float DirectionMultiplier(Direction direction) {
 Modulator::Modulator(uint32_t seed, size_t fade_time)
     : seed_(seed), fade_time_(std::max<size_t>(1, fade_time)) {}
 
-// ----- Modulator: validation
-
-float Modulator::ClampFinite(float value, float fallback) {
-  return std::isfinite(value) ? value : fallback;
-}
-
-float Modulator::ClampChance(float value) {
-  if (!std::isfinite(value)) {
-    return 0.0f;
-  }
-  return std::clamp(value, 0.0f, 1.0f);
-}
-
-config::Pan Modulator::ClampPan(float value) {
-  return config::Pan(std::clamp(ClampFinite(value), -1.0f, 1.0f));
-}
-
-size_t Modulator::ClampSize(float value, size_t minimum) {
-  if (!std::isfinite(value)) {
-    return minimum;
-  }
-  return static_cast<size_t>(
-      std::max<float>(static_cast<float>(minimum), std::lround(value)));
-}
-
-config::Config Modulator::SanitizeConfig(const config::Config& root_config) {
-  config::Config sanitized = root_config;
-
-  if (!config::RegionsFit(sanitized.regions)) {
-    sanitized.regions = {};
-  }
-
-  for (config::Head& head : sanitized.heads) {
-    if (head.region >= kNumRegions) {
-      head.region = 0;
-    }
-    if (sanitized.routing == config::Routing::kPairedRegions) {
-      head.position %= sanitized.regions[head.region].range;
-    }
-    head.write_amount = ClampFinite(head.write_amount);
-    head.read_amount = ClampFinite(head.read_amount);
-    head.erase_amount = ClampFinite(head.erase_amount);
-    head.feedback.amount = ClampFinite(head.feedback.amount);
-    head.pan = ClampPan(head.pan.pan());
-  }
-
-  for (config::LFO& lfo : sanitized.lfos) {
-    lfo.range = ClampSize(static_cast<float>(lfo.range), 0);
-    lfo.max_grain_size = ClampSize(static_cast<float>(lfo.max_grain_size), 1);
-    lfo.min_grain_size = ClampSize(static_cast<float>(lfo.min_grain_size), 1);
-    lfo.reverse_chance = ClampChance(lfo.reverse_chance);
-    lfo.teleport_chance = ClampChance(lfo.teleport_chance);
-    lfo.pitch_shift_chance = ClampChance(lfo.pitch_shift_chance);
-    lfo.low_octave_chance = ClampChance(lfo.low_octave_chance);
-    lfo.high_octave_chance = ClampChance(lfo.high_octave_chance);
-  }
-
-  sanitized.dry = ClampFinite(sanitized.dry);
-  sanitized.wet = ClampFinite(sanitized.wet);
-  return sanitized;
-}
-
 // ----- Modulator: control plane
 
 std::optional<size_t> Modulator::ParamSlot(const config::Target& target) {
@@ -276,6 +214,12 @@ const config::Config& Modulator::Reset(const config::Config& root_config) {
 // ----- Modulator: audio plane
 
 void Modulator::RecomputeMods() {
+  if (base_.routing == config::Routing::kPairedRegions) {
+    for (size_t i = 0; i < kNumHeads; ++i) {
+      mod_[i * kHeadParamCount] = engines_[i].value() - anchors_[i];
+    }
+    return;
+  }
   for (size_t p = 0; p < patch_count_; ++p) {
     mod_[patches_[p].slot] = 0.0f;
   }
@@ -326,13 +270,16 @@ void Modulator::UpdateEffectiveHead(size_t head_idx) {
   const float* mod = &mod_[head_idx * kHeadParamCount];
   config::Head& head = eff_heads_[head_idx];
 
-  head.position = ClampSize(static_cast<float>(base.position) + mod[0], 0);
-  head.region = base.region;
   if (base_.routing == config::Routing::kPairedRegions) {
+    // Only position is routed in paired mode; all other fields were installed
+    // by SetConfig. Avoid re-sanitizing the same gains and pan every sample.
     head.position =
         regions::WrapPosition(static_cast<float>(base.position) + mod[0],
                               base_.regions[base.region].range);
+    return;
   }
+  head.position = ClampSize(static_cast<float>(base.position) + mod[0], 0);
+  head.region = base.region;
   head.write_amount = ClampFinite(base.write_amount + mod[1]);
   head.read_amount = ClampFinite(base.read_amount + mod[2]);
   head.erase_amount = ClampFinite(base.erase_amount + mod[3]);
@@ -343,6 +290,14 @@ void Modulator::UpdateEffectiveHead(size_t head_idx) {
 
 void Modulator::BeginFades(size_t lfo_idx, const LFOTransition& transition) {
   if (!transition.reversed && !transition.teleported) {
+    return;
+  }
+
+  if (base_.routing == config::Routing::kPairedRegions) {
+    BeginHeadFade(
+        lfo_idx,
+        transition.old_speed * DirectionMultiplier(transition.old_direction),
+        base_.regions[base_.heads[lfo_idx].region].range);
     return;
   }
 
@@ -410,7 +365,7 @@ void Modulator::BuildFrame() {
   for (size_t h = 0; h < kNumHeads; ++h) {
     const Fade& fade = fades_[h];
     if (fade.remaining == 0) {
-      AddHead(eff_heads_[h], 1.0f);
+      frame_.heads[frame_.head_count++] = eff_heads_[h];
       continue;
     }
 
@@ -447,22 +402,15 @@ const Frame& Modulator::TickSample() {
     engines_[i].SetParams(EffectiveLfoParams(i));
   }
 
-  // NB: We always reinitialize this array, and this is never called reentrantly
-  // in a way that matters, so it seems fine to be static (I, aspen have seen
-  // the initialization of this array show up in ad-hoc profiles)
-  static std::array<std::optional<LFOTransition>, kNumLfos> transitions{};
+  // Fade capture only reads last sample's effective heads, so each event can
+  // be consumed immediately without shared scratch storage or a second scan.
   for (size_t i = 0; i < kNumLfos; ++i) {
-    transitions[i] = engines_[i].TickWithEvents(Samples(1u)).transition;
-  }
-
-  RecomputeMods();
-
-  // Fades capture eff_heads_ before this sample's positions land.
-  for (size_t i = 0; i < kNumLfos; ++i) {
-    if (transitions[i].has_value()) {
-      BeginFades(i, *transitions[i]);
+    const auto result = engines_[i].TickWithEvents(Samples(1u));
+    if (result.transition.has_value()) {
+      BeginFades(i, *result.transition);
     }
   }
+  RecomputeMods();
 
   uint32_t heads = modulated_heads_;
   while (heads != 0) {
@@ -524,6 +472,68 @@ const config::Config& Modulator::virtual_config() {
   output_config_.wet = effective_wet();
   output_dirty_ = false;
   return output_config_;
+}
+
+// ----- Modulator: validation
+
+float Modulator::ClampFinite(float value, float fallback) {
+  return std::isfinite(value) ? value : fallback;
+}
+
+float Modulator::ClampChance(float value) {
+  if (!std::isfinite(value)) {
+    return 0.0f;
+  }
+  return std::clamp(value, 0.0f, 1.0f);
+}
+
+config::Pan Modulator::ClampPan(float value) {
+  return config::Pan(std::clamp(ClampFinite(value), -1.0f, 1.0f));
+}
+
+size_t Modulator::ClampSize(float value, size_t minimum) {
+  if (!std::isfinite(value)) {
+    return minimum;
+  }
+  return static_cast<size_t>(
+      std::max<float>(static_cast<float>(minimum), std::lround(value)));
+}
+
+config::Config Modulator::SanitizeConfig(const config::Config& root_config) {
+  config::Config sanitized = root_config;
+
+  if (!config::RegionsFit(sanitized.regions)) {
+    sanitized.regions = {};
+  }
+
+  for (config::Head& head : sanitized.heads) {
+    if (head.region >= kNumRegions) {
+      head.region = 0;
+    }
+    if (sanitized.routing == config::Routing::kPairedRegions) {
+      head.position %= sanitized.regions[head.region].range;
+    }
+    head.write_amount = ClampFinite(head.write_amount);
+    head.read_amount = ClampFinite(head.read_amount);
+    head.erase_amount = ClampFinite(head.erase_amount);
+    head.feedback.amount = ClampFinite(head.feedback.amount);
+    head.pan = ClampPan(head.pan.pan());
+  }
+
+  for (config::LFO& lfo : sanitized.lfos) {
+    lfo.range = ClampSize(static_cast<float>(lfo.range), 0);
+    lfo.max_grain_size = ClampSize(static_cast<float>(lfo.max_grain_size), 1);
+    lfo.min_grain_size = ClampSize(static_cast<float>(lfo.min_grain_size), 1);
+    lfo.reverse_chance = ClampChance(lfo.reverse_chance);
+    lfo.teleport_chance = ClampChance(lfo.teleport_chance);
+    lfo.pitch_shift_chance = ClampChance(lfo.pitch_shift_chance);
+    lfo.low_octave_chance = ClampChance(lfo.low_octave_chance);
+    lfo.high_octave_chance = ClampChance(lfo.high_octave_chance);
+  }
+
+  sanitized.dry = ClampFinite(sanitized.dry);
+  sanitized.wet = ClampFinite(sanitized.wet);
+  return sanitized;
 }
 
 }  // namespace fridge::mod
