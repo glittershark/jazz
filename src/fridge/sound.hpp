@@ -195,6 +195,8 @@ class Sound {
   StereoSample ProcessSample(const mod::Frame& frame, StereoSample sample);
 
  private:
+  // The timing wheel must divide the natural uint32_t clock period.
+  static_assert(std::has_single_bit(kFadeTime));
   uint32_t global_clock_;
 
   std::array<IndicesToUpdate*, kFadeTime> indices_to_update_{};
