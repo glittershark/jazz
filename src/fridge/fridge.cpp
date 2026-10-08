@@ -75,6 +75,8 @@ void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
 
 [[noreturn]] int main() {
   hw.Init();
+  static_assert(kSampleRateHz == 48000);
+  hw.SetAudioSampleRate(SaiHandle::Config::SampleRate::SAI_48KHZ);
   hw.SetAudioBlockSize(kAudioBlockSize.samples());
   hw.StartLog(false);
 

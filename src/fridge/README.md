@@ -2,7 +2,8 @@
 
 Fridge has 10 heads, 10 independent granular LFOs, and 6 shared regions. Each
 region is its own circular stereo buffer. All six draw memory from one pool
-of approximately three minutes at 44.1 kHz.
+of approximately 165 seconds at the firmware’s explicit 48 kHz rate.
+The fixed 7,938,000-sample capacity preserves the existing SDRAM budget.
 
 ## Panel
 

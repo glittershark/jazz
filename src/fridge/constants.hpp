@@ -13,8 +13,8 @@ constexpr const size_t kMaxTargetParams = 8;  // ??
 /** Every (LFO, target) pair can be an active modulation route. */
 constexpr const size_t kMaxPatches = kNumLfos * kMaxTargetParams;
 
-constexpr const size_t kSampleRateHz = 44100;
-constexpr const size_t kBufferLen = kSampleRateHz * 60 * 3; /* 3 minutes */
+constexpr const size_t kSampleRateHz = 48000;
+constexpr const size_t kBufferLen = 7'938'000;  // Fixed SDRAM budget: ~165 s at 48 kHz.
 
 // Regions share this pool in small pages; their audible lengths remain exact.
 constexpr size_t kRegionPageSize = 1024;
