@@ -3,6 +3,7 @@ jazz_add_firmware(fridge SOURCES
   pwm.cpp
   io.cpp
   mod.cpp
+  lfo.cpp
   regions.cpp
   sound.cpp
   ui.cpp

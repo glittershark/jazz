@@ -1,5 +1,6 @@
 add_library(jazz-console-fridge STATIC
   ../fridge/mod.cpp
+  ../fridge/lfo.cpp
   ../fridge/sound.cpp
   ../fridge/regions.cpp
   ../fridge/config.cpp

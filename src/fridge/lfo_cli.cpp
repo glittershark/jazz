@@ -9,7 +9,7 @@
 
 #include "config.hpp"
 #include "libjazz/units.hpp"
-#include "mod.hpp"
+#include "lfo.hpp"
 
 namespace {
 
