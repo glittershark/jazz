@@ -1,7 +1,7 @@
 #include "sound.hpp"
 
-#include <memory>
 #include <cmath>
+#include <memory>
 
 #include "config.hpp"
 #include "constants.hpp"
@@ -16,7 +16,7 @@ Slab<Update, kUpdateCap> UPDATES;
 }  // namespace
 
 Slab<BufferValue::SampleWithUpdates, kUpdateCap> BufferValue::SAMPLES;
-Slab<IndicesToUpdate, kUpdateCap> IndicesToUpdate::SLAB;
+Slab<IndicesToUpdate, kNumHeads * 2 * kFadeTime> IndicesToUpdate::SLAB;
 
 BufferValue::BufferValue() = default;
 
@@ -76,10 +76,10 @@ Update* BufferValue::PushBack(Update&& update) {
   if (isSampleWithUpdates()) {
     auto head = asSampleWithUpdates();
 
-    // For erases, merge into the single pending erase rather than appending.
-    // Multiplying the values is equivalent to applying both erases in sequence,
-    // so the final result is the same.
-    if (update.kind == Update::Kind::kErase && head->erase_update != nullptr) {
+    // Coalesce simultaneous erases only. Later erases must retain their own
+    // deadline so they cannot erase a write that had not matured yet.
+    if (update.kind == Update::Kind::kErase && head->erase_update != nullptr &&
+        head->erase_update->finished_at == update.finished_at) {
       head->erase_update->value *= update.value;
       head->erase_update->erase_frac_offset =
           ComputeEraseFracOffset(head->erase_update->value);
@@ -125,12 +125,9 @@ void BufferValue::OnUpdateFreed(Update* freed_update) {
   }
 
   if (freed_update == head->last_update) {
-    // Freed the tail — scan for the new last node.
-    Update* last = nullptr;
-    for (Update* cur = head->first_update; cur != nullptr; cur = cur->next_) {
-      last = cur;
-    }
-    head->last_update = last;
+    // Housekeeping unlinks from the front in deadline order. If the tail
+    // was removed, the list is empty; no rescan is needed.
+    head->last_update = nullptr;
   }
 }
 
@@ -155,7 +152,7 @@ void BufferValue::Housekeep() {
 Sound::~Sound() {
   for (auto& ptr : indices_to_update_) {
     if (ptr != nullptr) {
-      for (auto&& _ : ptr->drain()) {
+      for (auto&& _ : IndicesToUpdate::drain(ptr)) {
       }
     }
   }
@@ -165,50 +162,29 @@ void Sound::DoUpdate(size_t index) {
   for (auto buffer : {&left_buffer_, &right_buffer_}) {
     auto content = &((*buffer)[index]);
 
-    // Single walk. The list is sorted by finished_at (updates are appended
-    // at the tail with monotonically-increasing global_clock_+FADE_TIME
-    // values; erase merges don't reorder), so once we see a non-ripe update
-    // we're done. Erase-before-write ordering is preserved by deferring the
-    // sample math until the walk completes.
-    Update* ripe_erase = nullptr;
-    float ripe_write_sum = 0.0f;
-    auto have_ripe_writes = false;
-
+    float erase = 1.0f;
+    float write = 0.0f;
+    bool changed = false;
     auto update_ptr = content->FirstUpdate();
     while (update_ptr != nullptr && *update_ptr != nullptr) {
       auto update = *update_ptr;
-      if (update->finished_at > global_clock_) {
+      // Unsigned subtraction handles the 32-bit sample clock rolling over.
+      const uint32_t remaining = update->finished_at - global_clock_;
+      if (remaining != 0 && remaining <= kFadeTime) {
         break;
       }
-      if (update->finished_at == global_clock_) {
-        if (update->kind == Update::Kind::kErase) {
-          ripe_erase = update;
-        } else {
-          ripe_write_sum += update->value;
-          have_ripe_writes = true;
-        }
-        *update_ptr = update->next_;
-        content->OnUpdateFreed(update);
-        // Defer freeing the erase until we've applied its value.
-        if (update->kind == Update::Kind::kWrite) {
-          UPDATES.Free(update);
-        }
-        continue;
+      if (update->kind == Update::Kind::kErase) {
+        erase *= update->value;
+      } else {
+        write += update->value;
       }
-      // finished_at < global_clock_ shouldn't happen (would mean we missed
-      // a tick) — skip defensively.
-      update_ptr = &update->next_;
+      changed = true;
+      *update_ptr = update->next_;
+      content->OnUpdateFreed(update);
+      UPDATES.Free(update);
     }
-
-    if (ripe_erase != nullptr) {
-      float new_sample = content->sample() * ripe_erase->value;
-      if (have_ripe_writes) {
-        new_sample += ripe_write_sum;
-      }
-      content->setSample(new_sample);
-      UPDATES.Free(ripe_erase);
-    } else if (have_ripe_writes) {
-      content->setSample(content->sample() + ripe_write_sum);
+    if (changed) {
+      content->setSample(content->sample() * erase + write);
     }
 
     content->Housekeep();
@@ -223,7 +199,7 @@ void Sound::PreHousekeeping(size_t clock_time) {
     return;
   }
 
-  for (auto&& index : indices_to_update->drain()) {
+  for (auto&& index : IndicesToUpdate::drain(indices_to_update)) {
     DoUpdate(index.index());
   }
 }
@@ -238,8 +214,8 @@ StereoSample Sound::Read(size_t position) {
       return value;
     }
 
-    // Single walk: accumulate the (at-most-one) erase factor and the sum of
-    // fading-in writes.
+    // Multiply independently timed erase fades and sum fading-in writes in
+    // one walk. Simultaneous erases were already coalesced at insertion.
     //
     // `time_till_ripe` is bounded by FADE_TIME (DoUpdate removes updates when
     // ripe), so the subtraction is safe without a modulo.
@@ -247,10 +223,13 @@ StereoSample Sound::Read(size_t position) {
     float write_sum = 0.0f;
     for (auto update = *maybe_update; update != nullptr;
          update = update->next_) {
-      auto time_till_ripe = update->finished_at - global_clock_;
+      const uint32_t time_till_ripe = update->finished_at - global_clock_;
       if (update->kind == Update::Kind::kErase) {
         // erase_frac_offset is precomputed in BufferValue::PushBack.
-        erase_factor =
+        if (update->value >= 1.0f) {
+          continue;
+        }
+        erase_factor *=
             update->erase_frac_offset /
             ((kFadeTime - time_till_ripe) + update->erase_frac_offset + 1);
       } else {
@@ -271,11 +250,9 @@ void Sound::Write(size_t position, StereoSample sample) {
   auto do_write = [&](auto buffer, float sample) {
     (*buffer)[position].PushBack({
         .kind = Update::Kind::kWrite,
-        .finished_at = global_clock_ + kFadeTime,
+        .finished_at = global_clock_ + static_cast<uint32_t>(kFadeTime),
         .value = sample,
     });
-    IndicesToUpdate::Prepend(
-        &indices_to_update_[(global_clock_ + kFadeTime) % kFadeTime], position);
   };
 
   do_write(&left_buffer_, sample.left);
@@ -286,11 +263,9 @@ void Sound::Erase(size_t position, StereoSample amount) {
   auto do_erase = [&](auto buffer, float amount) {
     (*buffer)[position].PushBack({
         .kind = Update::Kind::kErase,
-        .finished_at = global_clock_ + kFadeTime,
+        .finished_at = global_clock_ + static_cast<uint32_t>(kFadeTime),
         .value = amount,
     });
-    IndicesToUpdate::Prepend(
-        &indices_to_update_[(global_clock_ + kFadeTime) % kFadeTime], position);
   };
 
   do_erase(&left_buffer_, amount.left);
@@ -307,7 +282,7 @@ StereoSample Sound::ApplyHead(const fridge::config::Head& head,
 
   // Wrap once here so a position past the end of the tape can never index
   // out of the buffer.
-  size_t position = head.position % kBufferLen;
+  size_t position;
   if (use_regions) {
     if (head.region >= kNumRegions) {
       return wet_signal;
@@ -322,6 +297,8 @@ StereoSample Sound::ApplyHead(const fridge::config::Head& head,
       std::construct_at(&left_buffer_[position]);
       std::construct_at(&right_buffer_[position]);
     }
+  } else {
+    position = head.position % kBufferLen;
   }
 
   if (head.read_amount > 0.f) {
@@ -337,6 +314,11 @@ StereoSample Sound::ApplyHead(const fridge::config::Head& head,
     Erase(position, head.EraseAmount());
   }
 
+  if (head.write_amount > 0.f || head.erase_amount < 1.f) {
+    // One visit handles both channels and all updates posted by this head.
+    IndicesToUpdate::Prepend(&indices_to_update_[global_clock_ % kFadeTime],
+                             position);
+  }
   return wet_signal;
 }
 
@@ -349,11 +331,13 @@ StereoSample Sound::ProcessSample(const fridge::mod::Frame& frame,
 
   auto wet_signal = StereoSample::Zero();
 
-  for (size_t i = 0; valid_regions && i < frame.head_count; ++i) {
+  for (size_t i = 0;
+       valid_regions && i < std::min(frame.head_count, frame.heads.size());
+       ++i) {
     wet_signal += ApplyHead(frame.heads[i], sample, frame.regions != nullptr);
   }
 
-  global_clock_ = (global_clock_ + 1) % global_clock_max_;
+  ++global_clock_;
 
   return sample * frame.dry + wet_signal * frame.wet;
 }

@@ -26,11 +26,11 @@ TEST(FridgeIndicesToUpdateTest, Prepend) {
   ASSERT_EQ((*itu).index(), 1);
   ASSERT_EQ((*itu).next(), nullptr);
 
-  for (auto&& itu_ : itu->iter()) {
+  for (auto&& itu_ : IndicesToUpdate::iter(itu)) {
     ASSERT_EQ((*itu).index(), 1);
   }
 
-  for (auto&& itu_ : itu->drain()) {
+  for (auto&& itu_ : IndicesToUpdate::drain(itu)) {
     ASSERT_EQ((*itu).index(), 1);
   }
 }
@@ -38,7 +38,7 @@ TEST(FridgeIndicesToUpdateTest, Prepend) {
 TEST(FridgeIndicesToUpdateTest, IterEmpty) {
   IndicesToUpdate* itu = nullptr;
   // NOLINTNEXTLINE(clang-analyzer-core.CallAndMessage)
-  for (auto&& itu_ : itu->iter()) {
+  for (auto&& itu_ : IndicesToUpdate::iter(itu)) {
     ASSERT_FALSE(true);
   }
 }
@@ -223,6 +223,14 @@ TEST_F(FridgeSoundTest, EraseReducesSignal) {
 // a bunch of Sound instances and freeing them
 TEST_F(FridgeSoundTest, DestructorCleansUpSlabs) {
   fridge::mod::Frame frame;
+
+  frame.head_count = kNumHeads * 2;
+  frame.dry = 0;
+  for (auto& head : frame.heads) {
+    head.read_amount = 0.01f;
+    head.write_amount = 0.01f;
+    head.erase_amount = 0.99f;
+  }
 
   // Collect reference outputs from the first Sound instance.
   std::vector<StereoSample> reference;

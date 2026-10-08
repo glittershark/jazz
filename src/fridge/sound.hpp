@@ -4,8 +4,8 @@
 #include <algorithm>
 #include <array>
 #include <bit>
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 
 #include "config.hpp"
 #include "constants.hpp"
@@ -21,7 +21,7 @@ using jazz::audio::StereoSample;
 
 struct Update {
   enum Kind { kErase, kWrite } kind;
-  size_t finished_at;
+  uint32_t finished_at;
   float value;
   // For erases only: precomputed (FADE_TIME * value) / (1 - value). Cached
   // here so Read doesn't recompute it every sample. Updated whenever `value`
@@ -57,7 +57,7 @@ class IndicesToUpdate {
  private:
   size_t index_;
   IndicesToUpdate* next_ = nullptr;
-  static Slab<IndicesToUpdate, kUpdateCap> SLAB;
+  static Slab<IndicesToUpdate, kNumHeads * 2 * kFadeTime> SLAB;
 
  public:
   IndicesToUpdate() : index_(0) {}
@@ -123,8 +123,10 @@ class IndicesToUpdate {
   };
   friend DrainingIterator;
 
-  Iterator iter() { return Iterator(this); }
-  DrainingIterator drain() { return DrainingIterator(this); }
+  static Iterator iter(IndicesToUpdate* head) { return Iterator(head); }
+  static DrainingIterator drain(IndicesToUpdate* head) {
+    return DrainingIterator(head);
+  }
 
   static_assert(std::input_iterator<Iterator>);
   static_assert(std::input_iterator<DrainingIterator>);
@@ -182,9 +184,18 @@ class BufferValue {
 };
 
 class Sound {
+ public:
+  // Nonzero clocks allow deterministic tests of the Seed's 32-bit rollover.
+  explicit Sound(uint32_t initial_clock = 0) : global_clock_(initial_clock) {}
+  Sound(const Sound&) = delete;
+  Sound& operator=(const Sound&) = delete;
+  ~Sound();
+
+  /** Process one audio sample and advance the sample clock. */
+  StereoSample ProcessSample(const mod::Frame& frame, StereoSample sample);
+
  private:
-  static constexpr const size_t global_clock_max_ = SIZE_MAX - 1;
-  size_t global_clock_ = 0;
+  uint32_t global_clock_;
 
   std::array<IndicesToUpdate*, kFadeTime> indices_to_update_{};
   std::array<BufferValue, kBufferLen> left_buffer_;
@@ -194,10 +205,6 @@ class Sound {
   /** Perform pre-tick housekeeping */
   void PreHousekeeping(size_t clock_time);
 
- public:
-  ~Sound();
-
- private:
   /** Apply finished updates to a buffer index */
   void DoUpdate(size_t index);
 
@@ -219,13 +226,6 @@ class Sound {
 
   StereoSample ApplyHead(const fridge::config::Head& head, StereoSample sample,
                          bool use_regions);
-
- public:
-  /**
-   * Process an audio sample. Moves the internal clock forwards by 1
-   */
-  StereoSample ProcessSample(const fridge::mod::Frame& frame,
-                             StereoSample sample);
 };
 
 }  // namespace fridge::sound
