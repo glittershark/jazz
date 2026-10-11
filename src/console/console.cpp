@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -1177,6 +1178,8 @@ void PrintUsage(const char* argv0) {
                " [--sample-rate hz]"
                " [--effect e1,e2,...] [--preset preset.{json|toml}]"
                " [--fridge-lfo-chart] [--list-effects]\n";
+  std::cerr << "Output filenames are saved under mp3s/ in the current directory; "
+               "explicit paths are used as given.\n";
   std::cerr << "Effects: " << EffectListText() << "\n";
   std::cerr
       << "Params:\n"
@@ -1499,6 +1502,23 @@ bool CommandExists(const std::string& command) {
   return std::system(check.c_str()) == 0;
 }
 
+std::optional<std::string> PrepareOutputPath(const std::string& requested_path) {
+  const std::filesystem::path path(requested_path);
+  if (path.has_parent_path()) {
+    return requested_path;
+  }
+
+  const std::filesystem::path directory("mp3s");
+  std::error_code error;
+  std::filesystem::create_directory(directory, error);
+  if (error) {
+    std::cerr << "failed to create output directory " << directory << ": "
+              << error.message() << "\n";
+    return std::nullopt;
+  }
+  return (directory / path).string();
+}
+
 std::array<granular::Head, granular::NUM_HEADS> MakeDefaultHeads() {
   return {{
       {
@@ -1797,7 +1817,7 @@ int main(int argc, char** argv) {
     return 2;
   }
 
-  const Options options = parsed.options;
+  Options options = parsed.options;
   std::signal(SIGPIPE, SIG_IGN);
 
   if (options.fridge_lfo_chart) {
@@ -1829,6 +1849,13 @@ int main(int argc, char** argv) {
   if (options.play && !CommandExists("ffplay")) {
     std::cerr << "missing dependency: ffplay (or use --no-play)\n";
     return 1;
+  }
+
+  if (options.output_path.has_value()) {
+    options.output_path = PrepareOutputPath(*options.output_path);
+    if (!options.output_path.has_value()) {
+      return 1;
+    }
   }
 
   const std::string decoder_command =

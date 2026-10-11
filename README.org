@@ -52,6 +52,10 @@ save processed output to a new mp3:
 $ ./build-test/src/console/jazz-console input.mp3 --output processed.mp3
 #+end_src
 
+output filenames default to the ~mp3s/~ folder in the current directory (created
+if needed), so this writes ~mp3s/processed.mp3~ when run from the repo root.
+explicit paths such as ~./processed.mp3~ or ~/tmp/processed.mp3~ are used as given.
+
 if playback fails on your machine, disable playback and render offline:
 
 #+begin_src shell-session
