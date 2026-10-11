@@ -136,3 +136,13 @@ add_custom_target(fridge-tests)
 autogen_tests(${CMAKE_CURRENT_LIST_DIR})
 
 set_tests_properties(la_sort_gtest PROPERTIES LABELS "la_sort" TIMEOUT 60)
+find_package(Python3 COMPONENTS Interpreter QUIET)
+find_program(JAZZ_FFMPEG_EXECUTABLE ffmpeg)
+if(Python3_Interpreter_FOUND AND JAZZ_FFMPEG_EXECUTABLE)
+  add_test(NAME la_sort_console_test
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/la_sort_console_test.py
+      $<TARGET_FILE:jazz-console> ${JAZZ_FFMPEG_EXECUTABLE}
+      ${CMAKE_SOURCE_DIR}/presets/host/la_sort_demo.toml
+  )
+  set_tests_properties(la_sort_console_test PROPERTIES LABELS "la_sort" TIMEOUT 60)
+endif()

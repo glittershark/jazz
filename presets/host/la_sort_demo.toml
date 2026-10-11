@@ -1,0 +1,26 @@
+# Standalone La Sort demo, using the same DSP as the Daisy firmware.
+# Play and optionally save:
+# ./build-test/src/console/jazz-console input.mp3 --preset presets/host/la_sort_demo.toml --output la_sort_demo.mp3
+# Add --no-play to render offline.
+
+effect_chain = ["la_sort"]
+sample_rate = 48000
+
+# Number of recent samples to sort (integer 1–1024; default 64).
+la_sort_length = 64
+# Fixed sqrt(length) wet gain: 0 disables it, 1 is full compensation. No dynamics.
+la_sort_volume_compensation = 1.0
+
+# Rank in the sorted window: 0 = minimum, 0.5 = median, 1 = maximum.
+la_sort_weight_center = 0.5
+# 0 gives a moving average; larger values focus on the selected rank (max 32).
+la_sort_weight_sharpness = 12.0
+
+# Sine sweep: rate in Hz (0.05–20), depth as total list span (0–1).
+# Try --la-sort-lfo-rate 2 --la-sort-lfo-depth 1 for a full sweep.
+la_sort_lfo_rate = 1.0
+la_sort_lfo_depth = 0.0
+
+# Keep some attack while emphasizing the softened, median-focused signal.
+la_sort_dry = 0.15
+la_sort_wet = 0.85

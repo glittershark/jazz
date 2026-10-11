@@ -21,6 +21,7 @@
 
 #include "config.hpp"
 #include "granular.hpp"
+#include "la_sort.hpp"
 #include "libjazz/stereo_sample.hpp"
 #include "libjazz/units.hpp"
 #include "mod.hpp"
@@ -81,8 +82,7 @@ struct EffectParams {
   float highpass_alpha = 0.1f;
   float cursed_lowpass_alpha = 0.1f;
   float cursed_highpass_alpha = 0.1f;
-  float la_sort_weight_center = 0.5f;
-  float la_sort_weight_sharpness = 2.0f;
+  la_sort::Config la_sort_config;
   fridge::config::Config fridge_config = DefaultFridgeConfig();
 };
 
@@ -212,6 +212,22 @@ bool ParseSize(const std::string& value, size_t* out) {
   }
 
   *out = static_cast<size_t>(parsed);
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Validation: La Sort list length
+// ---------------------------------------------------------------------------
+bool ApplyLaSortLength(const std::string& value, la_sort::Config* config,
+                       std::string* error) {
+  size_t length = 0;
+  if (value.empty() || value.find_first_not_of("0123456789") != std::string::npos ||
+      !ParseSize(value, &length) || length < 1 || length > la_sort::kMaxLength) {
+    *error = "la_sort_length must be an integer in [1, " +
+             std::to_string(la_sort::kMaxLength) + "]";
+    return false;
+  }
+  config->length = length;
   return true;
 }
 
@@ -356,14 +372,38 @@ bool ApplyParamValue(const std::string& key, float value, EffectParams* params,
     if (!expect_range(0.0f, 1.0f, "la_sort_weight_center")) {
       return false;
     }
-    params->la_sort_weight_center = value;
+    params->la_sort_config.weight_center = value;
     return true;
   }
   if (k == "la_sort_weight_sharpness") {
-    if (!expect_range(0.0f, 32.0f, "la_sort_weight_sharpness")) {
+    if (!expect_range(0.0f, la_sort::kMaxSharpness, "la_sort_weight_sharpness")) {
       return false;
     }
-    params->la_sort_weight_sharpness = value;
+    params->la_sort_config.weight_sharpness = value;
+    return true;
+  }
+
+  if (k == "la_sort_lfo_rate") {
+    if (!expect_range(la_sort::kMinLfoRate, la_sort::kMaxLfoRate, k.c_str())) {
+      return false;
+    }
+    params->la_sort_config.lfo_rate = value;
+    return true;
+  }
+  if (k == "la_sort_dry" || k == "la_sort_wet" ||
+      k == "la_sort_volume_compensation" || k == "la_sort_lfo_depth") {
+    if (!expect_range(0.0f, 1.0f, k.c_str())) {
+      return false;
+    }
+    if (k == "la_sort_dry") {
+      params->la_sort_config.dry = value;
+    } else if (k == "la_sort_wet") {
+      params->la_sort_config.wet = value;
+    } else if (k == "la_sort_volume_compensation") {
+      params->la_sort_config.volume_compensation = value;
+    } else {
+      params->la_sort_config.lfo_depth = value;
+    }
     return true;
   }
 
@@ -715,6 +755,10 @@ bool ApplyFridgeConfigKV(const std::string& key, const std::string& value,
 bool ApplyConfigKV(const std::string& key, const std::string& value,
                    Options* options, std::string* error) {
   const std::string k = CanonicalKey(key);
+
+  if (k == "la_sort_length") {
+    return ApplyLaSortLength(value, &options->params.la_sort_config, error);
+  }
 
   if (k.starts_with("fridge_")) {
     return ApplyFridgeConfigKV(k, value, &options->params.fridge_config, error);
@@ -1142,6 +1186,11 @@ void PrintUsage(const char* argv0) {
       << "  --cursed-lowpass-alpha [0..1] --cursed-highpass-alpha [0..1]\n"
       << "  --la-sort-weight-center [0..1]"
       << " --la-sort-weight-sharpness [0..32]\n"
+      << "  --la-sort-dry [0..1] --la-sort-wet [0..1]\n"
+      << "  --la-sort-length [1.." << la_sort::kMaxLength << "] (default 64)\n"
+      << "  --la-sort-volume-compensation [0..1] (default 1)\n"
+      << "  --la-sort-lfo-rate [0.05..20] Hz (default 1)"
+      << " --la-sort-lfo-depth [0..1] (default 0)\n"
       << "  --fridge-lfo-chart"
       << " --fridge-lfo-chart-csv"
       << " --fridge-lfo-index N"
@@ -1357,6 +1406,28 @@ ParseResult ParseArgs(int argc, char** argv) {
       float v = 0.0f;
       if (!parse_next_float(&i, &v, "--cursed-highpass-alpha") ||
           !apply_param("cursed_highpass_alpha", v)) {
+        return result;
+      }
+      continue;
+    }
+    if (arg == "--la-sort-length") {
+      std::string error;
+      if (i + 1 >= argc) {
+        std::cerr << "missing value for --la-sort-length\n";
+        return result;
+      }
+      if (!ApplyLaSortLength(argv[++i], &options.params.la_sort_config, &error)) {
+        std::cerr << error << "\n";
+        return result;
+      }
+      continue;
+    }
+    if (arg == "--la-sort-dry" || arg == "--la-sort-wet" ||
+        arg == "--la-sort-volume-compensation" || arg == "--la-sort-lfo-rate" ||
+        arg == "--la-sort-lfo-depth") {
+      float v = 0.0f;
+      if (!parse_next_float(&i, &v, arg.c_str()) ||
+          !apply_param(arg.substr(2).c_str(), v)) {
         return result;
       }
       continue;
@@ -1635,104 +1706,25 @@ class CursedHighPassProcessor final : public MonoSampleProcessor {
   float last_input_ = 1.0f;
 };
 
-class LaSortProcessor final : public MonoSampleProcessor {
+class LaSortProcessor final : public SampleProcessor {
  public:
-  LaSortProcessor(float weight_center, float weight_sharpness)
-      : weight_center_(weight_center), weight_sharpness_(weight_sharpness) {}
+  LaSortProcessor(const la_sort::Config& config, float sample_rate)
+      : effect_(sample_rate) {
+    parameters_.SetConfig(config);
+  }
 
-  float Process(float sample) override {
-    InsertSorted(sample);
-    return WeightedTap();
+  StereoSample Process(StereoSample sample) override {
+    return effect_.ProcessSample(parameters_, sample);
   }
 
  private:
-  static constexpr size_t kBufferSize = 64;
-  std::array<float, kBufferSize> insertion_buffer_{};
-  std::array<float, kBufferSize> sorted_samples_{};
-  size_t current_size_ = 0;
-  size_t write_index_ = 0;
-  float weight_center_;
-  float weight_sharpness_;
-
-  void RemoveFromSorted(float value) {
-    size_t remove_pos = 0;
-    for (size_t i = 0; i < current_size_; i++) {
-      if (sorted_samples_[i] == value) {
-        remove_pos = i;
-        break;
-      }
-    }
-    for (size_t i = remove_pos; i < current_size_ - 1; i++) {
-      sorted_samples_[i] = sorted_samples_[i + 1];
-    }
-    current_size_--;
-  }
-
-  void InsertSorted(float sample) {
-    if (current_size_ < kBufferSize) {
-      size_t insert_pos = current_size_;
-      for (size_t i = 0; i < current_size_; i++) {
-        if (sample < sorted_samples_[i]) {
-          insert_pos = i;
-          break;
-        }
-      }
-
-      for (size_t i = current_size_; i > insert_pos; i--) {
-        sorted_samples_[i] = sorted_samples_[i - 1];
-      }
-      sorted_samples_[insert_pos] = sample;
-      current_size_++;
-      insertion_buffer_[write_index_] = sample;
-      write_index_ = (write_index_ + 1) % kBufferSize;
-      return;
-    }
-
-    RemoveFromSorted(insertion_buffer_[write_index_]);
-    size_t insert_pos = current_size_;
-    for (size_t i = 0; i < current_size_; i++) {
-      if (sample < sorted_samples_[i]) {
-        insert_pos = i;
-        break;
-      }
-    }
-
-    for (size_t i = current_size_; i > insert_pos; i--) {
-      sorted_samples_[i] = sorted_samples_[i - 1];
-    }
-    sorted_samples_[insert_pos] = sample;
-    current_size_++;
-    insertion_buffer_[write_index_] = sample;
-    write_index_ = (write_index_ + 1) % kBufferSize;
-  }
-
-  float WeightedTap() const {
-    if (current_size_ == 0) {
-      return 0.0f;
-    }
-    if (current_size_ == 1) {
-      return sorted_samples_[0];
-    }
-
-    float sum = 0.0f;
-    float weight_sum = 0.0f;
-
-    for (size_t i = 0; i < current_size_; i++) {
-      const float normalized_pos =
-          static_cast<float>(i) / static_cast<float>(current_size_ - 1);
-      const float distance = std::abs(normalized_pos - weight_center_);
-      const float weight = std::exp(-weight_sharpness_ * distance);
-
-      sum += sorted_samples_[i] * weight;
-      weight_sum += weight;
-    }
-
-    return (weight_sum > 0.0f) ? (sum / weight_sum) : 0.0f;
-  }
+  la_sort::Parameters parameters_;
+  la_sort::Effect effect_;
 };
 
 std::unique_ptr<SampleProcessor> MakeProcessor(EffectKind effect,
-                                               const EffectParams& params) {
+                                               const EffectParams& params,
+                                               float sample_rate) {
   switch (effect) {
   case EffectKind::kBypass:
     return std::make_unique<BypassProcessor>();
@@ -1755,8 +1747,7 @@ std::unique_ptr<SampleProcessor> MakeProcessor(EffectKind effect,
     return std::make_unique<CursedHighPassProcessor>(
         params.cursed_highpass_alpha);
   case EffectKind::kLaSort:
-    return std::make_unique<LaSortProcessor>(params.la_sort_weight_center,
-                                             params.la_sort_weight_sharpness);
+    return std::make_unique<LaSortProcessor>(params.la_sort_config, sample_rate);
   case EffectKind::kFridge:
     return std::make_unique<FridgeProcessor>(params.fridge_config);
   }
@@ -1887,7 +1878,7 @@ int main(int argc, char** argv) {
   std::vector<std::unique_ptr<SampleProcessor>> chain;
   chain.reserve(effect_chain.size());
   for (EffectKind effect : effect_chain) {
-    chain.push_back(MakeProcessor(effect, options.params));
+    chain.push_back(MakeProcessor(effect, options.params, options.sample_rate));
   }
 
   std::vector<StereoSample> chunk(kFramesPerChunk);

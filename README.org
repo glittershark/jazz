@@ -78,6 +78,21 @@ try the fridge terminal preset:
 $ ./build-test/src/console/jazz-console input.mp3 --preset presets/host/fridge_demo.toml --output fridge_demo.mp3
 #+end_src
 
+try the standalone la sort demo (the same sorting engine runs on the Daisy):
+
+#+begin_src shell-session
+$ ./build-test/src/console/jazz-console input.mp3 --preset presets/host/la_sort_demo.toml --output la_sort_demo.mp3
+#+end_src
+
+add ~--no-play~ to render offline. for a fully wet version or a different rank:
+
+#+begin_src shell-session
+$ ./build-test/src/console/jazz-console input.mp3 --preset presets/host/la_sort_demo.toml --la-sort-dry 0 --la-sort-wet 1 --la-sort-weight-center 0.65
+#+end_src
+
+la sort keeps the MP3's left and right channels separate. see
+[[file:src/la_sort/README.md][the la sort guide]] for controls and firmware details.
+
 inspect the fridge preset's LFO motion without rendering audio:
 
 #+begin_src shell-session
@@ -110,6 +125,10 @@ supported parameter flags:
 - ~--lowpass-alpha~, ~--highpass-alpha~
 - ~--cursed-lowpass-alpha~, ~--cursed-highpass-alpha~
 - ~--la-sort-weight-center~, ~--la-sort-weight-sharpness~
+- ~--la-sort-dry~, ~--la-sort-wet~
+- ~--la-sort-length~: integer 1–1024 samples, default 64; preset key ~la_sort_length~
+- ~--la-sort-volume-compensation~: 0–1, default 1; fixed sqrt(length) wet gain, up to +30 dB at 1024 (no dynamics control)
+- ~--la-sort-lfo-rate~: 0.05–20 Hz, default 1; ~--la-sort-lfo-depth~: 0–1, default 0 (off), 1 sweeps the whole list
 
 the fridge effect is configured through preset keys with the prefixes
 ~fridge_head_N_~ and ~fridge_lfo_N_~; see ~presets/host/fridge_demo.toml~.
@@ -122,7 +141,9 @@ load a preset file:
 $ ./build-test/src/console/jazz-console input.mp3 --preset presets/host/clip_lasort.toml --output processed.mp3
 #+end_src
 
-example preset included in repo:
+example presets included in repo:
+- ~presets/host/fridge_demo.toml~
+- ~presets/host/la_sort_demo.toml~
 - ~presets/host/clip_lasort.toml~
 
 CLI flags override preset values, so you can start from a preset and tweak:
@@ -188,4 +209,4 @@ like ~screen /dev/ttyACM0 115200~.
 - [[https://github.com/glittershark/jazz/blob/main/src/anticlip/anticlip.cpp][anticlip]]: adds back the residue from clipping.
 
 ** other
-- [[https://github.com/glittershark/jazz/blob/main/src/la_sort/la_sort.cpp][la_sort]]: sorting-based effect with weighted tap from sorted buffer.
+- [[file:src/la_sort/README.md][la_sort]]: stereo sorting-based effect with a weighted tap from a configurable rolling window (default 64 samples), shared by firmware and the MP3 demo.
