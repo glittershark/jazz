@@ -11,6 +11,7 @@ set(JAZZ_TEST_LIBS
   jazz::delay
   jazz::reverse
   jazz::granular
+  jazz::la_sort
   jazz::rachel
   jazz::fridge
   Threads::Threads
@@ -133,3 +134,5 @@ endfunction()
 
 add_custom_target(fridge-tests)
 autogen_tests(${CMAKE_CURRENT_LIST_DIR})
+
+set_tests_properties(la_sort_gtest PROPERTIES LABELS "la_sort" TIMEOUT 60)

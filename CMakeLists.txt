@@ -22,6 +22,7 @@ add_subdirectory(src/reverse)
 add_subdirectory(src/granular)
 add_subdirectory(src/fridge)
 add_subdirectory(src/rachel)
+add_subdirectory(src/la_sort)
 
 # ARM-only projects
 add_subdirectory(src/identity)
@@ -31,7 +32,6 @@ add_subdirectory(src/low_pass_filter)
 add_subdirectory(src/high_pass_filter)
 add_subdirectory(src/cursed_low_pass_filter)
 add_subdirectory(src/cursed_high_pass_filter)
-add_subdirectory(src/la_sort)
 
 if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
   enable_testing()

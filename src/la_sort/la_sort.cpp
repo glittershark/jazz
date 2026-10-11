@@ -1,164 +1,207 @@
+#include "la_sort.hpp"
+
+#include <algorithm>
 #include <cmath>
 
-#include "daisy_seed.h"
-#include "daisysp.h"
+namespace la_sort {
+namespace {
+float ValidSample(float sample);
+float ValidSampleRate(float sample_rate);
+}  // namespace
 
-using namespace daisy;
-using namespace daisysp;
+CenterLfo::CenterLfo(float sample_rate)
+    : sample_period_(1.0 / ValidSampleRate(sample_rate)) {}
 
-DaisySeed hw;
+float CenterLfo::Process(const Config& config) {
+  float center = config.weight_center;
+  if (config.lfo_depth > 0.0f) {
+    const float radius = 0.5f * config.lfo_depth;
+    const float midpoint = std::clamp(center, radius, 1.0f - radius);
+    center =
+        midpoint + radius * std::sin(float(phase_ * 6.2831853071795864769));
+    center = std::clamp(center, 0.0f, 1.0f);
+  }
+  // Preserve phase through control changes and while depth/wet are zero.
+  phase_ += config.lfo_rate * sample_period_;
+  phase_ -= std::floor(phase_);
+  return center;
+}
 
-// Fixed-size buffers (no dynamic allocation)
-static constexpr size_t BUFFER_SIZE = 64;
-static float insertion_buffer[BUFFER_SIZE] = {
-    0.0f};  // Circular buffer in insertion order
-static float sorted_samples[BUFFER_SIZE] = {0.0f};  // Sorted array
-static size_t current_size = 0;
-static size_t write_index = 0;  // Circular buffer write position
+Parameters::Parameters() {
+  SetConfig(Config{});
+}
 
-// Weight parameters
-static float weight_center =
-    0.5f;  // ADC control: 0.0 = weight edges, 1.0 = weight center
-static float weight_sharpness = 2.0f;  // How sharp the weighting curve is
+bool Parameters::SetConfig(const Config& config) {
+  if (!IsValid(config)) {
+    return false;
+  }
 
-// Remove a value from sorted array
-void remove_from_sorted(float value) {
-  // Find the value in sorted array (handle duplicates by removing first
-  // occurrence)
-  size_t remove_pos = 0;
-  for (size_t i = 0; i < current_size; i++) {
-    if (sorted_samples[i] == value) {
-      remove_pos = i;
-      break;
+  // Cache each startup size. Mixing and length-only changes reuse rows whose
+  // weighting curve is unchanged; bulk preparation stays outside the audio path.
+  if (config.weight_center != config_.weight_center ||
+      config.weight_sharpness != config_.weight_sharpness) {
+    prepared_length_ = 0;
+  }
+  for (size_t count = prepared_length_ + 1; count <= config.length; ++count) {
+    const float target = config.weight_center * float(count - 1);
+    const size_t pivot = static_cast<size_t>(target);
+    const float slope =
+        count == 1 ? 0.0f : config.weight_sharpness / float(count - 1);
+    RankWeights weights{
+        .left = std::exp(-slope * (target - float(pivot))),
+        .right = pivot + 1 < count
+                     ? std::exp(-slope * (float(pivot + 1) - target))
+                     : 0.0f,
+        // Store the small decrement accurately even when decay is near one.
+        .decay_step = -std::expm1(-slope),
+        // Fixed, signal-independent correction for the 1/sqrt(N) RMS loss
+        // of averaging independent samples. Never measures audio level.
+        .makeup_gain = std::sqrt(float(count)),
+        .pivot = pivot,
+    };
+    // Include small tail weights without losing them in a long float sum.
+    double total = 0.0;
+    float weight = weights.left;
+    for (size_t rank = pivot + 1; rank > 0; --rank) {
+      total += weight;
+      weight -= weight * weights.decay_step;
     }
-  }
-
-  // Shift elements to remove
-  for (size_t i = remove_pos; i < current_size - 1; i++) {
-    sorted_samples[i] = sorted_samples[i + 1];
-  }
-  current_size--;
-}
-
-// Insert sample into sorted array while maintaining sorted order
-void insert_sorted(float sample) {
-  if (current_size < BUFFER_SIZE) {
-    // Buffer not full yet, insert in sorted position
-    size_t insert_pos = current_size;
-    for (size_t i = 0; i < current_size; i++) {
-      if (sample < sorted_samples[i]) {
-        insert_pos = i;
-        break;
-      }
+    weight = weights.right;
+    for (size_t rank = pivot + 1; rank < count; ++rank) {
+      total += weight;
+      weight -= weight * weights.decay_step;
     }
+    weights.left /= total;
+    weights.right /= total;
+    weights_[count - 1] = weights;
+  }
+  prepared_length_ = std::max(prepared_length_, config.length);
+  config_ = config;
+  return true;
+}
 
-    // Shift elements to make room
-    for (size_t i = current_size; i > insert_pos; i--) {
-      sorted_samples[i] = sorted_samples[i - 1];
+jazz::audio::StereoSample Effect::ProcessSample(
+    const Parameters& parameters, jazz::audio::StereoSample sample) {
+  sample = {ValidSample(sample.left), ValidSample(sample.right)};
+  const size_t length = parameters.config_.length;
+  if (count_ > length) {
+    ShrinkWindow(length);
+  }
+  InsertSample(left_, sample.left, length);
+  InsertSample(right_, sample.right, length);
+  count_ = std::min(count_ + 1, length);
+  write_index_ = (write_index_ + 1) % kMaxLength;
+
+  const auto& config = parameters.config_;
+  const float center = center_lfo_.Process(config);
+  const auto wet = ReadWindow(parameters, center);
+  const float gain =
+      1.0f + config.volume_compensation *
+                 (parameters.weights_[count_ - 1].makeup_gain - 1.0f);
+  return sample * config.dry + wet * (config.wet * gain);
+}
+
+jazz::audio::StereoSample Effect::ReadWindow(const Parameters& parameters,
+                                             float center) {
+  auto weights = parameters.weights_[count_ - 1];
+  const auto& config = parameters.config_;
+  const bool modulated =
+      config.lfo_depth > 0.0f && config.weight_sharpness > 0.0f && count_ > 1;
+  if (modulated) {
+    // Reuse the prepared decay; only the two starting weights depend on the
+    // current center. Normalize during the rank walk, without rebuilding
+    // tables.
+    const float target = center * float(count_ - 1);
+    const float slope = config.weight_sharpness / float(count_ - 1);
+    weights.pivot = static_cast<size_t>(target);
+    weights.left = std::exp(-slope * (target - float(weights.pivot)));
+    weights.right = weights.pivot + 1 < count_
+                        ? std::exp(-slope * (float(weights.pivot + 1) - target))
+                        : 0.0f;
+  }
+  jazz::audio::StereoSample wet = jazz::audio::StereoSample::Zero();
+  double total = 0.0;
+  float weight = weights.left;
+  for (size_t rank = weights.pivot + 1; rank > 0; --rank) {
+    wet.left += left_.sorted[rank - 1] * weight;
+    wet.right += right_.sorted[rank - 1] * weight;
+    if (modulated) {
+      total += weight;
     }
-    sorted_samples[insert_pos] = sample;
-    current_size++;
-
-    // Also add to insertion buffer (track insertion order)
-    insertion_buffer[write_index] = sample;
-    write_index = (write_index + 1) % BUFFER_SIZE;
-  } else {
-    // Buffer is full, replace oldest sample
-    float oldest_sample = insertion_buffer[write_index];
-
-    // Remove oldest from sorted array
-    remove_from_sorted(oldest_sample);
-
-    // Insert new sample in sorted position
-    size_t insert_pos = current_size;  // current_size is now BUFFER_SIZE - 1
-    for (size_t i = 0; i < current_size; i++) {
-      if (sample < sorted_samples[i]) {
-        insert_pos = i;
-        break;
-      }
+    weight -= weight * weights.decay_step;
+  }
+  weight = weights.right;
+  for (size_t rank = weights.pivot + 1; rank < count_; ++rank) {
+    wet.left += left_.sorted[rank] * weight;
+    wet.right += right_.sorted[rank] * weight;
+    if (modulated) {
+      total += weight;
     }
+    weight -= weight * weights.decay_step;
+  }
+  return modulated ? wet * float(1.0 / total) : wet;
+}
 
-    // Shift elements to make room
-    for (size_t i = current_size; i > insert_pos; i--) {
-      sorted_samples[i] = sorted_samples[i - 1];
+void Effect::ShrinkWindow(size_t length) {
+  count_ = length;
+  const size_t oldest = (write_index_ + kMaxLength - count_) % kMaxLength;
+  for (Channel* channel : {&left_, &right_}) {
+    for (size_t i = 0; i < count_; ++i) {
+      channel->sorted[i] = channel->history[(oldest + i) % kMaxLength];
     }
-    sorted_samples[insert_pos] = sample;
-    current_size++;  // Restore to BUFFER_SIZE
-
-    // Update insertion buffer (circular)
-    insertion_buffer[write_index] = sample;
-    write_index = (write_index + 1) % BUFFER_SIZE;
+    std::sort(channel->sorted.begin(), channel->sorted.begin() + count_);
   }
 }
 
-// Compute weighted sum of sorted samples
-float weighted_tap() {
-  if (current_size == 0) {
-    return 0.0f;
+void Effect::InsertSample(Channel& channel, float sample, size_t length) {
+  size_t count = count_;
+  if (count == length) {
+    const float oldest =
+        channel.history[(write_index_ + kMaxLength - count) % kMaxLength];
+    const auto end = channel.sorted.begin() + count;
+    const auto removed = std::lower_bound(channel.sorted.begin(), end, oldest);
+    std::move(removed + 1, end, removed);
+    --count;
   }
 
-  // Handle single element case to avoid division by zero
-  if (current_size == 1) {
-    return sorted_samples[0];
-  }
-
-  float sum = 0.0f;
-  float weight_sum = 0.0f;
-
-  for (size_t i = 0; i < current_size; i++) {
-    // Normalize position to [0, 1] in sorted array
-    float normalized_pos =
-        static_cast<float>(i) / static_cast<float>(current_size - 1);
-
-    // Compute weight based on position
-    // weight_center controls where peak weight is:
-    //   0.0 = weight minimum values (left edge)
-    //   0.5 = weight center/median values
-    //   1.0 = weight maximum values (right edge)
-    float distance_from_target = std::abs(normalized_pos - weight_center);
-
-    // Exponential weighting: closer to target position = higher weight
-    float weight = std::exp(-weight_sharpness * distance_from_target);
-
-    sum += sorted_samples[i] * weight;
-    weight_sum += weight;
-  }
-
-  // Normalize by sum of weights
-  return (weight_sum > 0.0f) ? (sum / weight_sum) : 0.0f;
+  const auto end = channel.sorted.begin() + count;
+  const auto inserted = std::lower_bound(channel.sorted.begin(), end, sample);
+  std::move_backward(inserted, end, end + 1);
+  *inserted = sample;
+  channel.history[write_index_] = sample;
 }
 
-float la_sort(float sample) {
-  insert_sorted(sample);
-  return weighted_tap();
+// ---------------------------------------------------------------------------
+// Validation
+// ---------------------------------------------------------------------------
+
+bool IsValid(const Config& config) {
+  return config.length >= 1 && config.length <= kMaxLength &&
+         std::isfinite(config.weight_center) && config.weight_center >= 0.0f &&
+         config.weight_center <= 1.0f &&
+         std::isfinite(config.weight_sharpness) &&
+         config.weight_sharpness >= 0.0f &&
+         config.weight_sharpness <= kMaxSharpness &&
+         std::isfinite(config.dry) && config.dry >= 0.0f &&
+         config.dry <= 1.0f && std::isfinite(config.wet) &&
+         config.wet >= 0.0f && config.wet <= 1.0f &&
+         std::isfinite(config.volume_compensation) &&
+         config.volume_compensation >= 0.0f &&
+         config.volume_compensation <= 1.0f && std::isfinite(config.lfo_rate) &&
+         config.lfo_rate >= kMinLfoRate && config.lfo_rate <= kMaxLfoRate &&
+         std::isfinite(config.lfo_depth) && config.lfo_depth >= 0.0f &&
+         config.lfo_depth <= 1.0f;
 }
 
-void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
-                   size_t size) {
-  for (size_t i = 0; i < size; i++) {
-    auto sample = in[0][i];
-    float processed_sample = la_sort(sample);
-    out[0][i] = processed_sample;
-  }
+namespace {
+float ValidSampleRate(float sample_rate) {
+  return std::isfinite(sample_rate) && sample_rate > 0.0f ? sample_rate
+                                                          : 48000.0f;
 }
 
-int main() {
-  hw.Configure();
-  hw.Init();
-  hw.SetAudioBlockSize(4);
-
-  AdcChannelConfig adcConfig;
-  adcConfig.InitSingle(hw.GetPin(21));
-  hw.adc.Init(&adcConfig, 1);
-  hw.adc.Start();
-
-  hw.StartAudio(AudioCallback);
-  for (;;) {
-    // Map ADC value (0.0-1.0) to weight center position
-    // 0.0 = weight minimum values (left edge of sorted array)
-    // 0.5 = weight center/median values
-    // 1.0 = weight maximum values (right edge of sorted array)
-    weight_center = hw.adc.GetFloat(0);
-    System::Delay(1);
-  }
+float ValidSample(float sample) {
+  // A NaN in the sorted history would break eviction of the oldest sample.
+  return std::isfinite(sample) ? sample : 0.0f;
 }
+}  // namespace
+}  // namespace la_sort
