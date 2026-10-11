@@ -145,4 +145,9 @@ if(Python3_Interpreter_FOUND AND JAZZ_FFMPEG_EXECUTABLE)
       ${CMAKE_SOURCE_DIR}/presets/host/la_sort_demo.toml
   )
   set_tests_properties(la_sort_console_test PROPERTIES LABELS "la_sort" TIMEOUT 60)
+  add_test(NAME console_output_test
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/console_output_test.py
+      $<TARGET_FILE:jazz-console> ${JAZZ_FFMPEG_EXECUTABLE}
+  )
+  set_tests_properties(console_output_test PROPERTIES LABELS "console" TIMEOUT 60)
 endif()

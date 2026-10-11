@@ -64,7 +64,7 @@ def reference(samples, config, sample_rate=48000):
 def check_render(console, ffmpeg, input_path, output_path, preset, config, flags,
                  sample_rate=48000):
     run([console, str(input_path), "--preset", str(preset), "--no-play",
-         "--output", str(output_path), *flags])
+         "--output", str(output_path), *flags], data=b"o\n")
     source = decode(ffmpeg, input_path, sample_rate)
     expected_path = output_path.with_name("reference.mp3")
     run([ffmpeg, "-v", "error", "-y", "-f", "f32le", "-ac", "2",

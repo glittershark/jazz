@@ -103,6 +103,11 @@ struct Options {
   size_t fridge_lfo_chart_height = 18;
 };
 
+struct OutputTarget {
+  std::filesystem::path path;
+  bool overwrite = false;
+};
+
 enum class EffectKind {
   kBypass,
   kGranular,
@@ -1180,6 +1185,8 @@ void PrintUsage(const char* argv0) {
                " [--fridge-lfo-chart] [--list-effects]\n";
   std::cerr << "Output filenames are saved under mp3s/ in the current directory; "
                "explicit paths are used as given.\n";
+  std::cerr << "Existing outputs prompt to append a number, overwrite, or cancel "
+               "(default).\n";
   std::cerr << "Effects: " << EffectListText() << "\n";
   std::cerr
       << "Params:\n"
@@ -1502,21 +1509,118 @@ bool CommandExists(const std::string& command) {
   return std::system(check.c_str()) == 0;
 }
 
-std::optional<std::string> PrepareOutputPath(const std::string& requested_path) {
-  const std::filesystem::path path(requested_path);
-  if (path.has_parent_path()) {
-    return requested_path;
-  }
-
-  const std::filesystem::path directory("mp3s");
+// ---------------------------------------------------------------------------
+// Validation: output file access and overwrite safety
+// ---------------------------------------------------------------------------
+std::optional<bool> OutputPathExists(const std::filesystem::path& path) {
   std::error_code error;
-  std::filesystem::create_directory(directory, error);
-  if (error) {
-    std::cerr << "failed to create output directory " << directory << ": "
+  // Count dangling symlinks as occupied names, too.
+  const auto status = std::filesystem::symlink_status(path, error);
+  if (error && error != std::errc::no_such_file_or_directory) {
+    std::cerr << "failed to inspect output path " << path << ": "
               << error.message() << "\n";
     return std::nullopt;
   }
-  return (directory / path).string();
+  return std::filesystem::exists(status);
+}
+
+bool ValidateOverwrite(const std::string& input_path,
+                       const std::filesystem::path& output_path) {
+  std::error_code error;
+  if (!std::filesystem::is_regular_file(output_path, error)) {
+    std::cerr << "cannot overwrite a non-regular output file: " << output_path
+              << "\n";
+    return false;
+  }
+  const bool same_file =
+      std::filesystem::equivalent(input_path, output_path, error);
+  if (error) {
+    std::cerr << "failed to compare input and output files: " << error.message()
+              << "\n";
+    return false;
+  }
+  if (same_file) {
+    std::cerr << "cannot overwrite the input file; choose append number "
+                 "or a different output path\n";
+    return false;
+  }
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Output selection
+// ---------------------------------------------------------------------------
+std::optional<std::filesystem::path> FindNumberedOutputPath(
+    const std::filesystem::path& path) {
+  for (size_t number = 1; number < std::numeric_limits<size_t>::max(); ++number) {
+    const auto candidate =
+        path.parent_path() / (path.stem().string() + "_" + std::to_string(number) +
+                             path.extension().string());
+    const auto exists = OutputPathExists(candidate);
+    if (!exists.has_value()) {
+      return std::nullopt;
+    }
+    if (!*exists) {
+      return candidate;
+    }
+  }
+  std::cerr << "no unused numbered output filename available for " << path << "\n";
+  return std::nullopt;
+}
+
+std::optional<OutputTarget> PrepareOutputPath(const std::string& input_path,
+                                            const std::string& requested_path) {
+  std::filesystem::path path(requested_path);
+  if (!path.has_parent_path()) {
+    const std::filesystem::path directory("mp3s");
+    std::error_code error;
+    std::filesystem::create_directory(directory, error);
+    if (error) {
+      std::cerr << "failed to create output directory " << directory << ": "
+                << error.message() << "\n";
+      return std::nullopt;
+    }
+    path = directory / path;
+  }
+
+  const auto exists = OutputPathExists(path);
+  if (!exists.has_value()) {
+    return std::nullopt;
+  }
+  if (!*exists) {
+    return OutputTarget{path};
+  }
+
+  std::cerr << "Warning: output already exists: " << path << "\n";
+  while (true) {
+    std::cerr << "[n] Append number, [o] Overwrite, [c] Cancel (default): "
+              << std::flush;
+    std::string choice;
+    if (!std::getline(std::cin, choice)) {
+      std::cerr << "\nExport cancelled.\n";
+      return std::nullopt;
+    }
+    choice = ToLower(Trim(choice));
+    if (choice.empty() || choice == "c") {
+      std::cerr << "Export cancelled.\n";
+      return std::nullopt;
+    }
+    if (choice == "n") {
+      const auto numbered_path = FindNumberedOutputPath(path);
+      if (!numbered_path.has_value()) {
+        return std::nullopt;
+      }
+      std::cerr << "Saving to " << *numbered_path << "\n";
+      return OutputTarget{*numbered_path};
+    }
+    if (choice == "o") {
+      if (!ValidateOverwrite(input_path, path)) {
+        return std::nullopt;
+      }
+      return OutputTarget{path, true};
+    }
+    std::cerr << "Choose n, o, or c.\n";
+  }
 }
 
 std::array<granular::Head, granular::NUM_HEADS> MakeDefaultHeads() {
@@ -1817,7 +1921,7 @@ int main(int argc, char** argv) {
     return 2;
   }
 
-  Options options = parsed.options;
+  const Options options = parsed.options;
   std::signal(SIGPIPE, SIG_IGN);
 
   if (options.fridge_lfo_chart) {
@@ -1851,15 +1955,16 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  std::optional<OutputTarget> output;
   if (options.output_path.has_value()) {
-    options.output_path = PrepareOutputPath(*options.output_path);
-    if (!options.output_path.has_value()) {
+    output = PrepareOutputPath(options.input_path, *options.output_path);
+    if (!output.has_value()) {
       return 1;
     }
   }
 
   const std::string decoder_command =
-      "ffmpeg -hide_banner -loglevel error -i " +
+      "ffmpeg -hide_banner -loglevel error -nostdin -i " +
       ShellEscape(options.input_path) +
       " -f f32le -acodec pcm_f32le -ac 2 -ar " +
       std::to_string(options.sample_rate) + " pipe:1";
@@ -1884,13 +1989,14 @@ int main(int argc, char** argv) {
   }
 
   FILE* encoder = nullptr;
-  if (options.output_path.has_value()) {
+  if (output.has_value()) {
     const std::string encoder_command =
-        "ffmpeg -hide_banner -loglevel error -y -f f32le -acodec pcm_f32le "
+        std::string("ffmpeg -hide_banner -loglevel error -nostdin ") +
+        (output->overwrite ? "-y" : "-n") + " -f f32le -acodec pcm_f32le "
         "-ac 2 -ar " +
         std::to_string(options.sample_rate) +
         " -i pipe:0 -vn -codec:a libmp3lame -q:a 2 " +
-        ShellEscape(*options.output_path);
+        ShellEscape(output->path.string());
     encoder = popen(encoder_command.c_str(), "w");
     if (encoder == nullptr) {
       std::cerr << "failed to start ffmpeg encoder\n";

@@ -56,6 +56,12 @@ output filenames default to the ~mp3s/~ folder in the current directory (created
 if needed), so this writes ~mp3s/processed.mp3~ when run from the repo root.
 explicit paths such as ~./processed.mp3~ or ~/tmp/processed.mp3~ are used as given.
 
+if the output already exists, choose ~n~ to append the first available number
+(~processed_1.mp3~, ~processed_2.mp3~, ...), ~o~ to overwrite, or ~c~ to cancel.
+Enter or end-of-input cancels with a nonzero exit status before playback or
+rendering starts. overwriting the input file itself is rejected; choose a
+numbered filename instead.
+
 if playback fails on your machine, disable playback and render offline:
 
 #+begin_src shell-session
