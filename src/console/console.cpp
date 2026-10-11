@@ -29,6 +29,8 @@
 using jazz::audio::StereoSample;
 using jazz::units::Samples;
 
+static_assert(sizeof(StereoSample) == 2 * sizeof(float));
+
 namespace {
 
 constexpr int kDefaultSampleRate = 48000;
@@ -1762,9 +1764,8 @@ std::unique_ptr<SampleProcessor> MakeProcessor(EffectKind effect,
   return std::make_unique<BypassProcessor>();
 }
 
-bool WriteAll(FILE* stream, const StereoSample* buffer, size_t samples) {
-  const size_t bytes_total = samples * sizeof(float);
-  // TODO(aspen): uhhhhhhhhhh
+bool WriteAll(FILE* stream, const StereoSample* buffer, size_t frames) {
+  const size_t bytes_total = frames * sizeof(StereoSample);
   const auto cursor = reinterpret_cast<const unsigned char*>(buffer);
   size_t bytes_written = 0;
 
@@ -1842,7 +1843,7 @@ int main(int argc, char** argv) {
   const std::string decoder_command =
       "ffmpeg -hide_banner -loglevel error -i " +
       ShellEscape(options.input_path) +
-      " -f f32le -acodec pcm_f32le -ac stereo -ar " +
+      " -f f32le -acodec pcm_f32le -ac 2 -ar " +
       std::to_string(options.sample_rate) + " pipe:1";
 
   FILE* decoder = popen(decoder_command.c_str(), "r");
@@ -1868,7 +1869,7 @@ int main(int argc, char** argv) {
   if (options.output_path.has_value()) {
     const std::string encoder_command =
         "ffmpeg -hide_banner -loglevel error -y -f f32le -acodec pcm_f32le "
-        "-ac stereo -ar " +
+        "-ac 2 -ar " +
         std::to_string(options.sample_rate) +
         " -i pipe:0 -vn -codec:a libmp3lame -q:a 2 " +
         ShellEscape(*options.output_path);
@@ -1893,13 +1894,13 @@ int main(int argc, char** argv) {
 
   bool write_failed = false;
   while (true) {
-    const size_t read_samples =
-        std::fread(chunk.data(), sizeof(float), chunk.size(), decoder);
-    if (read_samples == 0) {
+    const size_t read_frames =
+        std::fread(chunk.data(), sizeof(StereoSample), chunk.size(), decoder);
+    if (read_frames == 0) {
       break;
     }
 
-    for (size_t i = 0; i < read_samples; i++) {
+    for (size_t i = 0; i < read_frames; i++) {
       StereoSample sample = chunk[i];
       for (auto& processor : chain) {
         sample = processor->Process(sample);
@@ -1907,12 +1908,12 @@ int main(int argc, char** argv) {
       chunk[i] = sample.Clip();
     }
 
-    if (player != nullptr && !WriteAll(player, chunk.data(), read_samples)) {
+    if (player != nullptr && !WriteAll(player, chunk.data(), read_frames)) {
       std::cerr << "failed writing to ffplay\n";
       write_failed = true;
       break;
     }
-    if (encoder != nullptr && !WriteAll(encoder, chunk.data(), read_samples)) {
+    if (encoder != nullptr && !WriteAll(encoder, chunk.data(), read_frames)) {
       std::cerr << "failed writing to encoder\n";
       write_failed = true;
       break;
