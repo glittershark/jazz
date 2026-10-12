@@ -79,21 +79,21 @@ class Warp {
 };
 
 class Decimate {
-  size_t skip_;
+  float frac_;
   float output_;
-  size_t count_;
+  float count_;
 
  public:
-  constexpr Decimate(size_t skip_) : skip_(skip_), output_(0.f), count_(0) {}
+  constexpr Decimate(float frac) : frac_(frac), output_(0.f), count_(0.f) {}
 
   float pre(float sample) { return sample; }
 
   float post(float sample, float) {
-    if (count_ == 0) {
-      count_ = skip_;
+    count_ += 1;
+
+    if (count_ >= frac_) {
+      count_ -= frac_;
       output_ = sample;
-    } else {
-      --count_;
     }
 
     return output_;
@@ -115,7 +115,7 @@ class LogWarp {
 
 float woodchipper(float sample) {
   static auto effect =
-      apply(Decimate(10), LogWarp(3.3f), Warp(0.7f), Crush(0.2f));
+      apply(Decimate(15.f), LogWarp(3.3f), Warp(0.7f), Crush(0.2f));
   return effect(sample);
 }
 
