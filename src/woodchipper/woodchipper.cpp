@@ -21,8 +21,8 @@ DaisySeed hw;
 static volatile int g_bits = 0;
 
 float woodchipper(float sample) {
-  static const float bits = 1.5f;
-  static const float warp = 0.2f;
+  static const float bits = 0.5f;
+  static const float warp = 1.2f;
 
   static const float bit_scale = powf(2.f, bits);
 
