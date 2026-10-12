@@ -20,28 +20,103 @@ DaisySeed hw;
 // written from the scan timer IRQ, read from the main loop
 static volatile int g_bits = 0;
 
-float woodchipper(float sample) {
-  static const float bits = 2.f;
-  static const float warp = 0.7f;
-  static const int decimate = 10;
+template <typename L, typename... Inner>
+class LayerApplication {
+  L l_;
+  LayerApplication<Inner...> i_;
 
-  static const float bit_scale = powf(2.f, bits);
+ public:
+  LayerApplication(L l, LayerApplication<Inner...> i) : l_(l), i_(i) {}
+  float operator()(float input) { return l_.post(i_(l_.pre(input)), input); }
+};
 
-  const float warped = powf(fabsf(sample), warp);
+template <typename L>
+class LayerApplication<L> {
+  L l_;
 
-  const float crushed = roundf(warped * bit_scale) / bit_scale;
+ public:
+  LayerApplication(L l) : l_(l) {}
+  float operator()(float input) { return l_.post(l_.pre(input), input); }
+};
 
-  const float unwarped = copysignf(powf(crushed, 1 / warp), sample);
+template <typename L, typename... Inner>
+LayerApplication<L, Inner...> apply(L l, Inner... inner) {
+  return LayerApplication(l, apply(inner...));
+}
 
-  static int counter = decimate;
-  static float output = 0.f;
+template <typename L>
+LayerApplication<L> apply(L l) {
+  return LayerApplication(l);
+}
 
-  if (--counter == 0) {
-    counter = decimate;
-    output = unwarped;
+template <typename L, typename L2>
+LayerApplication<L, L2> apply(L l, L2 l2) {
+  return LayerApplication(l, LayerApplication<L2>(l2));
+}
+
+class Crush {
+  float bit_scale_;
+
+ public:
+  constexpr Crush(float bits) : bit_scale_(powf(2.f, bits)) {}
+
+  float pre(float sample) { return roundf(sample * bit_scale_) / bit_scale_; }
+
+  float post(float sample, float) { return sample; }
+};
+
+class Warp {
+  float power_;
+
+ public:
+  constexpr Warp(float power) : power_(power) {}
+
+  float pre(float sample) { return powf(fabsf(sample), power_); }
+
+  float post(float sample, float orig) {
+    return copysignf(powf(sample, 1 / power_), orig);
   }
+};
 
-  return output;
+class Decimate {
+  size_t skip_;
+  float output_;
+  size_t count_;
+
+ public:
+  constexpr Decimate(size_t skip_) : skip_(skip_), output_(0.f), count_(0) {}
+
+  float pre(float sample) { return sample; }
+
+  float post(float sample, float) {
+    if (count_ == 0) {
+      count_ = skip_;
+      output_ = sample;
+    } else {
+      --count_;
+    }
+
+    return output_;
+  }
+};
+
+class LogWarp {
+  float log_base_;
+
+ public:
+  constexpr LogWarp(float base) : log_base_(logf(base)) {}
+
+  float pre(float sample) { return logf(fabsf(sample)) / log_base_; }
+
+  float post(float sample, float orig) {
+    return copysignf(expf(sample * log_base_), orig);
+  }
+};
+
+float woodchipper(float sample) {
+  static auto effect =
+      apply(Decimate(10), LogWarp(3.3f), Warp(0.7f), Crush(0.2f));
+  return effect(sample);
 }
 
 #ifndef UNIT_TEST
