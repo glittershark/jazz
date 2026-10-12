@@ -21,8 +21,9 @@ DaisySeed hw;
 static volatile int g_bits = 0;
 
 float woodchipper(float sample) {
-  static const float bits = 0.5f;
-  static const float warp = 1.2f;
+  static const float bits = 2.f;
+  static const float warp = 0.7f;
+  static const int decimate = 10;
 
   static const float bit_scale = powf(2.f, bits);
 
@@ -31,7 +32,16 @@ float woodchipper(float sample) {
   const float crushed = roundf(warped * bit_scale) / bit_scale;
 
   const float unwarped = copysignf(powf(crushed, 1 / warp), sample);
-  return unwarped;
+
+  static int counter = decimate;
+  static float output = 0.f;
+
+  if (--counter == 0) {
+    counter = decimate;
+    output = unwarped;
+  }
+
+  return output;
 }
 
 #ifndef UNIT_TEST
