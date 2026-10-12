@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdlib>
 
+#ifndef UNIT_TEST
 #include "daisy_seed.h"
 #include "daisysp.h"
 #include "io.hpp"
@@ -16,6 +17,7 @@ using namespace std::chrono_literals;
 using namespace fridge;
 
 DaisySeed hw;
+#endif  // UNIT_TEST
 
 // written from the scan timer IRQ, read from the main loop
 static volatile int g_bits = 0;
@@ -44,6 +46,7 @@ float woodchipper(float sample_f) {
   return ldexpf(exp2f(crushed.f), -shift);
 }
 
+#ifndef UNIT_TEST
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out,
                    size_t size) {
   for (size_t i = 0; i < size; i++) {
@@ -226,3 +229,4 @@ int main() {
     }
   }
 }
+#endif  // UNIT_TEST

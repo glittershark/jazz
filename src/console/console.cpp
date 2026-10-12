@@ -26,6 +26,9 @@
 #include "mod.hpp"
 #include "sound.hpp"
 
+// defined in src/woodchipper/woodchipper.cpp
+float woodchipper(float sample);
+
 using jazz::audio::StereoSample;
 using jazz::units::Samples;
 
@@ -110,6 +113,7 @@ enum class EffectKind {
   kCursedHighPass,
   kLaSort,
   kFridge,
+  kWoodchipper,
 };
 
 enum class ParseKind { kOk, kHelp, kError };
@@ -121,7 +125,7 @@ struct ParseResult {
 
 const char* EffectListText() {
   return "bypass, granular, clip, anticlip, lowpass, highpass, "
-         "cursed_lowpass, cursed_highpass, la_sort, fridge";
+         "cursed_lowpass, cursed_highpass, la_sort, fridge, woodchipper";
 }
 
 std::string ToLower(std::string value) {
@@ -243,6 +247,9 @@ std::optional<EffectKind> ParseEffect(const std::string& name) {
   }
   if (effect == "fridge") {
     return EffectKind::kFridge;
+  }
+  if (effect == "woodchipper") {
+    return EffectKind::kWoodchipper;
   }
   return std::nullopt;
 }
@@ -1580,6 +1587,11 @@ class CursedHighPassProcessor final : public MonoSampleProcessor {
   float last_input_ = 1.0f;
 };
 
+class WoodchipperProcessor final : public MonoSampleProcessor {
+ public:
+  float Process(float sample) override { return woodchipper(sample); }
+};
+
 class LaSortProcessor final : public MonoSampleProcessor {
  public:
   LaSortProcessor(float weight_center, float weight_sharpness)
@@ -1704,6 +1716,8 @@ std::unique_ptr<SampleProcessor> MakeProcessor(EffectKind effect,
                                              params.la_sort_weight_sharpness);
   case EffectKind::kFridge:
     return std::make_unique<FridgeProcessor>(params.fridge_config);
+  case EffectKind::kWoodchipper:
+    return std::make_unique<WoodchipperProcessor>();
   }
 
   return std::make_unique<BypassProcessor>();
@@ -1789,7 +1803,7 @@ int main(int argc, char** argv) {
   const std::string decoder_command =
       "ffmpeg -hide_banner -loglevel error -i " +
       ShellEscape(options.input_path) +
-      " -f f32le -acodec pcm_f32le -ac stereo -ar " +
+      " -f f32le -acodec pcm_f32le -ac 2 -ar " +
       std::to_string(options.sample_rate) + " pipe:1";
 
   FILE* decoder = popen(decoder_command.c_str(), "r");
@@ -1815,7 +1829,7 @@ int main(int argc, char** argv) {
   if (options.output_path.has_value()) {
     const std::string encoder_command =
         "ffmpeg -hide_banner -loglevel error -y -f f32le -acodec pcm_f32le "
-        "-ac stereo -ar " +
+        "-ac 2 -ar " +
         std::to_string(options.sample_rate) +
         " -i pipe:0 -vn -codec:a libmp3lame -q:a 2 " +
         ShellEscape(*options.output_path);
