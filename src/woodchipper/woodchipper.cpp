@@ -4,13 +4,11 @@
 
 #ifndef UNIT_TEST
 #include "daisy_seed.h"
-#include "daisysp.h"
 #include "io.hpp"
 #include "ui.hpp"
 
 using namespace daisy;
 using namespace daisy::seed;
-using namespace daisysp;
 using namespace std::chrono_literals;
 
 // FIXME: dedup
@@ -22,28 +20,18 @@ DaisySeed hw;
 // written from the scan timer IRQ, read from the main loop
 static volatile int g_bits = 0;
 
-union float_cast {
-  float f;
-  struct {
-    unsigned int mantissa : 23;
-    unsigned int exponent : 8;
-    unsigned int sign : 1;
-  };
-};
+float woodchipper(float sample) {
+  static const float bits = 1.5f;
+  static const float warp = 0.2f;
 
-float woodchipper(float sample_f) {
-  const int shift = 23;
+  static const float bit_scale = powf(2.f, bits);
 
-  const float flattened = roundf(log2f(ldexpf(sample_f, shift)));
+  const float warped = powf(fabsf(sample), warp);
 
-  union float_cast crushed = {
-      .f = flattened,
-  };
+  const float crushed = roundf(warped * bit_scale) / bit_scale;
 
-  // leave g_bits of upper bits in the mantissa
-  crushed.mantissa &= ~(((1 << 23) - 1) >> g_bits);
-
-  return ldexpf(exp2f(crushed.f), -shift);
+  const float unwarped = copysignf(powf(crushed, 1 / warp), sample);
+  return unwarped;
 }
 
 #ifndef UNIT_TEST

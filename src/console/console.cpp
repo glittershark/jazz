@@ -1827,11 +1827,16 @@ int main(int argc, char** argv) {
 
   FILE* encoder = nullptr;
   if (options.output_path.has_value()) {
+    // ffmpeg picks the codec from the output extension; mp3 just gets a
+    // better-than-default quality setting
+    const std::string codec_args =
+        ToLower(*options.output_path).ends_with(".mp3")
+            ? "-codec:a libmp3lame -q:a 2 "
+            : "";
     const std::string encoder_command =
         "ffmpeg -hide_banner -loglevel error -y -f f32le -acodec pcm_f32le "
         "-ac 2 -ar " +
-        std::to_string(options.sample_rate) +
-        " -i pipe:0 -vn -codec:a libmp3lame -q:a 2 " +
+        std::to_string(options.sample_rate) + " -i pipe:0 -vn " + codec_args +
         ShellEscape(*options.output_path);
     encoder = popen(encoder_command.c_str(), "w");
     if (encoder == nullptr) {
