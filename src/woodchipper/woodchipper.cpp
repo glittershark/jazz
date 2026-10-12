@@ -20,6 +20,23 @@ DaisySeed hw;
 // written from the scan timer IRQ, read from the main loop
 static volatile int g_bits = 0;
 
+/**
+ * Represents application of a "layer" of the woodchipper to some set of inner
+ * layers.
+ *
+ * This pedal is sort of set up like an onion: it's built out of a collection of
+ * layers, each of which
+ * - take an input sample,
+ * - apply some sort of transform to it,
+ * - apply all the inner layers,
+ * - apply *another* transform to it, possibly using the original input to this
+ *   layer, and
+ * - return the processed sample.
+ *
+ * I have, for some reason, made the decision to assemble layers in the type
+ * system rather than using an array of pointers and delegating via virtual
+ * function calls. This method is in theory more efficient but harder to read.
+ */
 template <typename L, typename... Inner>
 class LayerApplication {
   L l_;
@@ -27,44 +44,85 @@ class LayerApplication {
 
  public:
   LayerApplication(L l, LayerApplication<Inner...> i) : l_(l), i_(i) {}
-  float operator()(float input) { return l_.post(i_(l_.pre(input)), input); }
+
+  float apply(float sample) {
+    const float pre = l_.pre(sample);
+    const float inner = i_.apply(pre);
+    const float post = l_.post(inner, sample);
+    return post;
+  }
 };
 
+/**
+ * Specialization for the innermost layer of the woodchipper. Just omits
+ * `i_.apply()` since there's nothing inside.
+ */
 template <typename L>
 class LayerApplication<L> {
   L l_;
 
  public:
   LayerApplication(L l) : l_(l) {}
-  float operator()(float input) { return l_.post(l_.pre(input), input); }
+
+  float apply(float sample) {
+    const float pre = l_.pre(sample);
+    const float post = l_.post(pre, sample);
+    return post;
+  }
 };
 
+/**
+ * Helper template to stack up a bunch of layers of woodchippery goodness,
+ * `outermost` layer first.
+ */
 template <typename L, typename... Inner>
 LayerApplication<L, Inner...> apply(L l, Inner... inner) {
   return LayerApplication(l, apply(inner...));
 }
 
+/**
+ * Base case template specialization for `apply()`.
+ */
 template <typename L>
 LayerApplication<L> apply(L l) {
   return LayerApplication(l);
 }
 
+/**
+ * Unfortunately we need *two* template specializations here because the
+ * argument count in `LayerApplication`'s constructor changes whether there are
+ * one or two layers passed to `apply()`.
+ */
 template <typename L, typename L2>
 LayerApplication<L, L2> apply(L l, L2 l2) {
   return LayerApplication(l, LayerApplication<L2>(l2));
 }
 
+/**
+ * The "bitcrusher" layer for the woodchipper.
+ *
+ * The algorithm it uses is "scale the sample up, round it, scale it back down,"
+ * which has the effect of quantizing the sample using a variable step width.
+ * `bits` is a rough proxy for how many bits this process preserves (I think).
+ */
 class Crush {
-  float bit_scale_;
+  float step_size_;
 
  public:
-  constexpr Crush(float bits) : bit_scale_(powf(2.f, bits)) {}
+  constexpr Crush(float bits) : step_size_(powf(2.f, bits)) {}
 
-  float pre(float sample) { return roundf(sample * bit_scale_) / bit_scale_; }
+  float pre(float sample) { return roundf(sample * step_size_) / step_size_; }
 
   float post(float sample, float) { return sample; }
 };
 
+/**
+ * Polynomial prewarp and post-unwarp.
+ *
+ * Raises the absolute value of a sample to some power before it gets fed into
+ * the next layer. When wrapped around a bitcrusher, it causes the quantization
+ * levels to be roughly geometrically distributed.
+ */
 class Warp {
   float power_;
 
@@ -73,11 +131,39 @@ class Warp {
 
   float pre(float sample) { return powf(fabsf(sample), power_); }
 
+  // inverse of `pre()`
   float post(float sample, float orig) {
     return copysignf(powf(sample, 1 / power_), orig);
   }
 };
 
+/**
+ * Logarithmic prewarp and post-unwarp.
+ *
+ * Takes the log-base-whatever of the absolute value of the sample. When wrapped
+ * around a bitcrusher, this causes the steps to be logarithmically distributed.
+ *
+ * TODO(nausicaa): try `log1pf()` instead to avoid weird stuff close to zero?
+ */
+class LogWarp {
+  float log_base_;
+
+ public:
+  constexpr LogWarp(float base) : log_base_(logf(base)) {}
+
+  float pre(float sample) { return logf(fabsf(sample)) / log_base_; }
+
+  // inverse of `pre()`
+  float post(float sample, float orig) {
+    return copysignf(expf(sample * log_base_), orig);
+  }
+};
+
+/**
+ * Decimate the output sample rate by roughly a factor of `frac_`.
+ *
+ * It sounds really bad, which is the point.
+ */
 class Decimate {
   float frac_;
   float output_;
@@ -100,23 +186,10 @@ class Decimate {
   }
 };
 
-class LogWarp {
-  float log_base_;
-
- public:
-  constexpr LogWarp(float base) : log_base_(logf(base)) {}
-
-  float pre(float sample) { return logf(fabsf(sample)) / log_base_; }
-
-  float post(float sample, float orig) {
-    return copysignf(expf(sample * log_base_), orig);
-  }
-};
-
 float woodchipper(float sample) {
   static auto effect =
       apply(Decimate(15.f), LogWarp(3.3f), Warp(0.7f), Crush(0.2f));
-  return effect(sample);
+  return effect.apply(sample);
 }
 
 #ifndef UNIT_TEST
