@@ -28,7 +28,10 @@ body {
 nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem 1.25rem;
+    gap: 0.5rem 1.5rem;
+    font-size: 1.1rem;
+    font-variant: all-small-caps;
+    letter-spacing: 0.08em;
 }
 
 a {
@@ -46,8 +49,8 @@ a:hover {
 }
 
 nav a[aria-current="page"] {
-    color: black;
-    font-weight: bold;
+    color: #0a0a0a;
+    border-bottom: 1px solid #902804;
 }
 
 main {
@@ -72,7 +75,8 @@ hr {
     margin-top: 2rem;
     margin-bottom: 2rem;
     clear: both;
-    border-color: #902804;
+    border: 0;
+    border-top: 1px solid #c29281;
 }
 
 .about-img {
@@ -80,9 +84,8 @@ hr {
     width: calc(100% - 2.4rem);
     height: auto;
     margin: 1rem auto;
-    border: 1px solid #c29281;
-    border: 4px solid #c29281;
-    outline: 1px solid #902804;
+    border: 4px solid #e3c6ba;
+    outline: 1px solid #c29281;
     outline-offset: 0.7rem;
 }
 
@@ -92,7 +95,5 @@ footer {
 }
 
 footer a {
-    text-align: center;
-    font-size: 1.6rem;
-    color: #cb9886;
+    text-decoration: underline;
 }
