@@ -1,0 +1,3 @@
+# Deploy dist/ to stillmar.com
+deploy:
+    wrangler deploy
