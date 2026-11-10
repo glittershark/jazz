@@ -14,12 +14,17 @@ nav {
 }
 
 a {
+    cursor: pointer;
     text-decoration: none;
     color: #902804;
 }
 
 a:visited {
     color: #902804;
+}
+
+a:hover {
+    color: #c73d0d;
 }
 
 nav a[aria-current="page"] {
@@ -53,4 +58,15 @@ hr {
     border: 4px solid #c29281;
     outline: 1px solid #902804;
     outline-offset: 0.7rem;
+}
+
+footer {
+    margin-top: 4rem;
+    text-align: center;
+}
+
+footer a {
+    text-align: center;
+    font-size: 1.6rem;
+    color: #cb9886;
 }
