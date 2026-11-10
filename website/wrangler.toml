@@ -5,7 +5,6 @@ workers_dev = false
 
 routes = [
   { pattern = "stillmar.com", custom_domain = true },
-  { pattern = "www.stillmar.com", custom_domain = true },
 ]
 
 [assets]

@@ -1,3 +1,7 @@
 # Deploy dist/ to stillmar.com
 deploy:
     wrangler deploy
+
+# Deploy the worker that redirects www.stillmar.com to stillmar.com
+deploy-www-redirect:
+    cd www-redirect && wrangler deploy
