@@ -1,9 +1,27 @@
+/* Crimson Pro (OFL, see fonts/OFL.txt), a free Minion-like serif */
+@font-face {
+    font-family: "Crimson Pro";
+    src: url("fonts/crimson-pro.woff2") format("woff2");
+    font-weight: 200 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Crimson Pro";
+    src: url("fonts/crimson-pro-italic.woff2") format("woff2");
+    font-weight: 200 900;
+    font-style: italic;
+    font-display: swap;
+}
+
 body {
     max-width: 40rem;
     margin: 4rem auto;
     padding: 0 1.25rem;
     background: #fcf5f2;
     color: #0a0a0a;
+    font-family: "Crimson Pro", Georgia, serif;
     line-height: 1.5;
 }
 

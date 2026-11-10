@@ -16,6 +16,8 @@ Open `http://localhost:8080/`. Stop the server with Ctrl+C. The relative links a
 
 The HTML files in `dist/` are the source pages, with `index.html` as Home. `dist/styles.css` owns the shared styles. Edit these files directly; there is no build step.
 
+The site uses Crimson Pro, a free Minion-like serif, self-hosted from `dist/fonts/` under the SIL Open Font License (`dist/fonts/OFL.txt`, which must stay alongside the fonts). The files are the variable-weight fonts from the `crimson-pro` nixpkgs package, subset to Latin characters and converted to WOFF2 with `fontTools.subset`.
+
 Each page includes the same navigation links, with `aria-current="page"` on its own link. Keep the links consistent when adding or renaming pages. Check navigation between all pages, text, and layout at desktop and narrow mobile widths after changes.
 
 Each page's `<head>` has a description, a canonical URL, favicon links, and Open Graph tags for link previews. When adding a page, copy them and update the title, description, canonical URL, and `og:` values. Give every `<img>` `width` and `height` attributes matching the image file, so the layout doesn't jump while it loads.
