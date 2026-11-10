@@ -1,0 +1,9 @@
+name = "stillmar-www-redirect"
+account_id = "73dc9488c730a5a18de845c1efae02c1"
+compatibility_date = "2026-11-01"
+workers_dev = false
+main = "index.js"
+
+routes = [
+  { pattern = "www.stillmar.com", custom_domain = true },
+]
