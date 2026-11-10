@@ -39,8 +39,14 @@ main {
 .logo {
     width: 10rem;
     float: right;
-    margin: 2rem;
+    margin: 0 0 1rem 1rem;
     border-radius: 50%;
+}
+
+@media (min-width: 40rem) {
+    .logo {
+        margin: 2rem;
+    }
 }
 
 hr {
