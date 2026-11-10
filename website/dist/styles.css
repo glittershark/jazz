@@ -1,0 +1,56 @@
+body {
+    max-width: 40rem;
+    margin: 4rem auto;
+    padding: 0 1.25rem;
+    background: #fcf5f2;
+    color: #0a0a0a;
+    line-height: 1.5;
+}
+
+nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+}
+
+a {
+    text-decoration: none;
+    color: #902804;
+}
+
+a:visited {
+    color: #902804;
+}
+
+nav a[aria-current="page"] {
+    color: black;
+    font-weight: bold;
+}
+
+main {
+    margin-top: 2rem;
+}
+
+.logo {
+    width: 10rem;
+    float: right;
+    margin: 2rem;
+    border-radius: 50%;
+}
+
+hr {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    clear: both;
+    border-color: #902804;
+}
+
+.about-img {
+    display: block;
+    width: calc(100% - 2.4rem);
+    margin: 1rem auto;
+    border: 1px solid #c29281;
+    border: 4px solid #c29281;
+    outline: 1px solid #902804;
+    outline-offset: 0.7rem;
+}
